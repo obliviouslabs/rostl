@@ -1,0 +1,11 @@
+[tasks.ben]
+description = "Build the project and benchmarks"
+script = '''
+cargo build
+cargo test
+cargo bench
+cd target/criterion && python3 -m http.server 8080
+'''
+
+[config]
+default_to_workspace = false

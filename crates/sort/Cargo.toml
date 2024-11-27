@@ -1,0 +1,23 @@
+[package]
+name = "rods-sort"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+bytemuck.workspace = true
+rods-primitives.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+criterion-cycles-per-byte.workspace = true
+rand.workspace = true
+
+[[bench]]
+name="osort"
+harness=false
