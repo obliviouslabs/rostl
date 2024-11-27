@@ -29,6 +29,7 @@ rust.unreachable_pub = "warn"
 rust.unused_must_use = "deny"
 rustdoc.all = "warn"
 rust.unnameable-types = "warn"
+rust.edition_2024_expr_fragment_specifier = "allow"
 
 [workspace.lints.clippy]
 # These are some of clippy's nursery (i.e., experimental) lints that we like.
