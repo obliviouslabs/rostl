@@ -12,3 +12,10 @@ pub const fn get_strictly_bigger_power_of_two(size: usize) -> usize {
   }
   n
 }
+
+#[macro_export]
+macro_rules! CSWAP {
+  ($arr:expr, $i:expr, $j:expr) => {
+    $arr.cswap($i, $j, $arr[$i] > $arr[$j]);
+  };
+}

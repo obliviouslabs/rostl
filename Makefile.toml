@@ -7,5 +7,11 @@ cargo bench
 cd target/criterion && python3 -m http.server 8080
 '''
 
+[tasks.tests]
+description = "Run the tests"
+script = '''
+cargo nextest run
+'''
+
 [config]
 default_to_workspace = false
