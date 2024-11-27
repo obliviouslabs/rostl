@@ -19,7 +19,7 @@ pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
   group.plot_config(plot_config);
 
-  for &size in &[100, 1_000, 3_162, 10_000, 31_623, 100_000] {
+  for &size in &[32, 100, 320, 1_000] {
     group.bench_with_input(BenchmarkId::new("Bitonic", size), &size, |b, &size| {
       let mut data: Vec<i32> = (0..size).collect();
       data.shuffle(&mut rand::thread_rng());
