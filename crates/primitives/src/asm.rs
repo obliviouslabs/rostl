@@ -139,7 +139,7 @@ mod tests {
 
   #[test]
   fn test_cmov() {
-    for choice in [false, true].iter() {
+    for choice in &[false, true] {
       let mut a = 0u64;
       let b = 0x12345678u64;
       a.cmov(&b, *choice);

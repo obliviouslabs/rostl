@@ -91,8 +91,9 @@ mod tests {
         arr.swap(i, j);
       }
       bitonic_sort(&mut arr);
-      for i in 0..sz {
-        assert_eq!(arr[i], i as u32);
+      assert_eq!(arr.len(), sz);
+      for (i, v) in arr.iter().enumerate() {
+        assert_eq!(*v, i as u32);
       }
     }
   }
@@ -101,8 +102,9 @@ mod tests {
   fn test_bitonic_sort_large() {
     let mut arr: Vec<u32> = (0..1000).rev().collect();
     bitonic_sort(&mut arr);
-    for i in 0..1000 {
-      assert_eq!(arr[i], i as u32);
+    assert_eq!(arr.len(), 1000);
+    for (i, v) in arr.iter().enumerate() {
+      assert_eq!(*v, i as u32);
     }
 
     let sz = random::<usize>() % 1000;
@@ -113,8 +115,9 @@ mod tests {
       arr.swap(i, j);
     }
     bitonic_sort(&mut arr);
-    for i in 0..sz {
-      assert_eq!(arr[i], i as u32);
+    assert_eq!(arr.len(), sz);
+    for (i, v) in arr.iter().enumerate() {
+      assert_eq!(*v, i as u32);
     }
   }
 }

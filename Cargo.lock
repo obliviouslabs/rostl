@@ -444,7 +444,6 @@ version = "1.0.0"
 dependencies = [
  "bytemuck",
  "criterion",
- "criterion-cycles-per-byte",
  "rand",
  "rods-primitives",
 ]

@@ -11,7 +11,7 @@ pub fn benchmark_cmov_u64<T: Measurement + 'static>(c: &mut Criterion<T>) {
     let op_b: u64 = 0x12345678;
     b.iter(|| {
       for _ in 0..1000 {
-        black_box(op_a.cmov(black_box(&op_b), black_box(true)));
+        op_a.cmov(black_box(&op_b), black_box(true));
       }
     })
   });
@@ -21,7 +21,7 @@ pub fn benchmark_cmov_u64<T: Measurement + 'static>(c: &mut Criterion<T>) {
     let op_b: u64 = 0x12345678;
     b.iter(|| {
       for _ in 0..1000 {
-        black_box(op_a.cmov_base(black_box(&op_b), black_box(true)));
+        op_a.cmov_base(black_box(&op_b), black_box(true));
       }
     })
   });
@@ -31,7 +31,7 @@ pub fn benchmark_cmov_u64<T: Measurement + 'static>(c: &mut Criterion<T>) {
     let op_b: u64 = 0x12345678;
     b.iter(|| {
       for _ in 0..1000 {
-        black_box(op_a = black_box(op_b));
+        op_a = black_box(op_b);
       }
     })
   });
