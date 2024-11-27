@@ -108,6 +108,10 @@ zero_sized_map_values = "warn"
 # Explicitly listing should make it easier to fix in the future.
 len_without_is_empty = "allow"
 
+[profile.dev.package]
+rand_chacha.opt-level = 3
+
+
 [profile.release]
 codegen-units = 16
 debug = "line-tables-only"
