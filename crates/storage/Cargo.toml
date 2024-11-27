@@ -1,0 +1,13 @@
+[package]
+name = "rods-storage"
+edition = "2021"
+version.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+exclude.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true

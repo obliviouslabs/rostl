@@ -13,6 +13,7 @@ platform = "x86_64"
 members = [
   "crates/primitives",
   "crates/sort",
+  "crates/storage",
   # "crates/rodb",
 ]
 # default-members = ["crates/rodb"]
@@ -27,9 +28,9 @@ rust.rust_2021_compatibility = { level = "deny", priority = -1 }
 rust.rust_2024_compatibility = { level = "warn", priority = -1 }
 rust.unreachable_pub = "warn"
 rust.unused_must_use = "deny"
-rustdoc.all = "warn"
 rust.unnameable-types = "warn"
 rust.edition_2024_expr_fragment_specifier = "allow"
+rustdoc.all = "warn"
 
 [workspace.lints.clippy]
 # These are some of clippy's nursery (i.e., experimental) lints that we like.
