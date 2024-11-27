@@ -3,7 +3,6 @@ use criterion::{
   criterion_group, criterion_main, measurement::Measurement, AxisScale, BenchmarkId, Criterion,
   PlotConfiguration,
 };
-use criterion_cycles_per_byte::CyclesPerByte;
 use rand::seq::SliceRandom;
 #[allow(deprecated)]
 use rods_sort::batcher::batcher_sort;
