@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1732737774490,
+  "lastUpdate": 1732737799785,
   "repoUrl": "https://github.com/xtrm0/rods",
   "entries": {
     "Benchmark": [
@@ -815,6 +815,192 @@ window.BENCHMARK_DATA = {
             "name": "Sorting/WallTime/std::sort/1000",
             "value": 9198,
             "range": "± 190",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "committer": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "distinct": true,
+          "id": "481331d181ccbe36e60b6ad17d5a78caf38c8b6f",
+          "message": "Adds bose-nelson sorting network",
+          "timestamp": "2024-11-27T14:57:06-05:00",
+          "tree_id": "33e5b1441bc9b11381e5a168551b71fd7c7884b1",
+          "url": "https://github.com/xtrm0/rods/commit/481331d181ccbe36e60b6ad17d5a78caf38c8b6f"
+        },
+        "date": 1732737799078,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "cmov",
+            "value": 2912,
+            "range": "± 29",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov2",
+            "value": 2923,
+            "range": "± 52",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "mov",
+            "value": 1523,
+            "range": "± 50",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/100",
+            "value": 2804,
+            "range": "± 303",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/100",
+            "value": 4932,
+            "range": "± 87",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/100",
+            "value": 6137,
+            "range": "± 62",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/100",
+            "value": 663,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/1000",
+            "value": 51556,
+            "range": "± 623",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/1000",
+            "value": 99935,
+            "range": "± 433",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/1000",
+            "value": 257466,
+            "range": "± 27173",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/1000",
+            "value": 9573,
+            "range": "± 373",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/3162",
+            "value": 200075,
+            "range": "± 15522",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/3162",
+            "value": 446228,
+            "range": "± 1855",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/3162",
+            "value": 1555316,
+            "range": "± 14160",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/3162",
+            "value": 33157,
+            "range": "± 648",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/10000",
+            "value": 775857,
+            "range": "± 33673",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/10000",
+            "value": 1895182,
+            "range": "± 16218",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/10000",
+            "value": 9353812,
+            "range": "± 795375",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/10000",
+            "value": 116798,
+            "range": "± 6462",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/31623",
+            "value": 3092510,
+            "range": "± 22663",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/31623",
+            "value": 6968824,
+            "range": "± 40678",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/31623",
+            "value": 62977183,
+            "range": "± 9216190",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/31623",
+            "value": 554020,
+            "range": "± 5710",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/100000",
+            "value": 11364979,
+            "range": "± 79159",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/100000",
+            "value": 28019585,
+            "range": "± 201400",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/100000",
+            "value": 367194463,
+            "range": "± 50661971",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/100000",
+            "value": 1943664,
+            "range": "± 57336",
             "unit": "ns/iter"
           }
         ]
