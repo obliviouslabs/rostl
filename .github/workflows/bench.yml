@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   benchmark:
-    name: Run Criterion.rs benchmark example
+    name: Benchmarks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
