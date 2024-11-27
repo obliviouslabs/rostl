@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1732730059711,
+  "lastUpdate": 1732735232456,
   "repoUrl": "https://github.com/xtrm0/rods",
   "entries": {
     "Benchmark": [
@@ -395,6 +395,138 @@ window.BENCHMARK_DATA = {
             "name": "Sorting/WallTime/std::sort/100000",
             "value": 1921459,
             "range": "± 14712",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "committer": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "distinct": true,
+          "id": "14b5c7643ba766bcf748eeac71a7aab7bf1552c8",
+          "message": "Fix benchmark action source",
+          "timestamp": "2024-11-27T14:15:27-05:00",
+          "tree_id": "ecc1f43a693cb5a3f66a098ffc8fa6cc8b3ee674",
+          "url": "https://github.com/xtrm0/rods/commit/14b5c7643ba766bcf748eeac71a7aab7bf1552c8"
+        },
+        "date": 1732735231813,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "Sorting/WallTime/Bitonic/100",
+            "value": 2773,
+            "range": "± 1122",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/100",
+            "value": 4925,
+            "range": "± 232",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/100",
+            "value": 628,
+            "range": "± 61",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/1000",
+            "value": 50852,
+            "range": "± 1212",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/1000",
+            "value": 99923,
+            "range": "± 1927",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/1000",
+            "value": 8796,
+            "range": "± 468",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/3162",
+            "value": 196037,
+            "range": "± 5714",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/3162",
+            "value": 446112,
+            "range": "± 16043",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/3162",
+            "value": 32759,
+            "range": "± 2058",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/10000",
+            "value": 759589,
+            "range": "± 46630",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/10000",
+            "value": 1894933,
+            "range": "± 108566",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/10000",
+            "value": 113983,
+            "range": "± 8247",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/31623",
+            "value": 3004773,
+            "range": "± 49134",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/31623",
+            "value": 6966948,
+            "range": "± 339490",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/31623",
+            "value": 546393,
+            "range": "± 9257",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/100000",
+            "value": 11122419,
+            "range": "± 213354",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/100000",
+            "value": 28017814,
+            "range": "± 1012961",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/100000",
+            "value": 1919144,
+            "range": "± 30834",
             "unit": "ns/iter"
           }
         ]
