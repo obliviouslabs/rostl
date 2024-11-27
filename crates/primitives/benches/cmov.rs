@@ -32,10 +32,12 @@ pub fn benchmark_cmov_u64<T: Measurement + 'static>(c: &mut Criterion<T>) {
   });
 }
 
-criterion_group!(benches_time, benchmark_cmov_u64);
+criterion_group!(name = benches_time;
+  config = Criterion::default().warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(1));
+  targets = benchmark_cmov_u64);
 criterion_group!(
   name = benches_cycles;
-  config = Criterion::default().with_measurement(CyclesPerByte);
+  config = Criterion::default().with_measurement(CyclesPerByte).warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(1));
   targets = benchmark_cmov_u64<CyclesPerByte>
 );
 criterion_main!(benches_time, benches_cycles);
