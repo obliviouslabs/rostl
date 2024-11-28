@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1732742102057,
+  "lastUpdate": 1732767491830,
   "repoUrl": "https://github.com/xtrm0/rods",
   "entries": {
     "Benchmark": [
@@ -1691,6 +1691,144 @@ window.BENCHMARK_DATA = {
             "name": "Sorting/WallTime/std::sort/1000",
             "value": 8916,
             "range": "± 517",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "committer": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "distinct": true,
+          "id": "9837875a3eede7246088e1b8baadb58fd2696d96",
+          "message": "Adds memstore",
+          "timestamp": "2024-11-27T23:13:59-05:00",
+          "tree_id": "f1bd9170f097236ac6c6bb5a1ef2459fa221480d",
+          "url": "https://github.com/xtrm0/rods/commit/9837875a3eede7246088e1b8baadb58fd2696d96"
+        },
+        "date": 1732767490989,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "cmov",
+            "value": 2915,
+            "range": "± 400",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov2",
+            "value": 2924,
+            "range": "± 225",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "mov",
+            "value": 1524,
+            "range": "± 50",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/32",
+            "value": 665,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/32",
+            "value": 805,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/32",
+            "value": 982,
+            "range": "± 24",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/32",
+            "value": 175,
+            "range": "± 35",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/100",
+            "value": 2802,
+            "range": "± 30",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/100",
+            "value": 4925,
+            "range": "± 57",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/100",
+            "value": 6145,
+            "range": "± 104",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/100",
+            "value": 658,
+            "range": "± 27",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/320",
+            "value": 12086,
+            "range": "± 451",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/320",
+            "value": 25240,
+            "range": "± 190",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/320",
+            "value": 37850,
+            "range": "± 364",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/320",
+            "value": 2485,
+            "range": "± 57",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/1000",
+            "value": 51342,
+            "range": "± 608",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/1000",
+            "value": 99967,
+            "range": "± 1998",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/1000",
+            "value": 257645,
+            "range": "± 2774",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/1000",
+            "value": 8967,
+            "range": "± 158",
             "unit": "ns/iter"
           }
         ]
