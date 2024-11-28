@@ -20,6 +20,7 @@ impl<T> Length for Vec<T> {
 
 /// An Indexable that can be used in the algorithms in this library
 pub trait Indexable<T>: Index<usize, Output = T> + IndexMut<usize, Output = T> + Length {}
+
 impl<T, C> Indexable<T> for C where
   C: Index<usize, Output = T> + IndexMut<usize, Output = T> + Length
 {

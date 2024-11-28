@@ -13,5 +13,24 @@ script = '''
 cargo nextest run
 '''
 
+[tasks.precommit]
+description = "Run pre-commit checks"
+script = '''
+cargo test
+cargo clippy --all-targets --all-features -- -D warnings
+cargo fmt --all -- --check
+cargo hack check --feature-powerset
+codespell --count 0 --skip '*.json'
+~/.cargo/bin/zepter run check
+'''
+
+[tasks.gitpush]
+description = "Push the changes to the remote repository"
+dependencies = ["precommit"]
+script = '''
+git push
+'''
+
+
 [config]
 default_to_workspace = false

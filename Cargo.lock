@@ -451,6 +451,9 @@ dependencies = [
 [[package]]
 name = "rods-storage"
 version = "1.0.0"
+dependencies = [
+ "bytemuck",
+]
 
 [[package]]
 name = "ryu"
