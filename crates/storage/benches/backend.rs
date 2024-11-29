@@ -18,7 +18,7 @@ pub fn benchmark_storage<T: Measurement + 'static>(c: &mut Criterion<T>) {
     let src = MemStore::open(String::new(), 2).unwrap();
     let mut dst: Vec<u8> = vec![0; 4096];
     b.iter(|| {
-      src.read_page(black_box(0), black_box(&mut dst)).unwrap();
+      black_box(src.read_page(black_box(0), black_box(&mut dst))).unwrap();
     })
   });
 
@@ -26,6 +26,6 @@ pub fn benchmark_storage<T: Measurement + 'static>(c: &mut Criterion<T>) {
 }
 
 criterion_group!(name = benches_cycles;
-  config = Criterion::default().with_measurement(CyclesPerByte).warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(1));
+  config = Criterion::default().with_measurement(CyclesPerByte).warm_up_time(std::time::Duration::from_millis(2000)).measurement_time(std::time::Duration::from_secs(3));
   targets = benchmark_storage);
 criterion_main!(benches_cycles);

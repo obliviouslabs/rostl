@@ -1,1 +1,1 @@
-memstore-4k mov-4k 0.9 <= (x/y) <= 1.5
+memstore-4k mov-4k (x/y) <= 1.3
