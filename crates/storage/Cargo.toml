@@ -10,6 +10,13 @@ exclude.workspace = true
 [dependencies]
 bytemuck.workspace = true
 
+[dev-dependencies]
+criterion-cycles-per-byte.workspace = true
+criterion.workspace = true
 
 [lints]
 workspace = true
+
+[[bench]]
+name = "backend"
+harness = false

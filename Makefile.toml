@@ -3,8 +3,8 @@ description = "Build the project and benchmarks"
 script = '''
 cargo build
 cargo test
-cargo bench
-cd target/criterion && python3 -m http.server 8080
+cargo criterion --output-format bencher 2>&1 | tee target/bencher.log
+python scripts/benchmark_rules.py --input target/bencher.log --rules scripts/benchmark_rules.txt
 '''
 
 [tasks.tests]

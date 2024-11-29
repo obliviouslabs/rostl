@@ -453,6 +453,8 @@ name = "rods-storage"
 version = "1.0.0"
 dependencies = [
  "bytemuck",
+ "criterion",
+ "criterion-cycles-per-byte",
 ]
 
 [[package]]

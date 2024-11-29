@@ -50,4 +50,5 @@ jobs:
           alert-comment-cc-users: '@xtrm0'
           auto-push: true
           benchmark-data-dir-path: 'docs/dev/bench'
-
+      - name: Verify benchmark tests
+        run: python ./scripts/benchmark_rules.py --input output.txt --rules ./scripts/benchmark_rules.txt
