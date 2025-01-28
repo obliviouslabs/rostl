@@ -14,8 +14,9 @@ bytemuck.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
-criterion-cycles-per-byte.workspace = true
 
+[target.'cfg(target_arch = "x86_64")'.dev-dependencies]
+criterion-cycles-per-byte.workspace = true
 
 [[bench]]
 name="cmov"

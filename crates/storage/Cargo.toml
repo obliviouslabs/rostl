@@ -11,8 +11,10 @@ exclude.workspace = true
 bytemuck.workspace = true
 
 [dev-dependencies]
-criterion-cycles-per-byte.workspace = true
 criterion.workspace = true
+
+[target.'cfg(target_arch = "x86_64")'.dev-dependencies]
+criterion-cycles-per-byte.workspace = true
 
 [lints]
 workspace = true

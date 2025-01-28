@@ -1,5 +1,8 @@
 #![allow(missing_docs)]
+
 use criterion::{criterion_group, criterion_main, measurement::Measurement, Criterion};
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use criterion_cycles_per_byte::CyclesPerByte;
 use rods_primitives::asm::_Cmovbase;
 use rods_primitives::traits::Cmov;
@@ -37,9 +40,11 @@ pub fn benchmark_cmov_u64<T: Measurement + 'static>(c: &mut Criterion<T>) {
   });
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 criterion_group!(
   name = benches_cycles;
   config = Criterion::default().with_measurement(CyclesPerByte).warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(1));
   targets = benchmark_cmov_u64<CyclesPerByte>
 );
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 criterion_main!(benches_cycles);
