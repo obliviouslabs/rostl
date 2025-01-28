@@ -4,9 +4,9 @@
   note = "Support for aarch64 is not trace oblivious yet, feel free to complete this file."
 )]
 
-//! Assembly implementations of the `Cmov` trait.
-//!
-use std::arch::asm;
+// //! Assembly implementations of the `Cmov` trait.
+// //!
+// use std::arch::asm;
 
 use crate::traits::_Cmovbase;
 
