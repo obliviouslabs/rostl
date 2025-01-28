@@ -1,6 +1,11 @@
 #![allow(missing_docs)]
 
-use criterion::{criterion_group, criterion_main, measurement::Measurement, Criterion};
+#[allow(unused_imports)]
+use criterion::{
+  criterion_group, criterion_main,
+  measurement::{Measurement, WallTime},
+  Criterion,
+};
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use criterion_cycles_per_byte::CyclesPerByte;
@@ -46,5 +51,12 @@ criterion_group!(
   config = Criterion::default().with_measurement(CyclesPerByte).warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(1));
   targets = benchmark_cmov_u64<CyclesPerByte>
 );
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+
+#[cfg(target_arch = "aarch64")]
+criterion_group!(
+  name = benches_cycles;
+  config = Criterion::default().warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(1));
+  targets = benchmark_cmov_u64<WallTime>
+);
+
 criterion_main!(benches_cycles);

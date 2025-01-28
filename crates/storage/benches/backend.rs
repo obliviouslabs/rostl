@@ -1,6 +1,12 @@
 #![allow(clippy::collection_is_never_read)]
 #![allow(missing_docs)]
-use criterion::{criterion_group, criterion_main, measurement::Measurement, Criterion};
+
+#[allow(unused_imports)]
+use criterion::{
+  criterion_group, criterion_main,
+  measurement::{Measurement, WallTime},
+  Criterion,
+};
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use criterion_cycles_per_byte::CyclesPerByte;
 use rods_storage::{memstore::MemStore, traits::PageStorage};
@@ -54,7 +60,11 @@ pub fn benchmark_storage<T: Measurement + 'static>(c: &mut Criterion<T>) {
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 criterion_group!(name = benches_cycles;
   config = Criterion::default().with_measurement(CyclesPerByte).warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(1));
-  targets = benchmark_storage);
+  targets = benchmark_storage::<CyclesPerByte>);
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(target_arch = "aarch64")]
+criterion_group!(name = benches_cycles;
+  config = Criterion::default().with_measurement(WallTime).warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(1));
+  targets = benchmark_storage::<WallTime>);
+
 criterion_main!(benches_cycles);
