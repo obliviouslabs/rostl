@@ -1,2 +1,2 @@
-//! This crates implement oram algorithms 
+//! This crates implement oram algorithms
 pub mod linear_oram;
