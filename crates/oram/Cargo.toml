@@ -8,6 +8,7 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
+rods-primitives.workspace = true
 
 [lints]
 workspace = true

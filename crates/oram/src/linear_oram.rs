@@ -1,0 +1,33 @@
+//! Linear Scan ORAM
+//!
+use rods_primitives::{
+  indexable::Indexable,
+  traits::Cmov,
+};
+use std::marker::PhantomData;
+
+/// A simple indexable ORAM that does a linear scan for each access
+#[derive(Debug)]
+pub struct LinearOram<V, T, const SIZE: usize> 
+where
+T: Cmov + Copy + Default, 
+V: Indexable<T>,
+{
+  data: V,
+  _marker: PhantomData<T>,
+}
+
+impl <V, T, const SIZE: usize> LinearOram<V, T, SIZE>
+where
+T: Cmov + Copy + Default, 
+V: Indexable<T>,
+{
+  ///linear scan the entyre array, move the element out when index matches
+  pub fn read(&self, index: usize) -> T{
+    let mut ans = T::default();
+    for i in 0..self.data.len() {
+      ans.cmov(&self.data[i],i==index);
+    }
+    ans
+  }
+}
