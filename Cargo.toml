@@ -10,7 +10,7 @@ exclude = [".github/"]
 platform = "x86_64"
 
 [workspace]
-members = [
+members = [ "crates/oram",
   "crates/primitives",
   "crates/sort",
   "crates/storage",
