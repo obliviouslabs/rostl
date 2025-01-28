@@ -26,6 +26,7 @@ impl _Cmovbase for u64 {
   }
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 impl _Cmovbase for u32 {
   #[inline]
   fn cmov_base(&mut self, other: &Self, choice: bool) {
@@ -33,6 +34,25 @@ impl _Cmovbase for u32 {
       asm!(
         "test {mcond}, {mcond}",
         "cmovnz {i1:e}, {i2:e}",
+        i1 = inout(reg) *self,
+        i2 = in(reg) *other,
+        mcond = in(reg) choice as u64,
+        options(pure,nomem,nostack)
+      );
+    }
+  }
+}
+
+// We are providing support for aarch64, even though currently it is not used in the project.
+//
+#[cfg(target_arch = "aarch64")]
+impl _Cmovbase for u32 {
+  #[inline]
+  fn cmov_base(&mut self, other: &Self, choice: bool) {
+    unsafe {
+      asm!(
+        "test {mcond}, {mcond}",
+        "cmovnz {i1:w}, {i2:w}",
         i1 = inout(reg) *self,
         i2 = in(reg) *other,
         mcond = in(reg) choice as u64,
