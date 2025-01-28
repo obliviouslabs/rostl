@@ -6,7 +6,6 @@ use std::arch::asm;
 
 use crate::traits::{Cmov, _Cmovbase};
 
-
 impl _Cmovbase for u64 {
   #[inline]
   fn cmov_base(&mut self, other: &Self, choice: bool) {
@@ -64,4 +63,3 @@ impl _Cmovbase for u8 {
     *self = su16 as Self;
   }
 }
-

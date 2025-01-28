@@ -10,7 +10,6 @@ use std::arch::asm;
 
 use crate::traits::_Cmovbase;
 
-
 impl _Cmovbase for u64 {
   #[inline]
   fn cmov_base(&mut self, other: &Self, choice: bool) {

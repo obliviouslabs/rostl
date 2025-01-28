@@ -55,6 +55,6 @@ pub fn benchmark_storage<T: Measurement + 'static>(c: &mut Criterion<T>) {
 criterion_group!(name = benches_cycles;
   config = Criterion::default().with_measurement(CyclesPerByte).warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(1));
   targets = benchmark_storage);
-  
+
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 criterion_main!(benches_cycles);
