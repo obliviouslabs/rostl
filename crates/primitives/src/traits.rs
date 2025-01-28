@@ -1,6 +1,11 @@
 //! Traits for conditional move and swap operations.
 use crate::indexable::Indexable;
 
+#[allow(missing_docs)]
+pub trait _Cmovbase {
+  fn cmov_base(&mut self, other: &Self, choice: bool);
+}
+
 /// A trait for conditionally moving values with constant memory trace.
 ///
 pub trait Cmov: Sized {
