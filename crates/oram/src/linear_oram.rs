@@ -20,12 +20,9 @@ where
   V: Indexable<T>,
 {
   ///initialization
-  pub fn new(d: V) -> Self {
-    Self {
-        data: d,
-        _marker: PhantomData,
-    }
-}
+  pub const fn new(d: V) -> Self {
+    Self { data: d, _marker: PhantomData }
+  }
   ///linear scan the entyre array, move the element out when index matches
   pub fn read(&self, index: usize) -> T {
     let mut ret = T::default();
@@ -36,7 +33,6 @@ where
   }
 }
 
-
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -44,7 +40,7 @@ mod tests {
   #[test]
   fn test_read() {
     let vec = vec![25; 10];
-    let oram = LinearOram::<Vec<u32>,u32,128>::new(vec);
+    let oram = LinearOram::<Vec<u32>, u32, 128>::new(vec);
     assert_eq!(oram.read(3), 25);
   }
 }
