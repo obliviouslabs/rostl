@@ -19,6 +19,13 @@ where
   T: Cmov + Copy + Default,
   V: Indexable<T>,
 {
+  ///initialization
+  pub fn new(d: V) -> Self {
+    Self {
+        data: d,
+        _marker: PhantomData,
+    }
+}
   ///linear scan the entyre array, move the element out when index matches
   pub fn read(&self, index: usize) -> T {
     let mut ret = T::default();
@@ -26,5 +33,18 @@ where
       ret.cmov(&self.data[i], i == index);
     }
     ret
+  }
+}
+
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_read() {
+    let vec = vec![25; 10];
+    let oram = LinearOram::<Vec<u32>,u32,128>::new(vec);
+    assert_eq!(oram.read(3), 25);
   }
 }
