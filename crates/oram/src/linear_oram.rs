@@ -21,10 +21,10 @@ where
 {
   ///linear scan the entyre array, move the element out when index matches
   pub fn read(&self, index: usize) -> T {
-    let mut ans = T::default();
+    let mut ret = T::default();
     for i in 0..self.data.len() {
-      ans.cmov(&self.data[i], i == index);
+      ret.cmov(&self.data[i], i == index);
     }
-    ans
+    ret
   }
 }
