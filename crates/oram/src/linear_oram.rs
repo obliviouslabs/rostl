@@ -24,13 +24,13 @@ where
     Self { data: d, _marker: PhantomData }
   }
   ///linear scan the entire array, move the element out when index matches
-  pub fn read(&self, index: usize, ret: &mut T){
+  pub fn read(&self, index: usize, ret: &mut T) {
     for i in 0..self.data.len() {
       ret.cmov(&self.data[i], i == index);
     }
   }
   ///linear scan the entire array, write to the index if the index matches
-  pub fn write(&mut self, index: usize, value: T){
+  pub fn write(&mut self, index: usize, value: T) {
     for i in 0..self.data.len() {
       self.data[i].cmov(&value, i == index);
     }
@@ -48,7 +48,7 @@ mod tests {
     let vec = vec![default; 10];
     let oram = LinearOram::<Vec<u32>, u32>::new(vec);
     let mut ret = 0;
-    oram.read(index,&mut ret);
+    oram.read(index, &mut ret);
     assert_eq!(ret, default);
   }
 
@@ -61,7 +61,7 @@ mod tests {
     let mut oram = LinearOram::<Vec<u32>, u32>::new(vec);
     oram.write(index, new_value);
     let mut ret = 0;
-    oram.read(index,&mut ret);
+    oram.read(index, &mut ret);
     assert_eq!(ret, new_value);
   }
 }
