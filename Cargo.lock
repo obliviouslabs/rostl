@@ -296,13 +296,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b410bbe7e14ab526a0e86877eb47c6996a2bd7746f027ba551028c925390e4e9"
 
 [[package]]
-name = "oram"
-version = "1.0.0"
-dependencies = [
- "rods-primitives",
-]
-
-[[package]]
 name = "plotters"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -435,6 +428,15 @@ name = "regex-syntax"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
+
+[[package]]
+name = "rods-oram"
+version = "1.0.0"
+dependencies = [
+ "criterion",
+ "rand",
+ "rods-primitives",
+]
 
 [[package]]
 name = "rods-primitives"

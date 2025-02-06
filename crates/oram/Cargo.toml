@@ -1,5 +1,5 @@
 [package]
-name = "oram"
+name = "rods-oram"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,6 +9,14 @@ exclude.workspace = true
 
 [dependencies]
 rods-primitives.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+rand.workspace = true
+
+[[bench]]
+name="oram"
+harness=false
 
 [lints]
 workspace = true
