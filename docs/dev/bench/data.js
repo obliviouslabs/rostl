@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1738802894621,
+  "lastUpdate": 1738863566458,
   "repoUrl": "https://github.com/xtrm0/rods",
   "entries": {
     "Benchmark": [
@@ -5645,6 +5645,190 @@ window.BENCHMARK_DATA = {
             "name": "Sorting/WallTime/std::sort/1000",
             "value": 8934,
             "range": "± 164",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "songjunxi@GUA.local",
+            "name": "GUA"
+          },
+          "committer": {
+            "email": "songjunxi@GUA.local",
+            "name": "GUA"
+          },
+          "distinct": true,
+          "id": "646e5455895912d4ce5032df1ffc9bc68dce5e57",
+          "message": "minor",
+          "timestamp": "2025-02-06T09:31:24-08:00",
+          "tree_id": "feee3e7384a9d50df1d24febfc11831bf60ad948",
+          "url": "https://github.com/xtrm0/rods/commit/646e5455895912d4ce5032df1ffc9bc68dce5e57"
+        },
+        "date": 1738863565576,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "mov-4k",
+            "value": 4338,
+            "range": "± 78",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "memstore-4k",
+            "value": 177,
+            "range": "± 9",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov",
+            "value": 2924,
+            "range": "± 101",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov2",
+            "value": 2935,
+            "range": "± 27",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "mov",
+            "value": 1519,
+            "range": "± 12",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "LinearORAM/WallTime/Read/100",
+            "value": 27,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "LinearORAM/WallTime/Read/1000",
+            "value": 107,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "LinearORAM/WallTime/Read/1000000",
+            "value": 106924,
+            "range": "± 20764",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "LinearORAM/WallTime/Write/100",
+            "value": 96,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "LinearORAM/WallTime/Write/1000",
+            "value": 739,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "LinearORAM/WallTime/Write/1000000",
+            "value": 781466,
+            "range": "± 111211",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/32",
+            "value": 660,
+            "range": "± 92",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/32",
+            "value": 809,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/32",
+            "value": 1007,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/32",
+            "value": 156,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/100",
+            "value": 2794,
+            "range": "± 125",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/100",
+            "value": 4958,
+            "range": "± 47",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/100",
+            "value": 6232,
+            "range": "± 83",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/100",
+            "value": 641,
+            "range": "± 30",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/320",
+            "value": 11941,
+            "range": "± 534",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/320",
+            "value": 25397,
+            "range": "± 202",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/320",
+            "value": 37959,
+            "range": "± 479",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/320",
+            "value": 2455,
+            "range": "± 67",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/1000",
+            "value": 51100,
+            "range": "± 903",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/1000",
+            "value": 100632,
+            "range": "± 940",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/1000",
+            "value": 264496,
+            "range": "± 9903",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/1000",
+            "value": 8991,
+            "range": "± 200",
             "unit": "ns/iter"
           }
         ]
