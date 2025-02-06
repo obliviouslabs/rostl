@@ -1,4 +1,4 @@
-// #![cfg(target_arch = "aarch64")]
+#![cfg(target_arch = "aarch64")]
 #![deprecated(
   since = "1.0.0",
   note = "Support for aarch64 is not trace oblivious yet, feel free to complete this file."
