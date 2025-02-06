@@ -18,10 +18,12 @@ pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
   group.plot_config(plot_config);
 
-  for &size in &[100, 1_000, 1_000_000] {
+  let test_set = &[100, 1_000, 1_000_000];
+
+  for &size in test_set {
     group.bench_with_input(BenchmarkId::new("Read", size), &size, |b, &size| {
       let default_value = 25;
-      let mut data = vec![default_value; 10];
+      let mut data = vec![default_value; size];
       data.shuffle(&mut rand::thread_rng());
       let data = data;
       b.iter(|| {
@@ -35,11 +37,11 @@ pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
     });
   }
 
-  for &size in &[100, 1_000, 1_000_000] {
+  for &size in test_set {
     group.bench_with_input(BenchmarkId::new("Write", size), &size, |b, &size| {
       let default_value = 25;
       let new_value = 3;
-      let mut data = vec![default_value; 10];
+      let mut data = vec![default_value; size];
       data.shuffle(&mut rand::thread_rng());
       let data = data;
       b.iter(|| {
