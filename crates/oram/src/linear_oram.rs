@@ -1,27 +1,24 @@
 //! Linear Scan ORAM
 //!
-use rods_primitives::{indexable::Indexable, traits::Cmov};
-use std::marker::PhantomData;
+use bytemuck::Pod;
+use rods_primitives::traits::Cmov;
 
 /// A simple indexable ORAM that does a linear scan for each access
 #[derive(Debug)]
-pub struct LinearOram<V, T>
+pub struct LinearOram<T>
 where
-  T: Cmov,
-  V: Indexable<T>,
+  T: Cmov + Pod,
 {
-  data: V,
-  _marker: PhantomData<T>,
+  data: Vec<T>,
 }
 
-impl<V, T> LinearOram<V, T>
+impl<T> LinearOram<T>
 where
-  T: Cmov,
-  V: Indexable<T>,
+  T: Cmov + Pod + Default,
 {
   ///initialization
-  pub const fn new(d: V) -> Self {
-    Self { data: d, _marker: PhantomData }
+  pub fn new(max_n: usize) -> Self {
+    Self { data: vec![T::default(); max_n] }
   }
   ///linear scan the entire array, move the element out when index matches
   pub fn read(&self, index: usize, ret: &mut T) {
@@ -43,10 +40,9 @@ mod tests {
 
   #[test]
   fn test_read() {
-    let default = 25;
+    let default = 0;
     let index = 3;
-    let vec = vec![default; 10];
-    let oram = LinearOram::<Vec<u32>, u32>::new(vec);
+    let oram = LinearOram::<u32>::new(10);
     let mut ret = 0;
     oram.read(index, &mut ret);
     assert_eq!(ret, default);
@@ -54,13 +50,12 @@ mod tests {
 
   #[test]
   fn test_write() {
-    let default = 25;
-    let new_value = 0;
+    let default = 0;
+    let new_value = 25;
     let index = 3;
-    let vec = vec![default; 10];
-    let mut oram = LinearOram::<Vec<u32>, u32>::new(vec);
+    let mut oram = LinearOram::<u32>::new(10);
     oram.write(index, new_value);
-    let mut ret = 0;
+    let mut ret = default;
     oram.read(index, &mut ret);
     assert_eq!(ret, new_value);
   }
