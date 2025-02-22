@@ -143,11 +143,12 @@ overflow-checks = true
 # rods-rodb = { path = "crates/rodb" }
 rods-primitives = { path = "crates/primitives" }
 rods-sort = { path = "crates/sort" }
+rods-storage = { path = "crates/storage" }
 
 
 
-bytemuck = "1.20.0"
-rand = "0.8.5"
+bytemuck = { version = "1.21.0", features = ["derive"] }
+rand = "0.9.0"
 
 # [workspace.dev-dependencies]
 criterion = "0.5.1"

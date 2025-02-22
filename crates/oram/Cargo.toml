@@ -9,6 +9,8 @@ exclude.workspace = true
 
 [dependencies]
 rods-primitives.workspace = true
+rods-storage.workspace = true
+bytemuck.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true

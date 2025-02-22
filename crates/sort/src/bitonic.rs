@@ -80,14 +80,14 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use rand::random;
+  use rand::Rng;
 
   #[test]
   fn test_bitonic_sort() {
     for sz in 0..42 {
       let mut arr: Vec<u32> = (0..sz as u32).collect();
       for i in 0..sz {
-        let j = random::<usize>() % sz;
+        let j = rand::rng().random_range(0..sz);
         arr.swap(i, j);
       }
       bitonic_sort(&mut arr);
@@ -107,11 +107,11 @@ mod tests {
       assert_eq!(*v, i as u32);
     }
 
-    let sz = random::<usize>() % 1000;
+    let sz = rand::rng().random_range(0..1000);
     let mut arr: Vec<u32> = (0..sz as u32).rev().collect();
     // random permutation:
     for i in 0..sz {
-      let j = random::<usize>() % sz;
+      let j = rand::rng().random_range(0..sz);
       arr.swap(i, j);
     }
     bitonic_sort(&mut arr);

@@ -24,12 +24,12 @@ pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
     group.bench_with_input(BenchmarkId::new("Read", size), &size, |b, &size| {
       let default_value = 25;
       let mut data = vec![default_value; size];
-      data.shuffle(&mut rand::thread_rng());
+      data.shuffle(&mut rand::rng());
       let data = data;
       b.iter(|| {
         let data_clone = black_box(data.clone());
-        let mut rng = rand::thread_rng();
-        let index: usize = rng.gen_range(1..=size);
+        let mut rng = rand::rng();
+        let index: usize = rng.random_range(1..=size);
         let oram = LinearOram::<Vec<u32>, u32>::new(data_clone);
         let mut ret = 0;
         oram.read(index, &mut ret);
@@ -42,12 +42,12 @@ pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
       let default_value = 25;
       let new_value = 3;
       let mut data = vec![default_value; size];
-      data.shuffle(&mut rand::thread_rng());
+      data.shuffle(&mut rand::rng());
       let data = data;
       b.iter(|| {
         let data_clone = black_box(data.clone());
-        let mut rng = rand::thread_rng();
-        let index: usize = rng.gen_range(1..=size);
+        let mut rng = rand::rng();
+        let index: usize = rng.random_range(1..=size);
         let mut oram = LinearOram::<Vec<u32>, u32>::new(data_clone);
         oram.write(index, new_value);
       });
