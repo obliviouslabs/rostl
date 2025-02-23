@@ -11,5 +11,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Check if there are no untagged UNDONES():
+      - name: Check if there are no untagged UNDONES()
         run: sh ./scripts/find_untagged_undones.sh
