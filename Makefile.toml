@@ -35,7 +35,7 @@ git push
 description = "Run pre-merge checks"
 dependencies = ["precommit"]
 script = '''
-./scripts/find_untagged_undones.sh
+sh ./scripts/find_untagged_undones.sh
 '''
 
 
