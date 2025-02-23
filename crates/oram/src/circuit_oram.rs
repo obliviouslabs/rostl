@@ -9,10 +9,7 @@ use rods_primitives::{
 };
 
 use crate::heap_tree::HeapTree;
-
-type PositionType = usize;
-type K = usize;
-const DUMMY_POS: PositionType = PositionType::MAX;
+use crate::prelude::{PositionType, DUMMY_POS, K};
 
 const Z: usize = 2; // Blocks per bucket
 const S: usize = 2; // Initial stash size
@@ -68,9 +65,9 @@ unsafe impl<V: Cmov + Pod> Pod for Bucket<V> {}
 /// * use <Circuit ORAM invariants>
 #[derive(Debug)]
 pub struct CircuitORAM<V: Cmov + Pod> {
-  /// Number of blocks
+  /// Number of blocks, ilog2 of it is public via h
   pub max_n: usize,
-  /// Height of the tree
+  /// Height of the tree, public
   pub h: usize,
   /// The stash: has size `S + h * Z`. First S blocks are the actual stash the rest are the path used during operations.
   pub stash: Vec<Block<V>>,
@@ -396,6 +393,8 @@ impl<V: Cmov + Pod + Default + Clone> CircuitORAM<V> {
   ///
   /// # Returns
   /// * `true` if the element was found, `false` otherwise.
+  /// # Behavior
+  /// * If the element is not found, `ret` is not modified.
   pub fn read(&mut self, pos: usize, new_pos: usize, key: K, ret: &mut V) -> bool {
     debug_assert!(pos < self.max_n);
     debug_assert!(new_pos < self.max_n);
@@ -424,6 +423,7 @@ impl<V: Cmov + Pod + Default + Clone> CircuitORAM<V> {
   /// * `true` if the element was found and updated, `false` otherwise.
   /// # Behavior
   /// * If the element is not found, no modifications are made to the ORAM.
+  /// * If the element is found, it is updated with the new value.
   pub fn write(&mut self, pos: usize, new_pos: usize, key: K, val: V) -> bool {
     debug_assert!(pos < self.max_n);
     debug_assert!(new_pos < self.max_n);
@@ -438,7 +438,7 @@ impl<V: Cmov + Pod + Default + Clone> CircuitORAM<V> {
     write_block_to_empty_slot(
       &mut self.stash[..S],
       &Block::<V> { pos: target_pos, key, value: val },
-    );
+    ); // Succeeds due to Inv1.
 
     self.evict_once_fast(pos);
     self.write_back_path(pos);
@@ -446,11 +446,77 @@ impl<V: Cmov + Pod + Default + Clone> CircuitORAM<V> {
 
     found
   }
+
+  /// Writes a value to the ORAM or inserts it if not found.
+  ///
+  /// # Arguments
+  /// * `pos` - The current position of the block.
+  /// * `new_pos` - The new position of the block.
+  /// * `key` - The key of the block.
+  /// * `val` - The value to be written.
+  ///
+  /// # Returns
+  /// * `true` if the element was found and updated, `false` if it was inserted.
+  /// # Behavior
+  /// * If the element is not found, it is inserted with the new value.
+  /// * If the element is found, it is updated with the new value.
+  pub fn write_or_insert(&mut self, pos: usize, new_pos: usize, key: K, val: V) -> bool {
+    debug_assert!(pos < self.max_n);
+    debug_assert!(new_pos < self.max_n);
+
+    self.read_path_and_get_nodes(pos);
+
+    let found = remove_element(&mut self.stash, key);
+
+    let target_pos = new_pos;
+
+    write_block_to_empty_slot(
+      &mut self.stash[..S],
+      &Block::<V> { pos: target_pos, key, value: val },
+    ); // Succeeds due to Inv1.
+
+    self.evict_once_fast(pos);
+    self.write_back_path(pos);
+    self.perform_deterministic_evictions();
+
+    found
+  }
+
+  /// Updates a value in the ORAM using a provided update function.
+  ///
+  /// # Arguments
+  /// * `pos` - The current position of the block.
+  /// * `new_pos` - The new position of the block.
+  /// * `key` - The key of the block.
+  /// * `update_func` - The function to update the value.
+  ///
+  /// # Returns
+  /// * A tuple containing a boolean indicating if the element was found and the result of the update function.
+  pub fn update<T, F>(&mut self, pos: usize, new_pos: usize, key: K, update_func: F) -> (bool, T)
+  where
+    F: FnOnce(&mut V) -> T,
+  {
+    debug_assert!(pos < self.max_n);
+    debug_assert!(new_pos < self.max_n);
+
+    self.read_path_and_get_nodes(pos);
+
+    let mut val = V::default();
+    let found = read_and_remove_element(&mut self.stash, key, &mut val);
+    let rv = update_func(&mut val);
+
+    write_block_to_empty_slot(&mut self.stash[..S], &Block::<V> { pos: new_pos, key, value: val }); // Succeeds due to Inv1.
+
+    self.evict_once_fast(pos);
+    self.write_back_path(pos);
+    self.perform_deterministic_evictions();
+
+    (found, rv)
+  }
 }
 
 // UNDONE(): write tests for this module
 // UNDONE(): write a test to show that we can do 1000 evictions without failing on a randomly distributed ORAM of some size
-
 #[cfg(test)]
 mod tests {
   use super::*;

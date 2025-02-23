@@ -5,7 +5,7 @@
 #[derive(Debug)]
 pub struct HeapTree<T> {
   tree: Vec<T>,  // Actual storage container
-  height: usize, // Height of the tree
+  height: usize, // Height of the tree, public
 }
 
 impl<T> HeapTree<T>

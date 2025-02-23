@@ -5,7 +5,10 @@ use crate::traits::{Cmov, _Cmovbase};
 // UNDONE(): Once rust generics support either specialization, negative trait bounds, or finalizations this can be turned into a generic.
 // Until then, we have this ugly macro.
 /// The shared body for cmov.
-/// Any file that uses the macro should include be in a module that includes the bytemuck crate and should also use _Cmovbase from the traits mod in this crate.
+/// Any file that uses the macro should include be in a module that includes the bytemuck crate and should also include:
+/// ```ignore
+/// use rods_primitives::{impl_cmov_for_pod, cmov_body, traits::_Cmovbase};
+/// ```
 ///
 #[macro_export]
 macro_rules! cmov_body {

@@ -1,0 +1,146 @@
+//! Implements the recursive ORAM Technique
+// UNDONE(): Cite a paper or give a link in our docs explaining the recursive ORAM technique
+
+use bytemuck::{Pod, Zeroable};
+use rand::{rng, Rng};
+use rods_primitives::traits::Cmov;
+use rods_primitives::{cmov_body, impl_cmov_for_pod, traits::_Cmovbase};
+use static_assertions::const_assert;
+
+use crate::circuit_oram::CircuitORAM;
+use crate::linear_oram::{oblivious_read_update_index, LinearORAM};
+use crate::prelude::{max, PositionType, DUMMY_POS, K};
+
+const LINEAR_MAP_SIZE: usize = 128;
+const_assert!(LINEAR_MAP_SIZE.is_power_of_two());
+const LEVEL0_BITS: usize = LINEAR_MAP_SIZE.ilog2() as usize;
+const MASK0: usize = LINEAR_MAP_SIZE - 1;
+
+const FAN_OUT: usize = max(2, 64 / size_of::<PositionType>());
+const_assert!(FAN_OUT.is_power_of_two());
+const LEVELN_BITS: usize = FAN_OUT.ilog2() as usize;
+const MASKN: usize = FAN_OUT - 1;
+
+#[repr(transparent)]
+#[derive(Debug, Clone, Copy, Zeroable, Pod)]
+struct InternalNode([PositionType; FAN_OUT]);
+impl_cmov_for_pod!(InternalNode);
+
+impl Default for InternalNode {
+  fn default() -> Self {
+    Self([DUMMY_POS; FAN_OUT])
+  }
+}
+
+// UNDONE(): Theoretically, the top position map levels could use less bits. Figure out if this would be efficient in practice.
+/// An efficient position map for an ORAM where the key only has values from 0 to n-1
+/// The position map is implemented as a linear ORAM for the first level
+/// and a series of recursive ORAMs for the remaining levels
+#[derive(Debug)]
+pub struct RecursivePositionMap {
+  /// The first level
+  linear_oram: LinearORAM<PositionType>,
+  /// Remaining levels
+  recursive_orams: Vec<CircuitORAM<InternalNode>>,
+  /// The depth of the ORAM,
+  /// i.e. the number of levels in the recursive ORAM
+  h: usize, // public
+}
+
+impl RecursivePositionMap {
+  /// Creates a new `RecursivePositionMap` with the given size `n`.
+  pub fn new(n: usize) -> Self {
+    debug_assert!(n > 0);
+    let mut h: usize;
+
+    let first_level: LinearORAM<PositionType> = if n <= LINEAR_MAP_SIZE {
+      h = 0;
+      LinearORAM::new(n)
+    } else {
+      h = (n / LINEAR_MAP_SIZE).ilog(FAN_OUT) as usize;
+      LinearORAM::new(LINEAR_MAP_SIZE)
+    };
+    if LINEAR_MAP_SIZE * FAN_OUT.pow(h as u32) < n {
+      h += 1;
+    }
+    debug_assert!(LINEAR_MAP_SIZE * FAN_OUT.pow(h as u32) >= n);
+
+    let mut data_maps = Vec::with_capacity(h);
+    let mut curr = LINEAR_MAP_SIZE;
+    for _ in 0..h {
+      data_maps.push(CircuitORAM::new(curr));
+      curr *= FAN_OUT;
+    }
+
+    Self { linear_oram: first_level, recursive_orams: data_maps, h }
+  }
+
+  /// Accesses the position of a key `k` and updates it to `new_pos`.
+  ///
+  /// # Arguments
+  ///
+  /// * `k` - The key whose position is to be accessed.
+  /// * `new_pos` - The new position to update the key to.
+  ///
+  /// # Returns
+  ///
+  /// The previous position of the key.
+  pub fn access_position(&mut self, k: K, new_pos: PositionType) -> PositionType {
+    let mut ret: PositionType = PositionType::default();
+    let mut k = k;
+    let mut curr_max_pos = 1;
+    let mask0 = k & MASK0;
+    let mut curr_k = mask0;
+    k >>= LEVEL0_BITS;
+    curr_max_pos <<= LEVEL0_BITS;
+
+    let new_curr_pos: PositionType =
+      if self.h == 0 { new_pos } else { rng().random_range(0..curr_max_pos) };
+
+    self.linear_oram.read_update(curr_k, new_curr_pos, &mut ret);
+
+    // let mut pos = self.linear_oram.access_position(k, new_pos);
+    for i in 0..self.h {
+      let mask = k & MASKN;
+      k >>= LEVELN_BITS;
+      curr_max_pos <<= LEVELN_BITS;
+
+      let pos = ret;
+      let next_curr_pos =
+        if self.h == i + 1 { new_pos } else { rng().random_range(0..curr_max_pos) };
+
+      let (_found, nextpos) =
+        self.recursive_orams[i].update(pos, new_curr_pos, curr_k, |node: &mut InternalNode| {
+          let mut ret = DUMMY_POS;
+          oblivious_read_update_index(&mut node.0, mask, &mut ret, next_curr_pos);
+          ret
+        });
+      debug_assert!(_found);
+
+      ret = nextpos;
+      curr_k <<= LEVELN_BITS;
+      curr_k |= mask;
+    }
+
+    ret
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  // use super::*;
+
+  // UNDONE(): Make this test pass
+  // #[test]
+  // fn test_recursive_position_map_small() {
+  //   let n = LINEAR_MAP_SIZE / 2 + 1;
+  //   let mut pos_map = RecursivePositionMap::new(n);
+  //   let mut pos = vec![DUMMY_POS; n];
+  //   for i in 0..n {
+  //     pos[i] = pos_map.access_position(i, i as PositionType);
+  //   }
+  //   for i in 0..n {
+  //     assert_eq!(pos_map.access_position(i, i as PositionType), pos[i]);
+  //   }
+  // }
+}

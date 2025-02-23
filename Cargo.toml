@@ -150,6 +150,7 @@ rods-storage = { path = "crates/storage" }
 
 bytemuck = { version = "1.21.0", features = ["derive"] }
 rand = "0.9.0"
+static_assertions = "1.1.0"
 
 # [workspace.dev-dependencies]
 criterion = "0.5.1"

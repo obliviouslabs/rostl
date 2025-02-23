@@ -6,7 +6,7 @@ use criterion::{
 };
 use rand::Rng;
 
-use rods_oram::linear_oram::LinearOram;
+use rods_oram::linear_oram::LinearORAM;
 
 pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let mut group = c.benchmark_group(format!(
@@ -24,7 +24,7 @@ pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
       b.iter(|| {
         let mut rng = rand::rng();
         let index: usize = rng.random_range(1..=size);
-        let oram = LinearOram::<u32>::new(25);
+        let oram = LinearORAM::<u32>::new(25);
         let mut ret = 0;
         oram.read(index, &mut ret);
       });
@@ -38,7 +38,7 @@ pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
       b.iter(|| {
         let mut rng = rand::rng();
         let index: usize = rng.random_range(1..=size);
-        let mut oram = LinearOram::<u32>::new(size);
+        let mut oram = LinearORAM::<u32>::new(size);
         oram.write(index, new_value);
       });
     });
