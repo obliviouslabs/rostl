@@ -31,6 +31,13 @@ script = '''
 git push
 '''
 
+[tasks.premerge]
+description = "Run pre-merge checks"
+dependencies = ["precommit"]
+script = '''
+./scripts/find_untagged_undones.sh
+'''
+
 
 [config]
 default_to_workspace = false
