@@ -111,10 +111,9 @@ fn remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K) -> bool {
 #[inline]
 fn write_block_to_empty_slot<V: Cmov + Pod>(arr: &mut [Block<V>], val: &Block<V>) -> bool {
   let mut rv = false;
-  let k = val.key;
 
   for item in arr {
-    let matched = (!item.is_empty()) & (item.key == k);
+    let matched = (item.is_empty()) & (!rv);
     debug_assert!((!matched) | (!rv));
 
     item.cmov(val, matched);
@@ -195,7 +194,7 @@ const fn common_suffix_length(a: usize, b: usize) -> u32 {
   w.trailing_zeros()
 }
 
-impl<V: Cmov + Pod + Default + Clone> CircuitORAM<V> {
+impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// Creates a new empty `CircuitORAM` instance with the given maximum number of blocks.
   ///
   /// # Arguments
@@ -210,7 +209,14 @@ impl<V: Cmov + Pod + Default + Clone> CircuitORAM<V> {
     debug_assert!(max_n > 0);
     debug_assert!(max_n <= u32::MAX as usize);
 
-    let h = (max_n + (max_n >> 1)).ilog2() as usize + 1;
+    let h = {
+      let h = (max_n).ilog2() as usize;
+      if (1 << h) < max_n {
+        h + 1
+      } else {
+        h
+      }
+    };
     let tree = HeapTree::new(h);
     let stash = vec![Block::<V>::default(); S + h * Z];
 
@@ -465,8 +471,10 @@ impl<V: Cmov + Pod + Default + Clone> CircuitORAM<V> {
     debug_assert!(new_pos < self.max_n);
 
     self.read_path_and_get_nodes(pos);
+    println!("{:?}", self.stash);
 
     let found = remove_element(&mut self.stash, key);
+    println!("{:?}", found);
 
     let target_pos = new_pos;
 
@@ -474,6 +482,7 @@ impl<V: Cmov + Pod + Default + Clone> CircuitORAM<V> {
       &mut self.stash[..S],
       &Block::<V> { pos: target_pos, key, value: val },
     ); // Succeeds due to Inv1.
+    println!("{:?}", self.stash);
 
     self.evict_once_fast(pos);
     self.write_back_path(pos);
@@ -525,5 +534,21 @@ mod tests {
   fn test_circuitoram_simple() {
     let mut oram = CircuitORAM::<u64>::new(16);
     oram.perform_deterministic_evictions();
+
+    oram.write_or_insert(0, 0, 1, 1);
+    oram.write_or_insert(0, 0, 2, 2);
+    let mut v = 0;
+    let found = oram.read(0, 0, 1, &mut v);
+    assert!(found);
+    assert_eq!(v, 1);
+    let found = oram.read(0, 0, 2, &mut v);
+    assert!(found);
+    assert_eq!(v, 2);
+    let found = oram.read(0, 0, 3, &mut v);
+    assert!(!found);
+    oram.write_or_insert(0, 0, 1, 3);
+    let found = oram.read(0, 0, 1, &mut v);
+    assert!(found);
+    assert_eq!(v, 3);
   }
 }

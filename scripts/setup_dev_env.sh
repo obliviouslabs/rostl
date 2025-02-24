@@ -5,6 +5,7 @@ cargo install cargo-hack
 cargo install cargo-nextest
 cargo install zepter
 cargo install cargo-make
+cargo install cargo-show-asm
 
 echo "cargo make precommit" > .git/hooks/pre-push
 chmod +x .git/hooks/pre-push
