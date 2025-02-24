@@ -128,19 +128,19 @@ impl RecursivePositionMap {
 
 #[cfg(test)]
 mod tests {
-  // use super::*;
+  use super::*;
 
-  // UNDONE(): Make this test pass
-  // #[test]
-  // fn test_recursive_position_map_small() {
-  //   let n = LINEAR_MAP_SIZE / 2 + 1;
-  //   let mut pos_map = RecursivePositionMap::new(n);
-  //   let mut pos = vec![DUMMY_POS; n];
-  //   for i in 0..n {
-  //     pos[i] = pos_map.access_position(i, i as PositionType);
-  //   }
-  //   for i in 0..n {
-  //     assert_eq!(pos_map.access_position(i, i as PositionType), pos[i]);
-  //   }
-  // }
+  #[test]
+  fn test_recursive_position_map_small() {
+    let n = LINEAR_MAP_SIZE / 2 + 1;
+    let mut pos_map = RecursivePositionMap::new(n);
+    for i in 0..n {
+      pos_map.access_position(i, i as PositionType);
+    }
+    for i in 0..n {
+      assert_eq!(pos_map.access_position(i, i as PositionType), i);
+    }
+  }
+
+  // UNDONE(): Add more tests
 }

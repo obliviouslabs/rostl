@@ -393,7 +393,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   ///
   /// # Arguments
   /// * `pos` - The current position of the block.
-  /// * `new_pos` - The new position of the block.
+  /// * `new_pos` - The new position of the block, should be uniformly random on the size of the ORAM.
   /// * `key` - The key of the block.
   /// * `ret` - The value to be read.
   ///
@@ -421,7 +421,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   ///
   /// # Arguments
   /// * `pos` - The current position of the block.
-  /// * `new_pos` - The new position of the block.
+  /// * `new_pos` - The new position of the block, should be uniformly random on the size of the ORAM.
   /// * `key` - The key of the block.
   /// * `val` - The value to be written.
   ///
@@ -457,7 +457,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   ///
   /// # Arguments
   /// * `pos` - The current position of the block.
-  /// * `new_pos` - The new position of the block.
+  /// * `new_pos` - The new position of the block, should be uniformly random on the size of the ORAM.
   /// * `key` - The key of the block.
   /// * `val` - The value to be written.
   ///
@@ -495,7 +495,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   ///
   /// # Arguments
   /// * `pos` - The current position of the block.
-  /// * `new_pos` - The new position of the block.
+  /// * `new_pos` - The new position of the block, should be uniformly random on the size of the ORAM.
   /// * `key` - The key of the block.
   /// * `update_func` - The function to update the value.
   ///
