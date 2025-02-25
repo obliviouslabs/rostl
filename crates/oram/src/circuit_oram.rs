@@ -224,6 +224,25 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     Self { max_n, h, stash, tree, evict_counter: 0 }
   }
 
+  /// Creates a new `CircuitORAM` instance with the given maximum number of blocks, keys, values, and positions.
+  ///
+  /// # Arguments
+  /// * `max_n` - The maximum number of blocks in the ORAM.
+  /// * `keys` - A vector of keys for the blocks.
+  /// * `values` - A vector of values for the blocks.
+  /// * `positions` - A vector of positions for the blocks.
+  ///
+  /// # Returns
+  /// A new instance of `CircuitORAM`.
+  // UNDONE(): Fast external-memory initialization
+  pub fn new_with_positions_and_values(max_n: usize, keys: &Vec<K>, values: &Vec<V>, positions: &Vec<PositionType>) -> Self {
+    let mut oram = Self::new(max_n);
+    for (i, ((key, value), pos)) in keys.into_iter().zip(values.into_iter()).zip(positions.into_iter()).enumerate() {
+      oram.write_or_insert(i, *pos, *key, *value);
+    }
+    oram
+  }
+
   /// Reads a path to the end of the stash
   fn read_path_and_get_nodes(&mut self, pos: usize) {
     debug_assert!(pos < self.max_n);

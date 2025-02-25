@@ -8,8 +8,8 @@ use rods_primitives::{cmov_body, impl_cmov_for_pod, traits::_Cmovbase};
 use static_assertions::const_assert;
 
 use crate::circuit_oram::CircuitORAM;
-use crate::linear_oram::{oblivious_read_update_index, LinearORAM};
-use crate::prelude::{max, PositionType, DUMMY_POS, K};
+use crate::linear_oram::{self, oblivious_read_update_index, LinearORAM};
+use crate::prelude::{max, min, PositionType, DUMMY_POS, K};
 
 const LINEAR_MAP_SIZE: usize = 128;
 const_assert!(LINEAR_MAP_SIZE.is_power_of_two());
@@ -53,7 +53,7 @@ impl RecursivePositionMap {
     debug_assert!(n > 0);
     let mut h: usize;
 
-    let first_level: LinearORAM<PositionType> = if n <= LINEAR_MAP_SIZE {
+    let mut first_level: LinearORAM<PositionType> = if n <= LINEAR_MAP_SIZE {
       h = 0;
       LinearORAM::new(n)
     } else {
@@ -66,10 +66,29 @@ impl RecursivePositionMap {
     debug_assert!(LINEAR_MAP_SIZE * FAN_OUT.pow(h as u32) >= n);
 
     let mut data_maps = Vec::with_capacity(h);
-    let mut curr = LINEAR_MAP_SIZE;
+    let mut curr = min(LINEAR_MAP_SIZE, n);
     for _ in 0..h {
-      data_maps.push(CircuitORAM::new(curr));
+      data_maps.push(CircuitORAM::new(1));
       curr *= FAN_OUT;
+    }
+
+    // UNDONE(): Optimize this (make it cache efficient)
+    let mut positions_maps_for_level : Vec<PositionType> = (0..n).map(|_| rng().random_range(0..n)).collect();
+    for i in (0..h).rev() {
+      curr /= FAN_OUT;
+      let keys = (0..n).map(|i| i as K).collect::<Vec<K>>();
+      let mut values = vec![InternalNode::default(); curr];
+      
+      for j in 0..curr {
+        for k in 0..FAN_OUT {
+          values[j].0[k] = positions_maps_for_level[j * FAN_OUT + k];
+        }
+      }
+      positions_maps_for_level = (0..curr).map(|_| rng().random_range(0..curr)).collect();
+      data_maps[i] = CircuitORAM::new_with_positions_and_values(curr, &keys, &values, &positions_maps_for_level);
+    }
+    for i in 0..curr {
+      first_level.write(i, positions_maps_for_level[i]);
     }
 
     Self { linear_oram: first_level, recursive_orams: data_maps, h }
@@ -134,6 +153,22 @@ mod tests {
   fn test_recursive_position_map_small() {
     let n = LINEAR_MAP_SIZE / 2 + 1;
     let mut pos_map = RecursivePositionMap::new(n);
+    assert_eq!(pos_map.h, 0);
+    assert_eq!(pos_map.linear_oram.data.len(), n);    
+    for i in 0..n {
+      pos_map.access_position(i, i as PositionType);
+    }
+    for i in 0..n {
+      assert_eq!(pos_map.access_position(i, i as PositionType), i);
+    }
+  }
+
+  #[test]
+  fn test_recursive_position_map_onelevel() {
+    let n = LINEAR_MAP_SIZE * FAN_OUT;
+    let mut pos_map = RecursivePositionMap::new(n);
+    assert_eq!(pos_map.h, 1);
+    assert_eq!(pos_map.linear_oram.data.len(), LINEAR_MAP_SIZE);
     for i in 0..n {
       pos_map.access_position(i, i as PositionType);
     }

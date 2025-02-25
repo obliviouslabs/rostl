@@ -10,7 +10,8 @@ pub struct LinearORAM<T>
 where
   T: Cmov + Pod,
 {
-  data: Vec<T>,
+  /// The actual data storage array
+  pub data: Vec<T>,
 }
 
 #[inline]
