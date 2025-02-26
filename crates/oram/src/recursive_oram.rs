@@ -73,19 +73,21 @@ impl RecursivePositionMap {
     }
 
     // UNDONE(): Optimize this (make it cache efficient)
-    let mut positions_maps_for_level : Vec<PositionType> = (0..n).map(|_| rng().random_range(0..n)).collect();
+    let mut positions_maps_for_level: Vec<PositionType> =
+      (0..n).map(|_| rng().random_range(0..n)).collect();
     for i in (0..h).rev() {
       curr /= FAN_OUT;
       let keys = (0..n).map(|i| i as K).collect::<Vec<K>>();
       let mut values = vec![InternalNode::default(); curr];
-      
+
       for j in 0..curr {
         for k in 0..FAN_OUT {
           values[j].0[k] = positions_maps_for_level[j * FAN_OUT + k];
         }
       }
       positions_maps_for_level = (0..curr).map(|_| rng().random_range(0..curr)).collect();
-      data_maps[i] = CircuitORAM::new_with_positions_and_values(curr, &keys, &values, &positions_maps_for_level);
+      data_maps[i] =
+        CircuitORAM::new_with_positions_and_values(curr, &keys, &values, &positions_maps_for_level);
     }
     for i in 0..curr {
       first_level.write(i, positions_maps_for_level[i]);
@@ -154,7 +156,7 @@ mod tests {
     let n = LINEAR_MAP_SIZE / 2 + 1;
     let mut pos_map = RecursivePositionMap::new(n);
     assert_eq!(pos_map.h, 0);
-    assert_eq!(pos_map.linear_oram.data.len(), n);    
+    assert_eq!(pos_map.linear_oram.data.len(), n);
     for i in 0..n {
       pos_map.access_position(i, i as PositionType);
     }

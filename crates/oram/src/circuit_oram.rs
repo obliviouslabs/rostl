@@ -12,7 +12,7 @@ use crate::heap_tree::HeapTree;
 use crate::prelude::{PositionType, DUMMY_POS, K};
 
 const Z: usize = 2; // Blocks per bucket
-const S: usize = 2; // Initial stash size
+const S: usize = 20; // Initial stash size
 const EVICTIONS_PER_OP: usize = 2; // Evictions per operations
 
 /// A block in the ORAM tree
@@ -235,9 +235,16 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// # Returns
   /// A new instance of `CircuitORAM`.
   // UNDONE(): Fast external-memory initialization
-  pub fn new_with_positions_and_values(max_n: usize, keys: &Vec<K>, values: &Vec<V>, positions: &Vec<PositionType>) -> Self {
+  pub fn new_with_positions_and_values(
+    max_n: usize,
+    keys: &Vec<K>,
+    values: &Vec<V>,
+    positions: &Vec<PositionType>,
+  ) -> Self {
     let mut oram = Self::new(max_n);
-    for (i, ((key, value), pos)) in keys.into_iter().zip(values.into_iter()).zip(positions.into_iter()).enumerate() {
+    for (i, ((key, value), pos)) in
+      keys.into_iter().zip(values.into_iter()).zip(positions.into_iter()).enumerate()
+    {
       oram.write_or_insert(i, *pos, *key, *value);
     }
     oram
@@ -405,7 +412,14 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
       self.evict_counter = (self.evict_counter + 1) % self.max_n;
     }
     // UNDONE(): Otherwise, if fetching a path is expensive, we should increase the stash size and do two evictions on the same path. (so read and write are only called once)
-    // UNDONE(): debug_assert that the stash has at least one empty slot and have a failure recovery path if it doesn't.
+
+    // debug_assert that the stash has at least one empty slot:
+    let mut ok = false;
+    for elem in self.stash[..S].iter() {
+      ok.cmov(&true, elem.is_empty());
+    }
+    debug_assert!(ok);
+    // UNDONE(): have a failure recovery path if it doesn't.
   }
 
   /// Reads a value from the ORAM.
