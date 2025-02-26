@@ -1,4 +1,3 @@
-#![allow(clippy::collection_is_never_read)]
 #![allow(missing_docs)]
 use criterion::{
   black_box, criterion_group, criterion_main, measurement::Measurement, AxisScale, BenchmarkId,
