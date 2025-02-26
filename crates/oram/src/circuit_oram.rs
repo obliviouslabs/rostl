@@ -335,13 +335,14 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
       src.cmov(&deepest[i], change_flag);
       dst.cmov(&(i as i32), change_flag);
     }
+    target[0].cmov(&dst, src == 0);
 
     // 3) Third pass: Actually move the data (end of Alg 4 - EvictOnceFast in CircuitORAM paper).
     //
     // First level (including the stash)
     let mut hold = Block::<V>::default();
     for idx in 0..S + Z {
-      let is_deepest = deepest[0] == idx as i32;
+      let is_deepest = deepest_idx[0] == idx as i32;
       let read_and_remove_flag = is_deepest & (target[0] != -1);
       hold.cmov(&self.stash[idx], read_and_remove_flag);
       self.stash[idx].pos.cmov(&DUMMY_POS, read_and_remove_flag);
@@ -371,7 +372,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
         //         hasTargetFlag = true, placeDummyFlag = false
         //         hold will be swapped with the slot that evicts to deepest,
         //         which fulfills both src and dest requirements.
-        let is_deepest = deepest[i] == idx as i32;
+        let is_deepest = deepest_idx[i] == idx as i32;
         let read_and_remove_flag = is_deepest & has_target_flag;
         let write_flag = (self.stash[idx].is_empty()) & place_dummy_flag;
         let swap_flag = read_and_remove_flag | write_flag;
@@ -563,22 +564,38 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
 mod tests {
   use super::*;
 
+  fn assert_empty_stash(oram: &CircuitORAM<u64>) {
+    for elem in oram.stash[..S].iter() {
+      debug_assert!(elem.is_empty());
+    }
+  }
+
   #[test]
   fn test_circuitoram_simple() {
     let mut oram = CircuitORAM::<u64>::new(16);
     oram.perform_deterministic_evictions();
+    assert_empty_stash(&oram);
 
     oram.write_or_insert(0, 0, 1, 1);
-    oram.write_or_insert(0, 0, 2, 2);
+    assert_empty_stash(&oram);
+
     let mut v = 0;
     let found = oram.read(0, 0, 1, &mut v);
     assert!(found);
     assert_eq!(v, 1);
+    assert_empty_stash(&oram);
+
+    oram.write_or_insert(0, 0, 2, 2);
+    assert_empty_stash(&oram);
     let found = oram.read(0, 0, 2, &mut v);
     assert!(found);
     assert_eq!(v, 2);
+    assert_empty_stash(&oram);
+
     let found = oram.read(0, 0, 3, &mut v);
     assert!(!found);
+    assert_empty_stash(&oram);
+
     oram.write_or_insert(0, 0, 1, 3);
     let found = oram.read(0, 0, 1, &mut v);
     assert!(found);
