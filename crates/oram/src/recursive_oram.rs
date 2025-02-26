@@ -1,5 +1,5 @@
 //! Implements the recursive ORAM Technique
-// UNDONE(): Cite a paper or give a link in our docs explaining the recursive ORAM technique
+// UNDONE(git-17): Cite a paper or give a link in our docs explaining the recursive ORAM technique
 
 use bytemuck::{Pod, Zeroable};
 use rand::{rng, Rng};
@@ -34,7 +34,7 @@ impl Default for InternalNode {
   }
 }
 
-// UNDONE(): Theoretically, the top position map levels could use less bits. Figure out if this would be efficient in practice.
+// UNDONE(git-18): Theoretically, the top position map levels could use less bits. Figure out if this would be efficient in practice.
 /// An efficient position map for an ORAM where the key only has values from 0 to n-1
 /// The position map is implemented as a linear ORAM for the first level
 /// and a series of recursive ORAMs for the remaining levels
@@ -74,7 +74,7 @@ impl RecursivePositionMap {
       curr *= FAN_OUT;
     }
 
-    // UNDONE(): Optimize this (make it cache efficient)
+    // UNDONE(git-19): Optimize this (make it cache efficient)
     let mut positions_maps_for_level: Vec<PositionType> =
       (0..n).map(|_| rng().random_range(0..n)).collect();
     for i in (0..h).rev() {
@@ -192,5 +192,5 @@ mod tests {
     }
   }
 
-  // UNDONE(): Add more tests
+  // UNDONE(git-15): Add more tests
 }

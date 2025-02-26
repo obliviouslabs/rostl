@@ -18,7 +18,7 @@ use crate::CSWAP;
 /// * `C` - The type of the container. Must implement `Indexable<T>`.
 ///
 /// Uses the implementation from <https://ieeexplore.ieee.org/document/8478515>
-/// `UNDONE()`: I didn't have the time to read the paper and analyze if the transformations are ok
+// UNDONE(git-21): I didn't have the time to read the paper and analyze if the transformations are ok
 #[deprecated(note = "I'm not sure if this paper is correct. Don't use this function")]
 fn _batcher_sort_untrusted_but_faster<T, C>(arr: &mut C)
 where

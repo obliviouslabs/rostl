@@ -1,7 +1,7 @@
 //! Implementation of [Circuit ORAM](https://eprint.iacr.org/2014/672.pdf)
 //!
-#![allow(clippy::multiple_bound_locations)] // UNDONE(): This seems to be a clippy bug, check if we can remove this.
-#![allow(clippy::needless_bitwise_bool)] // UNDONE(): This is needed to enforce the bitwise operations to not short circuit. Investigate if we should be using helper functions instead.
+#![allow(clippy::multiple_bound_locations)] // UNDONE(git-7): This seems to be a clippy bug, check if we can remove this.
+#![allow(clippy::needless_bitwise_bool)] // UNDONE(git-8): This is needed to enforce the bitwise operations to not short circuit. Investigate if we should be using helper functions instead.
 use bytemuck::{Pod, Zeroable};
 use rods_primitives::{
   cmov_body, impl_cmov_for_generic_pod,
@@ -202,7 +202,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   ///
   /// # Returns
   /// A new instance of `CircuitORAM`.
-  // UNDONE(): Fast external-memory initialization
+  // UNDONE(git-9): Fast external-memory initialization
   pub fn new_with_positions_and_values(
     max_n: usize,
     keys: &[K],
@@ -247,8 +247,8 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
 
   /// Alg. 4 - EvictOnceFast(path) in `CircuitORAM` paper
   fn evict_once_fast(&mut self, pos: usize) {
-    // UNDONE(): Investigate using u8 and/or bitwise operations here instead of u32/bool cmov's
-    // UNDONE(): This only suppports n<=32. Is it enough?
+    // UNDONE(git-10): Investigate using u8 and/or bitwise operations here instead of u32/bool cmov's
+    // UNDONE(git-11): This only suppports n<=32. Is it enough?
     //
     let mut deepest: [i32; 64] = [-1; 64];
     let mut deepest_idx: [i32; 64] = [0; 64];
@@ -383,7 +383,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
       self.perform_eviction(evict_pos);
       self.evict_counter = (self.evict_counter + 1) % self.max_n;
     }
-    // UNDONE(): Otherwise, if fetching a path is expensive, we should increase the stash size and do two evictions on the same path. (so read and write are only called once)
+    // UNDONE(git-12): Otherwise, if fetching a path is expensive, we should increase the stash size and do two evictions on the same path. (so read and write are only called once)
 
     // debug_assert that the stash has at least one empty slot:
     let mut ok = false;
@@ -391,7 +391,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
       ok.cmov(&true, elem.is_empty());
     }
     debug_assert!(ok);
-    // UNDONE(): have a failure recovery path if it doesn't.
+    // UNDONE(git-13): have a failure recovery path if it doesn't.
   }
 
   /// Reads a value from the ORAM.
@@ -541,8 +541,8 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   }
 }
 
-// UNDONE(): write tests for this module
-// UNDONE(): write a test to show that we can do 1000 evictions without failing on a randomly distributed ORAM of some size
+// UNDONE(git-14): write tests for this module
+// UNDONE(git-14): write a test to show that we can do 1000 evictions without failing on a randomly distributed ORAM of some size
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -587,4 +587,6 @@ mod tests {
     assert!(found);
     assert_eq!(v, 3);
   }
+
+  // UNDONE(git-14): Add more tests
 }

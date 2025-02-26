@@ -38,7 +38,7 @@ impl<T> HeapTree<T> {
     let level_offset = 2usize.pow(depth as u32) - 1;
     let index = level_offset + (path >> (self.height - depth));
 
-    // UNDONE(): Make sure this doesn't have bounds checking and is safe
+    // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &self.tree[index]
   }
 
@@ -49,9 +49,7 @@ impl<T> HeapTree<T> {
     let level_offset = 2usize.pow(depth as u32) - 1;
     let index = level_offset + (path >> (self.height - depth));
 
-    // UNDONE(): Make sure this doesn't have bounds checking and is safe
+    // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &mut self.tree[index]
   }
 }
-
-// UNDONE(): write tests for this module

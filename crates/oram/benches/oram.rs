@@ -19,7 +19,7 @@ pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let test_set = &[100, 1_000, 1_000_000];
 
   for &size in test_set {
-    // UNDONE(): This isn't benchmarking correctly, it's just testing the overhead of the RNG + constructor
+    // UNDONE(git-4): This isn't benchmarking correctly, it's just testing the overhead of the RNG + constructor
     group.bench_with_input(BenchmarkId::new("Read", size), &size, |b, &size| {
       b.iter(|| {
         let mut rng = rand::rng();
@@ -32,7 +32,7 @@ pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
   }
 
   for &size in test_set {
-    // UNDONE(): This isn't benchmarking correctly, it's just testing the overhead of the RNG + constructor
+    // UNDONE(git-4): This isn't benchmarking correctly, it's just testing the overhead of the RNG + constructor
     group.bench_with_input(BenchmarkId::new("Write", size), &size, |b, &size| {
       let new_value = 3;
       b.iter(|| {
