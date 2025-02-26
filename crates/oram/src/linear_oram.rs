@@ -34,7 +34,7 @@ pub fn oblivious_read_update_index<T: Cmov>(data: &mut [T], index: usize, ret: &
 
 impl<T> LinearORAM<T>
 where
-  T: Cmov + Pod + Default,
+  T: Cmov + Pod + Default + std::fmt::Debug,
 {
   ///initialization
   pub fn new(max_n: usize) -> Self {
@@ -59,6 +59,13 @@ where
   ///linear scan the entire array, read the element out when index matches, write to the index if the index matches
   pub fn read_update(&mut self, index: K, value: T, ret: &mut T) {
     oblivious_read_update_index(&mut self.data, index, ret, value);
+  }
+
+  pub(crate) fn print_for_debug(&self) {
+    for i in 0..self.data.len() {
+      print!("{:?}, ", self.data[i]);
+    }
+    println!();
   }
 }
 

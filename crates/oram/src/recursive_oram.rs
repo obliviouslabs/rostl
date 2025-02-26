@@ -11,12 +11,14 @@ use crate::circuit_oram::CircuitORAM;
 use crate::linear_oram::{self, oblivious_read_update_index, LinearORAM};
 use crate::prelude::{max, min, PositionType, DUMMY_POS, K};
 
-const LINEAR_MAP_SIZE: usize = 128;
+const LINEAR_MAP_SIZE: usize = 4; // For debug
+const FAN_OUT: usize = 4; // For debug
+                          // const LINEAR_MAP_SIZE: usize = 128;
+                          // const FAN_OUT: usize = max(2, 64 / size_of::<PositionType>());
 const_assert!(LINEAR_MAP_SIZE.is_power_of_two());
 const LEVEL0_BITS: usize = LINEAR_MAP_SIZE.ilog2() as usize;
 const MASK0: usize = LINEAR_MAP_SIZE - 1;
 
-const FAN_OUT: usize = max(2, 64 / size_of::<PositionType>());
 const_assert!(FAN_OUT.is_power_of_two());
 const LEVELN_BITS: usize = FAN_OUT.ilog2() as usize;
 const MASKN: usize = FAN_OUT - 1;
@@ -77,7 +79,7 @@ impl RecursivePositionMap {
       (0..n).map(|_| rng().random_range(0..n)).collect();
     for i in (0..h).rev() {
       curr /= FAN_OUT;
-      let keys = (0..n).map(|i| i as K).collect::<Vec<K>>();
+      let keys = (0..curr).map(|i| i as K).collect::<Vec<K>>();
       let mut values = vec![InternalNode::default(); curr];
 
       for j in 0..curr {
@@ -145,6 +147,15 @@ impl RecursivePositionMap {
 
     ret
   }
+
+  pub(crate) fn print_for_debug(&self) {
+    println!("Linear ORAM:");
+    self.linear_oram.print_for_debug();
+    for i in 0..self.h {
+      println!("Level {} ORAM:", i);
+      self.recursive_orams[i].print_for_debug();
+    }
+  }
 }
 
 #[cfg(test)]
@@ -171,6 +182,7 @@ mod tests {
     let mut pos_map = RecursivePositionMap::new(n);
     assert_eq!(pos_map.h, 1);
     assert_eq!(pos_map.linear_oram.data.len(), LINEAR_MAP_SIZE);
+    pos_map.print_for_debug();
     for i in 0..n {
       pos_map.access_position(i, i as PositionType);
     }

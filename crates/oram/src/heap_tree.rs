@@ -14,7 +14,7 @@ where
 {
   /// Initialized a new heap tree with a certain height
   pub fn new(height: usize) -> Self {
-    let tree = vec![T::default(); 2usize.pow(1 + height as u32) - 1];
+    let tree = vec![T::default(); 2usize.pow(height as u32) - 1];
     Self { tree, height }
   }
 }
@@ -25,7 +25,7 @@ where
 {
   /// Initialized a new heap tree with a certain height and a default value
   pub fn new_with(height: usize, default: T) -> Self {
-    let tree = vec![default; 2usize.pow(1 + height as u32) - 1];
+    let tree = vec![default; 2usize.pow(height as u32) - 1];
     Self { tree, height }
   }
 }

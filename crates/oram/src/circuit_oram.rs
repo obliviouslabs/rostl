@@ -23,7 +23,7 @@ const EVICTIONS_PER_OP: usize = 2; // Evictions per operations
 /// # Note
 /// * It is wrong to assume anything about the block being empty or not based on the key, please use pos.
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Zeroable)]
+#[derive(Clone, Copy, Zeroable)]
 pub struct Block<V: Cmov + Pod> {
   /// The position of the block
   pub pos: PositionType,
@@ -37,6 +37,16 @@ unsafe impl<V: Cmov + Pod> Pod for Block<V> {}
 impl<T: Cmov + Pod> Default for Block<T> {
   fn default() -> Self {
     Self { pos: DUMMY_POS, key: 0, value: T::zeroed() }
+  }
+}
+
+impl<T: Cmov + Pod + std::fmt::Debug> std::fmt::Debug for Block<T> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    if self.pos == DUMMY_POS {
+      write!(f, ".")
+    } else {
+      write!(f, "Block {{ pos: {}, key: {}, value: {:?} }}", self.pos, self.key, self.value)
+    }
   }
 }
 
@@ -67,7 +77,7 @@ unsafe impl<V: Cmov + Pod> Pod for Bucket<V> {}
 pub struct CircuitORAM<V: Cmov + Pod> {
   /// Number of blocks, ilog2 of it is public via h
   pub max_n: usize,
-  /// Height of the tree, public
+  /// Height of the tree, public, single element tree has height 1, the depth of this element is 0
   pub h: usize,
   /// The stash: has size `S + h * Z`. First S blocks are the actual stash the rest are the path used during operations.
   pub stash: Vec<Block<V>>,
@@ -123,48 +133,6 @@ fn write_block_to_empty_slot<V: Cmov + Pod>(arr: &mut [Block<V>], val: &Block<V>
   rv
 }
 
-// #[inline]
-// fn read_element_and_update_position<V: Cmov + Pod>(
-//   arr: &mut [Block<V>],
-//   k: K,
-//   new_pos: PositionType,
-//   ret: &mut V,
-// ) -> bool {
-//   let mut rv = false;
-
-//   for item in arr {
-//     let matched = (!item.is_empty()) & (item.key == k);
-//     debug_assert!((!matched) | (!rv));
-
-//     ret.cmov(&item.value, matched);
-//     item.pos.cmov(&new_pos, matched);
-//     rv.cmov(&true, matched);
-//   }
-
-//   rv
-// }
-
-// #[inline]
-// fn write_element_and_update_position<V: Cmov + Pod>(
-//   arr: &mut [Block<V>],
-//   k: K,
-//   new_pos: PositionType,
-//   val: &V,
-// ) -> bool {
-//   let mut rv = false;
-
-//   for item in arr {
-//     let matched = (!item.is_empty()) & (item.key == k);
-//     debug_assert!((!matched) | (!rv));
-
-//     item.value.cmov(val, matched);
-//     item.pos.cmov(&new_pos, matched);
-//     rv.cmov(&true, matched);
-//   }
-
-//   rv
-// }
-
 /// Reverses the bits of a given number up to a specified number of bits.
 ///
 /// # Arguments
@@ -210,17 +178,17 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     debug_assert!(max_n <= u32::MAX as usize);
 
     let h = {
-      let h = (max_n).ilog2() as usize;
-      if (1 << h) < max_n {
-        h + 1
+      let h0 = (max_n).ilog2() as usize;
+      if (1 << h0) < max_n {
+        h0 + 2
       } else {
-        h
+        h0 + 1
       }
     };
     let tree = HeapTree::new(h);
     let stash = vec![Block::<V>::default(); S + h * Z];
 
-    let max_n = 2usize.pow(h as u32);
+    let max_n = 2usize.pow((h - 1) as u32);
     Self { max_n, h, stash, tree, evict_counter: 0 }
   }
 
@@ -242,6 +210,10 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     positions: &Vec<PositionType>,
   ) -> Self {
     let mut oram = Self::new(max_n);
+    debug_assert!(keys.len() == values.len());
+    debug_assert!(keys.len() == positions.len());
+    debug_assert!(keys.len() <= max_n);
+
     for (i, ((key, value), pos)) in
       keys.into_iter().zip(values.into_iter()).zip(positions.into_iter()).enumerate()
     {
@@ -384,7 +356,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     }
 
     // last level
-    let place_dummy_flag = (self.h as i32 - 1) == dst;
+    let place_dummy_flag = ((self.h - 1) as i32) == dst;
     let mut written = false;
     for _ in 0..Z {
       let write_flag = (self.stash[idx].is_empty()) & place_dummy_flag & (!written);
@@ -408,7 +380,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   fn perform_deterministic_evictions(&mut self) {
     // Empirically we found out this strategy works if reading and fetching a path is cheap
     for _ in 0..EVICTIONS_PER_OP {
-      let evict_pos = reverse_bits(self.evict_counter, self.h);
+      let evict_pos = reverse_bits(self.evict_counter, self.h - 1);
       self.perform_eviction(evict_pos);
       self.evict_counter = (self.evict_counter + 1) % self.max_n;
     }
@@ -505,10 +477,10 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     debug_assert!(new_pos < self.max_n);
 
     self.read_path_and_get_nodes(pos);
-    println!("{:?}", self.stash);
+    // println!("{:?}", self.stash);
 
     let found = remove_element(&mut self.stash, key);
-    println!("{:?}", found);
+    // println!("{:?}", found);
 
     let target_pos = new_pos;
 
@@ -516,7 +488,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
       &mut self.stash[..S],
       &Block::<V> { pos: target_pos, key, value: val },
     ); // Succeeds due to Inv1.
-    println!("{:?}", self.stash);
+       // println!("{:?}", self.stash);
 
     self.evict_once_fast(pos);
     self.write_back_path(pos);
@@ -556,6 +528,17 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
 
     (found, rv)
   }
+
+  pub(crate) fn print_for_debug(&self) {
+    println!("Stash: {:?}", self.stash);
+    for i in 0..self.h {
+      print!("Level {}: ", i);
+      for j in 0..(1 << i) {
+        print!("{:?} ", self.tree.get_path_at_depth(i, j << (self.h - i)));
+      }
+      println!();
+    }
+  }
 }
 
 // UNDONE(): write tests for this module
@@ -584,6 +567,7 @@ mod tests {
     assert!(found);
     assert_eq!(v, 1);
     assert_empty_stash(&oram);
+    oram.print_for_debug();
 
     oram.write_or_insert(0, 0, 2, 2);
     assert_empty_stash(&oram);
@@ -591,10 +575,12 @@ mod tests {
     assert!(found);
     assert_eq!(v, 2);
     assert_empty_stash(&oram);
+    oram.print_for_debug();
 
     let found = oram.read(0, 0, 3, &mut v);
     assert!(!found);
     assert_empty_stash(&oram);
+    oram.print_for_debug();
 
     oram.write_or_insert(0, 0, 1, 3);
     let found = oram.read(0, 0, 1, &mut v);
