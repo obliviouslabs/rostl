@@ -74,7 +74,6 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use rand::random;
 
   #[test]
   fn test_basic_shuffle() {
