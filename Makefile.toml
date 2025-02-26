@@ -36,6 +36,7 @@ description = "Run pre-merge checks"
 dependencies = ["precommit"]
 script = '''
 sh ./scripts/find_untagged_undones.sh
+cargo deny check all
 '''
 
 

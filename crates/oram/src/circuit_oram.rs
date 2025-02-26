@@ -248,7 +248,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// Alg. 4 - EvictOnceFast(path) in `CircuitORAM` paper
   fn evict_once_fast(&mut self, pos: usize) {
     // UNDONE(git-10): Investigate using u8 and/or bitwise operations here instead of u32/bool cmov's
-    // UNDONE(git-11): This only suppports n<=32. Is it enough?
+    // UNDONE(git-11): This only supports n<=32. Is it enough?
     //
     let mut deepest: [i32; 64] = [-1; 64];
     let mut deepest_idx: [i32; 64] = [0; 64];

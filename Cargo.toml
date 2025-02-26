@@ -142,6 +142,7 @@ overflow-checks = true
 
 [workspace.dependencies]
 # rods-rodb = { path = "crates/rodb" }
+rods-oram = { path = "crates/oram" }
 rods-primitives = { path = "crates/primitives" }
 rods-sort = { path = "crates/sort" }
 rods-storage = { path = "crates/storage" }
