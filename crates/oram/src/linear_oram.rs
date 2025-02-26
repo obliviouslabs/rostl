@@ -61,6 +61,7 @@ where
     oblivious_read_update_index(&mut self.data, index, ret, value);
   }
 
+  #[cfg(test)]
   pub(crate) fn print_for_debug(&self) {
     for i in 0..self.data.len() {
       print!("{:?}, ", self.data[i]);

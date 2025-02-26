@@ -8,8 +8,8 @@ use rods_primitives::{cmov_body, impl_cmov_for_pod, traits::_Cmovbase};
 use static_assertions::const_assert;
 
 use crate::circuit_oram::CircuitORAM;
-use crate::linear_oram::{self, oblivious_read_update_index, LinearORAM};
-use crate::prelude::{max, min, PositionType, DUMMY_POS, K};
+use crate::linear_oram::{oblivious_read_update_index, LinearORAM};
+use crate::prelude::{min, PositionType, DUMMY_POS, K};
 
 const LINEAR_MAP_SIZE: usize = 4; // For debug
 const FAN_OUT: usize = 4; // For debug
@@ -91,8 +91,8 @@ impl RecursivePositionMap {
       data_maps[i] =
         CircuitORAM::new_with_positions_and_values(curr, &keys, &values, &positions_maps_for_level);
     }
-    for i in 0..curr {
-      first_level.write(i, positions_maps_for_level[i]);
+    for (i, item) in positions_maps_for_level.iter().enumerate() {
+      first_level.write(i, *item);
     }
 
     Self { linear_oram: first_level, recursive_orams: data_maps, h }
@@ -148,6 +148,7 @@ impl RecursivePositionMap {
     ret
   }
 
+  #[cfg(test)]
   pub(crate) fn print_for_debug(&self) {
     println!("Linear ORAM:");
     self.linear_oram.print_for_debug();

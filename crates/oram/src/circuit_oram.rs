@@ -205,17 +205,16 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   // UNDONE(): Fast external-memory initialization
   pub fn new_with_positions_and_values(
     max_n: usize,
-    keys: &Vec<K>,
-    values: &Vec<V>,
-    positions: &Vec<PositionType>,
+    keys: &[K],
+    values: &[V],
+    positions: &[PositionType],
   ) -> Self {
     let mut oram = Self::new(max_n);
     debug_assert!(keys.len() == values.len());
     debug_assert!(keys.len() == positions.len());
     debug_assert!(keys.len() <= max_n);
 
-    for (i, ((key, value), pos)) in
-      keys.into_iter().zip(values.into_iter()).zip(positions.into_iter()).enumerate()
+    for (i, ((key, value), pos)) in keys.iter().zip(values.iter()).zip(positions.iter()).enumerate()
     {
       oram.write_or_insert(i, *pos, *key, *value);
     }
@@ -388,7 +387,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
 
     // debug_assert that the stash has at least one empty slot:
     let mut ok = false;
-    for elem in self.stash[..S].iter() {
+    for elem in &self.stash[..S] {
       ok.cmov(&true, elem.is_empty());
     }
     debug_assert!(ok);
@@ -529,6 +528,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     (found, rv)
   }
 
+  #[cfg(test)]
   pub(crate) fn print_for_debug(&self) {
     println!("Stash: {:?}", self.stash);
     for i in 0..self.h {
@@ -548,7 +548,7 @@ mod tests {
   use super::*;
 
   fn assert_empty_stash(oram: &CircuitORAM<u64>) {
-    for elem in oram.stash[..S].iter() {
+    for elem in &oram.stash[..S] {
       debug_assert!(elem.is_empty());
     }
   }
