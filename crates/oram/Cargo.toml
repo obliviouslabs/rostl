@@ -9,7 +9,6 @@ exclude.workspace = true
 
 [dependencies]
 rods-primitives.workspace = true
-rods-storage.workspace = true
 bytemuck.workspace = true
 static_assertions.workspace = true
 rand.workspace = true

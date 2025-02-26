@@ -460,7 +460,6 @@ dependencies = [
  "criterion",
  "rand",
  "rods-primitives",
- "rods-storage",
  "static_assertions",
 ]
 
