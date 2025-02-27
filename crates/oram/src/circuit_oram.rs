@@ -1,6 +1,5 @@
 //! Implementation of [Circuit ORAM](https://eprint.iacr.org/2014/672.pdf)
 //!
-#![allow(clippy::multiple_bound_locations)] // UNDONE(git-7): This seems to be a clippy bug, check if we can remove this.
 #![allow(clippy::needless_bitwise_bool)] // UNDONE(git-8): This is needed to enforce the bitwise operations to not short circuit. Investigate if we should be using helper functions instead.
 use bytemuck::{Pod, Zeroable};
 use rods_primitives::{
@@ -24,7 +23,10 @@ const EVICTIONS_PER_OP: usize = 2; // Evictions per operations
 /// * It is wrong to assume anything about the block being empty or not based on the key, please use pos.
 #[repr(C)]
 #[derive(Clone, Copy, Zeroable)]
-pub struct Block<V: Cmov + Pod> {
+pub struct Block<V>
+where
+  V: Cmov + Pod,
+{
   /// The position of the block
   pub pos: PositionType,
   /// The key of the block
@@ -62,7 +64,10 @@ impl<V: Cmov + Pod> Block<V> {
 /// A bucket in the ORAM tree
 #[repr(C)]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
-pub struct Bucket<V: Cmov + Pod> {
+pub struct Bucket<V>
+where
+  V: Cmov + Pod,
+{
   /// The blocks in the bucket
   pub buckets: [Block<V>; Z],
 }
