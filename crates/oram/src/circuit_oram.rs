@@ -413,11 +413,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     self.read_path_and_get_nodes(pos);
 
     let found = read_and_remove_element(&mut self.stash, key, ret);
-    let mut to_write = Block {
-      pos: new_pos,
-      key,
-      value: *ret,
-    };
+    let mut to_write = Block { pos: new_pos, key, value: *ret };
     to_write.pos.cmov(&DUMMY_POS, !found);
     write_block_to_empty_slot(&mut self.stash[..S], &to_write); // Succeeds due to Inv1.
 
@@ -487,11 +483,8 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     let found = remove_element(&mut self.stash, key);
     // println!("{:?}", found);
 
-    write_block_to_empty_slot(
-      &mut self.stash[..S],
-      &Block::<V> { pos: new_pos, key, value: val },
-    ); // Succeeds due to Inv1.
-       // println!("{:?}", self.stash);
+    write_block_to_empty_slot(&mut self.stash[..S], &Block::<V> { pos: new_pos, key, value: val }); // Succeeds due to Inv1.
+                                                                                                    // println!("{:?}", self.stash);
 
     self.evict_once_fast(pos);
     self.write_back_path(pos);
@@ -538,7 +531,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     for i in 0..self.h {
       print!("Level {}: ", i);
       for j in 0..(1 << i) {
-        print!("{:?} ", self.tree.get_path_at_depth(i, j << (self.h-1 - i)));
+        print!("{:?} ", self.tree.get_path_at_depth(i, j << (self.h - 1 - i)));
       }
       println!();
     }
@@ -551,7 +544,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
 mod tests {
   use std::vec;
 
-use super::*;
+  use super::*;
   use rand::{rng, Rng};
 
   fn assert_empty_stash(oram: &CircuitORAM<u64>) {
@@ -609,17 +602,17 @@ use super::*;
     assert_eq!(val, 123);
   }
 
-  
   fn test_circuitoram_repetitive_generic<const TOTAL_KEYS: usize>() {
     let mut oram = CircuitORAM::<u64>::new(TOTAL_KEYS);
     let mut pmap = vec![0; TOTAL_KEYS];
-    let mut vals =  vec![0; TOTAL_KEYS];
+    let mut vals = vec![0; TOTAL_KEYS];
     let mut used = vec![false; TOTAL_KEYS];
     let mut rng = rng();
 
     for _ in 0..2_000 {
       let new_pos = rng.random_range(0..TOTAL_KEYS);
-      let key = 0; rng.random_range(0..TOTAL_KEYS);
+      let key = 0;
+      rng.random_range(0..TOTAL_KEYS);
       let val = rng.random::<u64>();
       let op = rng.random_range(0..3);
       // println!("op: {}, key: {}, val: {}, new_pos: {}", op, key, val, new_pos);
@@ -641,7 +634,7 @@ use super::*;
         vals[key] = val;
         used[key] = true;
       }
-      pmap[key] = new_pos;      
+      pmap[key] = new_pos;
     }
   }
 

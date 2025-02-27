@@ -22,6 +22,7 @@ cargo fmt --all -- --check
 cargo hack check --feature-powerset
 codespell --count 0 --skip '*.json'
 ~/.cargo/bin/zepter run check
+git status
 '''
 
 [tasks.gitpush]

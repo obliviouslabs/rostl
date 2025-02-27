@@ -35,7 +35,7 @@ impl<T> HeapTree<T> {
   fn get_index(&self, depth: usize, path: usize) -> usize {
     debug_assert!(depth < self.height);
     let level_offset = 2usize.pow(depth as u32) - 1;
-    let mask = (1<<depth)-1;
+    let mask = (1 << depth) - 1;
     level_offset + (path & mask)
   }
 
