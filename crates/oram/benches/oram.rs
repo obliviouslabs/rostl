@@ -1,47 +1,84 @@
 #![allow(clippy::collection_is_never_read)]
 #![allow(missing_docs)]
 use criterion::{
-  criterion_group, criterion_main, measurement::Measurement, AxisScale, BenchmarkId, Criterion,
-  PlotConfiguration,
+  black_box, criterion_group, criterion_main, measurement::Measurement, AxisScale, BenchmarkId,
+  Criterion, PlotConfiguration,
 };
-use rand::Rng;
+// use rand::Rng;
 
-use rods_oram::linear_oram::LinearORAM;
+use rods_oram::{
+  circuit_oram::CircuitORAM,
+  linear_oram::LinearORAM,
+  // recursive_oram::RecursivePositionMap
+};
 
-pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
+pub fn benchmark_oram_initialization<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let mut group = c.benchmark_group(format!(
-    "LinearORAM/{}",
+    "ORAM_Initialization/{}",
     std::any::type_name::<T>().split(':').last().unwrap()
   ));
   let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
   group.plot_config(plot_config);
 
-  let test_set = &[100, 1_000, 1_000_000];
+  let test_set = &[128, 1 << 10, 1 << 20];
 
   for &size in test_set {
-    // UNDONE(git-4): This isn't benchmarking correctly, it's just testing the overhead of the RNG + constructor
-    group.bench_with_input(BenchmarkId::new("Read", size), &size, |b, &size| {
+    group.bench_with_input(BenchmarkId::new("LinearORAM", size), &size, |b, &size| {
       b.iter(|| {
-        let mut rng = rand::rng();
-        let index: usize = rng.random_range(1..=size);
-        let oram = LinearORAM::<u32>::new(25);
-        let mut ret = 0;
-        oram.read(index, &mut ret);
+        black_box(LinearORAM::<u64>::new(size));
       });
     });
+    group.bench_with_input(BenchmarkId::new("CircuitORAM", size), &size, |b, &size| {
+      b.iter(|| {
+        black_box(CircuitORAM::<u64>::new(size));
+      });
+    });
+    // group.bench_with_input(BenchmarkId::new("RecursivePositionMap", size), &size, |b, &size| {
+    //   b.iter(|| {
+    //     black_box(RecursivePositionMap::new(size));
+    //   });
+    // });
   }
+}
+
+pub fn benchmark_oram_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
+  let mut group = c
+    .benchmark_group(format!("ORAM_Ops/{}", std::any::type_name::<T>().split(':').last().unwrap()));
+  let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
+  group.plot_config(plot_config);
+
+  let test_set = &[128, 1 << 10, 1 << 20];
 
   for &size in test_set {
-    // UNDONE(git-4): This isn't benchmarking correctly, it's just testing the overhead of the RNG + constructor
-    group.bench_with_input(BenchmarkId::new("Write", size), &size, |b, &size| {
-      let new_value = 3;
+    group.bench_with_input(BenchmarkId::new("LinearORAM_Read", size), &size, |b, &size| {
+      let mut oram = LinearORAM::<u64>::new(size);
+      oram.write(0, 0);
       b.iter(|| {
-        let mut rng = rand::rng();
-        let index: usize = rng.random_range(1..=size);
-        let mut oram = LinearORAM::<u32>::new(size);
-        oram.write(index, new_value);
+        let mut _ign = black_box(0);
+        oram.read(black_box(0), &mut _ign);
       });
     });
+    group.bench_with_input(BenchmarkId::new("CircuitORAM_Read", size), &size, |b, &size| {
+      let mut oram = CircuitORAM::<u64>::new(size);
+      oram.write_or_insert(0, 0, 0, 0);
+      b.iter(|| {
+        let mut _ign = black_box(0);
+        black_box(oram.read(black_box(0), black_box(0), black_box(0), &mut _ign));
+      });
+    });
+    group.bench_with_input(BenchmarkId::new("CircuitORAM_Write", size), &size, |b, &size| {
+      let mut oram = CircuitORAM::<u64>::new(size);
+      oram.write_or_insert(0, 0, 0, 0);
+      b.iter(|| {
+        black_box(oram.write(black_box(0), black_box(0), black_box(0), black_box(0)));
+      });
+    });
+    // group.bench_with_input(BenchmarkId::new("RecursivePositionMap", size), &size, |b, &size| {
+    //   let oram = RecursivePositionMap::<u64>::new(size);
+    //   b.iter(|| {
+    //     black_box(oram.read(0));
+    //   });
+    // });
   }
 
   group.finish();
@@ -49,5 +86,5 @@ pub fn benchmark_linear_oram<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
 criterion_group!(name = benches_time;
     config = Criterion::default().warm_up_time(std::time::Duration::from_millis(500)).measurement_time(std::time::Duration::from_secs(3));
-    targets = benchmark_linear_oram);
+    targets = benchmark_oram_initialization, benchmark_oram_ops);
 criterion_main!(benches_time);

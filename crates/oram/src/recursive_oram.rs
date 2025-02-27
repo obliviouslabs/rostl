@@ -51,6 +51,8 @@ pub struct RecursivePositionMap {
 
 impl RecursivePositionMap {
   /// Creates a new `RecursivePositionMap` with the given size `n`.
+  // UNDONE(git-9): Fast external-memory initialization
+  // UNDONE(git-19): Optimize this function
   pub fn new(n: usize) -> Self {
     debug_assert!(n > 0);
     let mut h: usize;
