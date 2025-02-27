@@ -659,4 +659,6 @@ mod tests {
     test_circuitoram_repetitive_generic::<16>();
     test_circuitoram_repetitive_generic::<1024>();
   }
+
+  // UNDONE(git-24): Add a test to visualize circuit oram failure probability.
 }
