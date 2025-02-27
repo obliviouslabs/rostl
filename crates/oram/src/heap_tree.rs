@@ -5,7 +5,7 @@
 #[derive(Debug)]
 pub struct HeapTree<T> {
   tree: Vec<T>,  // Actual storage container
-  height: usize, // Height of the tree, public
+  height: usize, // Height of the tree, public, tree with a single element has height 1
 }
 
 impl<T> HeapTree<T>
@@ -31,23 +31,29 @@ where
 }
 
 impl<T> HeapTree<T> {
-  /// Get a node of a certain path at a certain depth
-  /// Reveals depth and path
-  pub fn get_path_at_depth(&self, depth: usize, path: usize) -> &T {
+  #[inline]
+  fn get_index(&self, depth: usize, path: usize) -> usize {
     debug_assert!(depth < self.height);
     let level_offset = 2usize.pow(depth as u32) - 1;
-    let index = level_offset + (path >> (self.height - depth));
+    let mask = (1<<depth)-1;
+    level_offset + (path & mask)
+  }
+
+  /// Get a node of a certain path at a certain depth
+  /// Reveals depth and path
+  #[inline]
+  pub fn get_path_at_depth(&self, depth: usize, path: usize) -> &T {
+    let index = self.get_index(depth, path);
 
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &self.tree[index]
   }
 
   /// Get a node of a certain path at a certain depth
-  /// /// Reveals depth and path
+  /// Reveals depth and path
+  #[inline]
   pub fn get_path_at_depth_mut(&mut self, depth: usize, path: usize) -> &mut T {
-    debug_assert!(depth < self.height);
-    let level_offset = 2usize.pow(depth as u32) - 1;
-    let index = level_offset + (path >> (self.height - depth));
+    let index = self.get_index(depth, path);
 
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &mut self.tree[index]

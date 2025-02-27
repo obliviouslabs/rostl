@@ -289,8 +289,8 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
       }
 
       let deepper_flag = bucket_deepest_level > dst;
-      dst.cmov(&bucket_deepest_level, deepper_flag);
       src.cmov(&(i as i32), deepper_flag);
+      dst.cmov(&bucket_deepest_level, deepper_flag);
     }
 
     // 2) Second pass: (Alg 3 - PrepareTarget in CircuitORAM paper).
@@ -413,7 +413,13 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     self.read_path_and_get_nodes(pos);
 
     let found = read_and_remove_element(&mut self.stash, key, ret);
-    write_block_to_empty_slot(&mut self.stash[..S], &Block { pos: new_pos, key, value: *ret }); // Succeeds due to Inv1.
+    let mut to_write = Block {
+      pos: new_pos,
+      key,
+      value: *ret,
+    };
+    to_write.pos.cmov(&DUMMY_POS, !found);
+    write_block_to_empty_slot(&mut self.stash[..S], &to_write); // Succeeds due to Inv1.
 
     self.evict_once_fast(pos);
     self.write_back_path(pos);
@@ -433,7 +439,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// # Returns
   /// * `true` if the element was found and updated, `false` otherwise.
   /// # Behavior
-  /// * If the element is not found, no modifications are made to the ORAM.
+  /// * If the element is not found, no modifications are made to the logical ORAM state.
   /// * If the element is found, it is updated with the new value.
   pub fn write(&mut self, pos: usize, new_pos: usize, key: K, val: V) -> bool {
     debug_assert!(pos < self.max_n);
@@ -481,11 +487,9 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     let found = remove_element(&mut self.stash, key);
     // println!("{:?}", found);
 
-    let target_pos = new_pos;
-
     write_block_to_empty_slot(
       &mut self.stash[..S],
-      &Block::<V> { pos: target_pos, key, value: val },
+      &Block::<V> { pos: new_pos, key, value: val },
     ); // Succeeds due to Inv1.
        // println!("{:?}", self.stash);
 
@@ -534,7 +538,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     for i in 0..self.h {
       print!("Level {}: ", i);
       for j in 0..(1 << i) {
-        print!("{:?} ", self.tree.get_path_at_depth(i, j << (self.h - i)));
+        print!("{:?} ", self.tree.get_path_at_depth(i, j << (self.h-1 - i)));
       }
       println!();
     }
@@ -545,7 +549,10 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
 // UNDONE(git-14): write a test to show that we can do 1000 evictions without failing on a randomly distributed ORAM of some size
 #[cfg(test)]
 mod tests {
-  use super::*;
+  use std::vec;
+
+use super::*;
+  use rand::{rng, Rng};
 
   fn assert_empty_stash(oram: &CircuitORAM<u64>) {
     for elem in &oram.stash[..S] {
@@ -586,6 +593,63 @@ mod tests {
     let found = oram.read(0, 0, 1, &mut v);
     assert!(found);
     assert_eq!(v, 3);
+  }
+
+  #[test]
+  fn test_circuitoram_simple_2() {
+    const TOTAL_KEYS: usize = 8;
+    let mut oram = CircuitORAM::<u64>::new(TOTAL_KEYS);
+    let mut val = 0;
+    let found = oram.write_or_insert(0, 4, 0, 123);
+    oram.print_for_debug();
+    assert!(!found);
+    let found = oram.read(4, 7, 0, &mut val);
+    oram.print_for_debug();
+    assert!(found);
+    assert_eq!(val, 123);
+  }
+
+  
+  fn test_circuitoram_repetitive_generic<const TOTAL_KEYS: usize>() {
+    let mut oram = CircuitORAM::<u64>::new(TOTAL_KEYS);
+    let mut pmap = vec![0; TOTAL_KEYS];
+    let mut vals =  vec![0; TOTAL_KEYS];
+    let mut used = vec![false; TOTAL_KEYS];
+    let mut rng = rng();
+
+    for _ in 0..2_000 {
+      let new_pos = rng.random_range(0..TOTAL_KEYS);
+      let key = 0; rng.random_range(0..TOTAL_KEYS);
+      let val = rng.random::<u64>();
+      let op = rng.random_range(0..3);
+      // println!("op: {}, key: {}, val: {}, new_pos: {}", op, key, val, new_pos);
+      // oram.print_for_debug();
+      if op == 0 {
+        let mut v = 0;
+        let found = oram.read(pmap[key], new_pos, key as K, &mut v);
+        assert_eq!(found, used[key]);
+        if used[key] {
+          assert_eq!(v, vals[key]);
+        }
+      } else if op == 1 {
+        let found = oram.write(pmap[key], new_pos, key as K, val);
+        assert_eq!(found, used[key]);
+        vals[key] = val;
+      } else {
+        let found = oram.write_or_insert(pmap[key], new_pos, key as K, val);
+        assert_eq!(found, used[key]);
+        vals[key] = val;
+        used[key] = true;
+      }
+      pmap[key] = new_pos;      
+    }
+  }
+
+  #[test]
+  fn test_circuitoram_repetitive() {
+    test_circuitoram_repetitive_generic::<8>();
+    test_circuitoram_repetitive_generic::<16>();
+    test_circuitoram_repetitive_generic::<1024>();
   }
 
   // UNDONE(git-14): Add more tests
