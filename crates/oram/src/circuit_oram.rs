@@ -543,8 +543,6 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   }
 }
 
-// UNDONE(git-14): write tests for this module
-// UNDONE(git-14): write a test to show that we can do 1000 evictions without failing on a randomly distributed ORAM of some size
 #[cfg(test)]
 mod tests {
   use std::vec;
@@ -633,12 +631,24 @@ mod tests {
         let found = oram.write(pmap[key], new_pos, key as K, val);
         assert_eq!(found, used[key]);
         vals[key] = val;
-      } else {
+      } else if op == 2 {
         let found = oram.write_or_insert(pmap[key], new_pos, key as K, val);
         assert_eq!(found, used[key]);
-        vals[key] = val;
         used[key] = true;
+        vals[key] = val;
+      } else if op == 3 {
+        let found = oram.update(pmap[key], new_pos, key as K, |v| {
+          *v = val;
+          *v
+        });
+        assert_eq!(found.0, used[key]);
+        if used[key] {
+          assert_eq!(found.1, vals[key]);
+        }
+        used[key] = true;
+        vals[key] = val;
       }
+
       pmap[key] = new_pos;
     }
   }
@@ -649,6 +659,4 @@ mod tests {
     test_circuitoram_repetitive_generic::<16>();
     test_circuitoram_repetitive_generic::<1024>();
   }
-
-  // UNDONE(git-14): Add more tests
 }
