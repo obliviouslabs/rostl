@@ -117,7 +117,7 @@ impl RecursivePositionMap {
     k >>= LEVEL0_BITS;
     curr_max_pos <<= LEVEL0_BITS;
 
-    let new_curr_pos: PositionType =
+    let mut new_curr_pos: PositionType =
       if self.h == 0 { new_pos } else { rng().random_range(0..curr_max_pos) };
 
     self.linear_oram.read_update(curr_k, new_curr_pos, &mut ret);
@@ -139,6 +139,7 @@ impl RecursivePositionMap {
           ret
         });
       debug_assert!(_found);
+      new_curr_pos = next_curr_pos;
 
       ret = nextpos;
       curr_k <<= LEVELN_BITS;
@@ -198,7 +199,7 @@ mod tests {
     let mut pmap = vec![0; TOTAL_KEYS];
     let mut used = vec![false; TOTAL_KEYS];
 
-    for _ in 0..2_000 {
+    for _i in 0..2_000 {
       let k = rng.random_range(0..TOTAL_KEYS);
       let new_pos = rng.random_range(0..TOTAL_KEYS as PositionType);
       let old_pos = pos_map.access_position(k, new_pos);
@@ -212,14 +213,13 @@ mod tests {
 
   #[test]
   fn test_recursive_position_map() {
-    // test_recursive_position_generic::<(LINEAR_MAP_SIZE / 2) + 1>();
     const TOTAL_KEYS_0: usize = LINEAR_MAP_SIZE / 2 + 1;
     test_recursive_position_generic::<TOTAL_KEYS_0>();
     test_recursive_position_generic::<LINEAR_MAP_SIZE>();
     const TOTAL_KEYS_1: usize = LINEAR_MAP_SIZE * FAN_OUT;
     test_recursive_position_generic::<TOTAL_KEYS_1>();
-    // const TOTAL_KEYS_2: usize = LINEAR_MAP_SIZE * FAN_OUT * FAN_OUT;
-    // test_recursive_position_generic::<TOTAL_KEYS_2>();
+    const TOTAL_KEYS_2: usize = LINEAR_MAP_SIZE * FAN_OUT * FAN_OUT;
+    test_recursive_position_generic::<TOTAL_KEYS_2>();
   }
 
   // UNDONE(git-15): Add more tests
