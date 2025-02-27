@@ -192,5 +192,35 @@ mod tests {
     }
   }
 
+  fn test_recursive_position_generic<const TOTAL_KEYS: usize>() {
+    let mut pos_map = RecursivePositionMap::new(TOTAL_KEYS);
+    let mut rng = rng();
+    let mut pmap = vec![0; TOTAL_KEYS];
+    let mut used = vec![false; TOTAL_KEYS];
+
+    for _ in 0..2_000 {
+      let k = rng.random_range(0..TOTAL_KEYS);
+      let new_pos = rng.random_range(0..TOTAL_KEYS as PositionType);
+      let old_pos = pos_map.access_position(k, new_pos);
+      if used[k] {
+        assert_eq!(pmap[k], old_pos);
+      }
+      pmap[k] = new_pos;
+      used[k] = true;
+    }
+  }
+
+  #[test]
+  fn test_recursive_position_map() {
+    // test_recursive_position_generic::<(LINEAR_MAP_SIZE / 2) + 1>();
+    const TOTAL_KEYS_0: usize = LINEAR_MAP_SIZE / 2 + 1;
+    test_recursive_position_generic::<TOTAL_KEYS_0>();
+    test_recursive_position_generic::<LINEAR_MAP_SIZE>();
+    const TOTAL_KEYS_1: usize = LINEAR_MAP_SIZE * FAN_OUT;
+    test_recursive_position_generic::<TOTAL_KEYS_1>();
+    // const TOTAL_KEYS_2: usize = LINEAR_MAP_SIZE * FAN_OUT * FAN_OUT;
+    // test_recursive_position_generic::<TOTAL_KEYS_2>();
+  }
+
   // UNDONE(git-15): Add more tests
 }
