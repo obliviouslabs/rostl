@@ -10,12 +10,14 @@ use static_assertions::const_assert;
 
 use crate::circuit_oram::CircuitORAM;
 use crate::linear_oram::{oblivious_read_update_index, LinearORAM};
-use crate::prelude::{min, PositionType, DUMMY_POS, K};
+use crate::prelude::{max, min, PositionType, DUMMY_POS, K};
 
-const LINEAR_MAP_SIZE: usize = 4; // For debug
-const FAN_OUT: usize = 4; // For debug
-                          // const LINEAR_MAP_SIZE: usize = 128;
-                          // const FAN_OUT: usize = max(2, 64 / size_of::<PositionType>());
+// UNDONE(git-25): Optimize these constants:
+const LINEAR_MAP_SIZE: usize = 128;
+const FAN_OUT: usize = max(2, 64 / size_of::<PositionType>());
+// const LINEAR_MAP_SIZE: usize = 4; // For debug
+// const FAN_OUT: usize = 4; // For debug
+
 const_assert!(LINEAR_MAP_SIZE.is_power_of_two());
 const LEVEL0_BITS: usize = LINEAR_MAP_SIZE.ilog2() as usize;
 const MASK0: usize = LINEAR_MAP_SIZE - 1;
