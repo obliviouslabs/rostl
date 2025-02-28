@@ -2,6 +2,7 @@
 // UNDONE(git-17): Cite a paper or give a link in our docs explaining the recursive ORAM technique
 
 use bytemuck::{Pod, Zeroable};
+use core::mem::size_of;
 use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
 use rods_primitives::traits::Cmov;
