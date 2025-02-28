@@ -12,10 +12,10 @@ workspace = true
 [dependencies]
 bytemuck.workspace = true
 rods-primitives.workspace = true
+rand.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
-rand.workspace = true
 
 [[bench]]
 name="osort"

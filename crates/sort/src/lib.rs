@@ -7,3 +7,5 @@ pub mod bose_nelson;
 pub mod bitonic;
 
 pub mod utils;
+
+pub mod basic_shuffle;

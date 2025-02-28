@@ -461,16 +461,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rods-shuffling"
-version = "1.0.0"
-dependencies = [
- "criterion",
- "rand",
- "rods-primitives",
- "rods-sort",
-]
-
-[[package]]
 name = "rods-sort"
 version = "1.0.0"
 dependencies = [

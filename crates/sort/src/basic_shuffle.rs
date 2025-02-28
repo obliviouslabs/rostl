@@ -1,8 +1,8 @@
 //! Basic shuffle algorithm.
+use crate::bitonic::bitonic_sort;
 use rand::random;
 use rods_primitives::indexable::Indexable;
 use rods_primitives::traits::Cmov;
-use rods_sort::bitonic::bitonic_sort;
 use std::cmp::Ordering;
 
 /// Basic shuffle algorithm using bitonic sort.
