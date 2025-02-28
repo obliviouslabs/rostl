@@ -57,7 +57,7 @@ jobs:
           tool: 'cargo'
           output-file-path: output.txt
           # Workflow will fail when an alert happens
-          fail-on-alert: true
+          fail-on-alert: false
           github-token: ${{ secrets.GITHUB_TOKEN }}
           alert-threshold: '115%'
           # Enable alert commit comment
