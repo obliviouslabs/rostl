@@ -230,6 +230,4 @@ mod tests {
     const TOTAL_KEYS_2: usize = LINEAR_MAP_SIZE * FAN_OUT * FAN_OUT;
     test_recursive_position_generic::<TOTAL_KEYS_2>();
   }
-
-  // UNDONE(git-15): Add more tests
 }
