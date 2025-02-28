@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1738863566458,
+  "lastUpdate": 1740717088012,
   "repoUrl": "https://github.com/xtrm0/rods",
   "entries": {
     "Benchmark": [
@@ -5829,6 +5829,282 @@ window.BENCHMARK_DATA = {
             "name": "Sorting/WallTime/std::sort/1000",
             "value": 8991,
             "range": "± 200",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "xtrm0",
+            "username": "xtrm0"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b7752fd27e04dfe4343f07f1a1bd2614d822a9e9",
+          "message": "Implement circuit oram (#23)\n\n+ Implements circuit ORAM\n+ Implements recursive ORAM on top of circuitoram\n+ Adds a ci check for untagged UNDONES\n+ Rewrites cmov using macros (see #20 )\n\nSquashed commit  messages:\nca9d508 Cleanup\n0b60622 Import size_of in MSRV\nd1a5a30 Fix LINEAR_MAP_SIZE and FAN_OUT\nbe91378 Fix recursive oram and circuit oram, closes #15 and #6\nae7a1e7 minor\n82a20d6 Closes #14\n614dafb Closed #7\n212effc Closes #4 and #5\na2425ec Fix recursive ORAM\n34a55b8 Add more recursive oram tests\nc3aff86 Adds git status to cargo make precheck\n3c92e9b More circuitoram tests\n4285ab9 Fix minor errors\n4dbe742 Fix minor errors\n320adf4 Tag UNDONES\n80cb596 Cleanup\n67e7ea9 Fix recursive oram\n67be5fb Fix circuitoram eviction\n2de1c6e Update default git config\nbe68ff8 Adds failure detection  in CircuitORAM\n9a1a19d Adds recursive oram initialization\nea69d44 Fix recursive oram test\n48d83a9 Fix heap_tree\nf4d1e7d Fix\n93d6591 Fix\naefa660 Adds pr check to github workflow\ne585d71 Adds premerge task\n5319c91 Adds recursive ORAM\ned27af8 Change linear oram interface to use plain array\n5f60304 Refactor code and add CircuitORAM",
+          "timestamp": "2025-02-27T23:14:36-05:00",
+          "tree_id": "8e835444110439be66eb5551b029e19aeabd257f",
+          "url": "https://github.com/xtrm0/rods/commit/b7752fd27e04dfe4343f07f1a1bd2614d822a9e9"
+        },
+        "date": 1740717086930,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "mov-4k",
+            "value": 3365,
+            "range": "± 78",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "memstore-4k",
+            "value": 3379,
+            "range": "± 129",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov",
+            "value": 2939,
+            "range": "± 41",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov2",
+            "value": 2849,
+            "range": "± 14",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "mov",
+            "value": 1535,
+            "range": "± 488",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/LinearORAM/128",
+            "value": 43,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/CircuitORAM/128",
+            "value": 255,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/RecursivePositionMap/128",
+            "value": 11663,
+            "range": "± 402",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/LinearORAM/1024",
+            "value": 139,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/CircuitORAM/1024",
+            "value": 1970,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/RecursivePositionMap/1024",
+            "value": 178487,
+            "range": "± 8977",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/LinearORAM/1048576",
+            "value": 140796,
+            "range": "± 10376",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/CircuitORAM/1048576",
+            "value": 9841597,
+            "range": "± 230587",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/RecursivePositionMap/1048576",
+            "value": 1688722083,
+            "range": "± 19544949",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/LinearORAM_Read/128",
+            "value": 85,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Read/128",
+            "value": 783,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Write/128",
+            "value": 775,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/RecursivePositionMap/128",
+            "value": 95,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/LinearORAM_Read/1024",
+            "value": 642,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Read/1024",
+            "value": 997,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Write/1024",
+            "value": 986,
+            "range": "± 122",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/RecursivePositionMap/1024",
+            "value": 1404,
+            "range": "± 28",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/LinearORAM_Read/1048576",
+            "value": 656285,
+            "range": "± 6988",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Read/1048576",
+            "value": 1910,
+            "range": "± 53",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Write/1048576",
+            "value": 1907,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/RecursivePositionMap/1048576",
+            "value": 11367,
+            "range": "± 787",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/32",
+            "value": 662,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/32",
+            "value": 810,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/32",
+            "value": 942,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/32",
+            "value": 174,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/100",
+            "value": 2808,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/100",
+            "value": 4954,
+            "range": "± 144",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/100",
+            "value": 6045,
+            "range": "± 70",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/100",
+            "value": 646,
+            "range": "± 46",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/320",
+            "value": 11964,
+            "range": "± 165",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/320",
+            "value": 25397,
+            "range": "± 1964",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/320",
+            "value": 36441,
+            "range": "± 1141",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/320",
+            "value": 2490,
+            "range": "± 67",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/1000",
+            "value": 51067,
+            "range": "± 569",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/1000",
+            "value": 100540,
+            "range": "± 3778",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/1000",
+            "value": 247142,
+            "range": "± 3389",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/1000",
+            "value": 8975,
+            "range": "± 226",
             "unit": "ns/iter"
           }
         ]
