@@ -17,7 +17,7 @@ impl PageStorage for MemStore {
   fn read_page(&self, block_idx: usize, buf: &mut [u8]) -> io::Result<()> {
     let start = block_idx * Self::PAGE_SIZE;
     let end = start + Self::PAGE_SIZE;
-    // UNDONE(): Avoid double copy.
+    // UNDONE(git-22): Avoid double copy.
     buf.copy_from_slice(&self.data.read().unwrap()[start..end]);
     Ok(())
   }

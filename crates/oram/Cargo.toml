@@ -9,10 +9,13 @@ exclude.workspace = true
 
 [dependencies]
 rods-primitives.workspace = true
+bytemuck.workspace = true
+static_assertions.workspace = true
+rand.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
-rand.workspace = true
+
 
 [[bench]]
 name="oram"

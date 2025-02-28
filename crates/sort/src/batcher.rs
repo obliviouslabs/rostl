@@ -18,7 +18,7 @@ use crate::CSWAP;
 /// * `C` - The type of the container. Must implement `Indexable<T>`.
 ///
 /// Uses the implementation from <https://ieeexplore.ieee.org/document/8478515>
-/// `UNDONE()`: I didn't have the time to read the paper and analyze if the transformations are ok
+// UNDONE(git-21): I didn't have the time to read the paper and analyze if the transformations are ok
 #[deprecated(note = "I'm not sure if this paper is correct. Don't use this function")]
 fn _batcher_sort_untrusted_but_faster<T, C>(arr: &mut C)
 where
@@ -107,14 +107,14 @@ where
 #[allow(deprecated)]
 mod tests {
   use super::*;
-  use rand::random;
+  use rand::Rng;
 
   #[test]
   fn test_batcher_sort() {
     for sz in 0..42 {
       let mut arr: Vec<u32> = (0..sz as u32).collect();
       for i in 0..sz {
-        let j = random::<usize>() % sz;
+        let j = rand::rng().random_range(0..sz);
         arr.swap(i, j);
       }
       batcher_sort(&mut arr);
@@ -134,11 +134,11 @@ mod tests {
       assert_eq!(*v, i as u32);
     }
 
-    let sz = random::<usize>() % 1000;
+    let sz = rand::rng().random_range(0..1000);
     let mut arr: Vec<u32> = (0..sz as u32).rev().collect();
     // random permutation:
     for i in 0..sz {
-      let j = random::<usize>() % sz;
+      let j = rand::rng().random_range(0..sz);
       arr.swap(i, j);
     }
     batcher_sort(&mut arr);

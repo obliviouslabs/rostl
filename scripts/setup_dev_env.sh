@@ -5,6 +5,9 @@ cargo install cargo-hack
 cargo install cargo-nextest
 cargo install zepter
 cargo install cargo-make
+cargo install cargo-show-asm
+cargo install cargo-udeps
+cargo install cargo-deny
 
 echo "cargo make precommit" > .git/hooks/pre-push
 chmod +x .git/hooks/pre-push
@@ -16,3 +19,5 @@ if command -v brew &> /dev/null; then
 else
     echo "Homebrew is not installed. Skipping codespell installation. You may need to manually install codespell to push"
 fi
+
+git config --local include.path ../.gitconfig

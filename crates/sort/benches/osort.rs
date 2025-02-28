@@ -22,7 +22,7 @@ pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
   for &size in &[32, 100, 320, 1_000] {
     group.bench_with_input(BenchmarkId::new("Bitonic", size), &size, |b, &size| {
       let mut data: Vec<i32> = (0..size).collect();
-      data.shuffle(&mut rand::thread_rng());
+      data.shuffle(&mut rand::rng());
       let data = data;
       b.iter(|| {
         let mut data_clone = black_box(data.clone());
@@ -32,7 +32,7 @@ pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
     group.bench_with_input(BenchmarkId::new("Batcher", size), &size, |b, &size| {
       let mut data: Vec<i32> = (0..size).collect();
-      data.shuffle(&mut rand::thread_rng());
+      data.shuffle(&mut rand::rng());
       let data = data;
       b.iter(|| {
         let mut data_clone = black_box(data.clone());
@@ -43,7 +43,7 @@ pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
     group.bench_with_input(BenchmarkId::new("BoseNelson", size), &size, |b, &size| {
       let mut data: Vec<i32> = (0..size).collect();
-      data.shuffle(&mut rand::thread_rng());
+      data.shuffle(&mut rand::rng());
       let data = data;
       b.iter(|| {
         let mut data_clone = black_box(data.clone());
@@ -54,7 +54,7 @@ pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
     group.bench_with_input(BenchmarkId::new("std::sort", size), &size, |b, &size| {
       let mut data: Vec<i32> = (0..size).collect();
-      data.shuffle(&mut rand::thread_rng());
+      data.shuffle(&mut rand::rng());
       let data = data;
       b.iter(|| {
         let mut data_clone = black_box(data.clone());

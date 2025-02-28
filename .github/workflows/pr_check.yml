@@ -1,0 +1,15 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  no-untagged-undones:
+    name: check untagged undones
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check if there are no untagged UNDONES()
+        run: sh ./scripts/find_untagged_undones.sh

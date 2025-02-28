@@ -22,6 +22,7 @@ cargo fmt --all -- --check
 cargo hack check --feature-powerset
 codespell --count 0 --skip '*.json'
 ~/.cargo/bin/zepter run check
+git status
 '''
 
 [tasks.gitpush]
@@ -29,6 +30,14 @@ description = "Push the changes to the remote repository"
 dependencies = ["precommit"]
 script = '''
 git push
+'''
+
+[tasks.premerge]
+description = "Run pre-merge checks"
+dependencies = ["precommit"]
+script = '''
+sh ./scripts/find_untagged_undones.sh
+cargo deny check all
 '''
 
 
