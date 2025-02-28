@@ -4,7 +4,6 @@ use criterion::{
   black_box, criterion_group, criterion_main, measurement::Measurement, AxisScale, BenchmarkId,
   Criterion, PlotConfiguration,
 };
-// use rand::Rng;
 
 use rods_oram::{
   circuit_oram::CircuitORAM, linear_oram::LinearORAM, recursive_oram::RecursivePositionMap,
