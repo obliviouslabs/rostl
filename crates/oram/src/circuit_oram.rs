@@ -384,7 +384,8 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   fn perform_deterministic_evictions(&mut self) {
     // Empirically we found out this strategy works if reading and fetching a path is cheap
     for _ in 0..EVICTIONS_PER_OP {
-      let evict_pos = reverse_bits(self.evict_counter, self.h - 1);
+      // let evict_pos = reverse_bits(self.evict_counter, self.h - 1);
+      let evict_pos = self.evict_counter;
       self.perform_eviction(evict_pos);
       self.evict_counter = (self.evict_counter + 1) % self.max_n;
     }

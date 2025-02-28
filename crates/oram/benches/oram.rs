@@ -7,9 +7,7 @@ use criterion::{
 // use rand::Rng;
 
 use rods_oram::{
-  circuit_oram::CircuitORAM,
-  linear_oram::LinearORAM,
-  // recursive_oram::RecursivePositionMap
+  circuit_oram::CircuitORAM, linear_oram::LinearORAM, recursive_oram::RecursivePositionMap,
 };
 
 pub fn benchmark_oram_initialization<T: Measurement + 'static>(c: &mut Criterion<T>) {
@@ -33,11 +31,11 @@ pub fn benchmark_oram_initialization<T: Measurement + 'static>(c: &mut Criterion
         black_box(CircuitORAM::<u64>::new(size));
       });
     });
-    // group.bench_with_input(BenchmarkId::new("RecursivePositionMap", size), &size, |b, &size| {
-    //   b.iter(|| {
-    //     black_box(RecursivePositionMap::new(size));
-    //   });
-    // });
+    group.bench_with_input(BenchmarkId::new("RecursivePositionMap", size), &size, |b, &size| {
+      b.iter(|| {
+        black_box(RecursivePositionMap::new(size));
+      });
+    });
   }
 }
 
@@ -55,7 +53,7 @@ pub fn benchmark_oram_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
       oram.write(0, 0);
       b.iter(|| {
         let mut _ign = black_box(0);
-        oram.read(black_box(0), &mut _ign);
+        oram.read(black_box(0), black_box(&mut _ign));
       });
     });
     group.bench_with_input(BenchmarkId::new("CircuitORAM_Read", size), &size, |b, &size| {
@@ -63,22 +61,22 @@ pub fn benchmark_oram_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
       oram.write_or_insert(0, 0, 0, 0);
       b.iter(|| {
         let mut _ign = black_box(0);
-        black_box(oram.read(black_box(0), black_box(0), black_box(0), &mut _ign));
+        oram.read(black_box(0), black_box(0), black_box(0), &mut _ign);
       });
     });
     group.bench_with_input(BenchmarkId::new("CircuitORAM_Write", size), &size, |b, &size| {
       let mut oram = CircuitORAM::<u64>::new(size);
       oram.write_or_insert(0, 0, 0, 0);
       b.iter(|| {
-        black_box(oram.write(black_box(0), black_box(0), black_box(0), black_box(0)));
+        oram.write(black_box(0), black_box(0), black_box(0), black_box(0));
       });
     });
-    // group.bench_with_input(BenchmarkId::new("RecursivePositionMap", size), &size, |b, &size| {
-    //   let oram = RecursivePositionMap::<u64>::new(size);
-    //   b.iter(|| {
-    //     black_box(oram.read(0));
-    //   });
-    // });
+    group.bench_with_input(BenchmarkId::new("RecursivePositionMap", size), &size, |b, &size| {
+      let mut oram = RecursivePositionMap::new(size);
+      b.iter(|| {
+        oram.access_position(black_box(0), black_box(0));
+      });
+    });
   }
 
   group.finish();

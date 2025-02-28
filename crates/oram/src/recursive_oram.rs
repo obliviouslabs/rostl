@@ -2,6 +2,7 @@
 // UNDONE(git-17): Cite a paper or give a link in our docs explaining the recursive ORAM technique
 
 use bytemuck::{Pod, Zeroable};
+use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
 use rods_primitives::traits::Cmov;
 use rods_primitives::{cmov_body, impl_cmov_for_pod, traits::_Cmovbase};
@@ -47,6 +48,8 @@ pub struct RecursivePositionMap {
   /// The depth of the ORAM,
   /// i.e. the number of levels in the recursive ORAM
   h: usize, // public
+  /// Thread local rng
+  rng: ThreadRng,
 }
 
 impl RecursivePositionMap {
@@ -56,6 +59,7 @@ impl RecursivePositionMap {
   pub fn new(n: usize) -> Self {
     debug_assert!(n > 0);
     let mut h: usize;
+    let mut rng = rng();
 
     let mut first_level: LinearORAM<PositionType> = if n <= LINEAR_MAP_SIZE {
       h = 0;
@@ -78,7 +82,7 @@ impl RecursivePositionMap {
 
     // UNDONE(git-19): Optimize this (make it cache efficient)
     let mut positions_maps_for_level: Vec<PositionType> =
-      (0..n).map(|_| rng().random_range(0..n)).collect();
+      (0..curr).map(|_| rng.random_range(0..curr)).collect();
     for i in (0..h).rev() {
       curr /= FAN_OUT;
       let keys = (0..curr).map(|i| i as K).collect::<Vec<K>>();
@@ -89,7 +93,7 @@ impl RecursivePositionMap {
           values[j].0[k] = positions_maps_for_level[j * FAN_OUT + k];
         }
       }
-      positions_maps_for_level = (0..curr).map(|_| rng().random_range(0..curr)).collect();
+      positions_maps_for_level = (0..curr).map(|_| rng.random_range(0..curr)).collect();
       data_maps[i] =
         CircuitORAM::new_with_positions_and_values(curr, &keys, &values, &positions_maps_for_level);
     }
@@ -97,7 +101,7 @@ impl RecursivePositionMap {
       first_level.write(i, *item);
     }
 
-    Self { linear_oram: first_level, recursive_orams: data_maps, h }
+    Self { linear_oram: first_level, recursive_orams: data_maps, h, rng }
   }
 
   /// Accesses the position of a key `k` and updates it to `new_pos`.
@@ -120,7 +124,7 @@ impl RecursivePositionMap {
     curr_max_pos <<= LEVEL0_BITS;
 
     let mut new_curr_pos: PositionType =
-      if self.h == 0 { new_pos } else { rng().random_range(0..curr_max_pos) };
+      if self.h == 0 { new_pos } else { self.rng.random_range(0..curr_max_pos) };
 
     self.linear_oram.read_update(curr_k, new_curr_pos, &mut ret);
 
@@ -132,7 +136,7 @@ impl RecursivePositionMap {
 
       let pos = ret;
       let next_curr_pos =
-        if self.h == i + 1 { new_pos } else { rng().random_range(0..curr_max_pos) };
+        if self.h == i + 1 { new_pos } else { self.rng.random_range(0..curr_max_pos) };
 
       let (_found, nextpos) =
         self.recursive_orams[i].update(pos, new_curr_pos, curr_k, |node: &mut InternalNode| {
