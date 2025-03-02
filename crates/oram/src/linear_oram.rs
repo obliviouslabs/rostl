@@ -1,5 +1,7 @@
 //! Linear Scan ORAM
 //!
+use std::borrow::Borrow;
+
 use crate::prelude::K;
 use bytemuck::Pod;
 use rods_primitives::traits::Cmov;
@@ -14,7 +16,6 @@ where
   pub data: Vec<T>,
 }
 
-#[inline]
 /// Performs an oblivious read and update at the specified index.
 ///
 /// # Arguments
@@ -23,12 +24,45 @@ where
 /// * `index` - The index to read and update.
 /// * `ret` - A mutable reference to store the read value.
 /// * `value` - The value to write at the specified index.
+#[inline]
 pub fn oblivious_read_update_index<T: Cmov>(data: &mut [T], index: usize, ret: &mut T, value: T) {
   debug_assert!(index < data.len());
   for (i, item) in data.iter_mut().enumerate() {
     let choice = i == index;
     ret.cmov(item, choice);
     item.cmov(&value, choice);
+  }
+}
+
+/// Performs an oblivious read at the specified index.
+///
+/// # Arguments
+///
+/// * `data` - A slice of data.
+/// * `index` - The index to read.
+/// * `out` - A mutable reference to store the read value.
+#[inline]
+pub fn oblivious_read_index<T: Cmov>(data: &[T], index: usize, out: &mut T) {
+  debug_assert!(index < data.len());
+  for (i, item) in data.iter().enumerate() {
+    let choice = i == index;
+    out.cmov(item, choice);
+  }
+}
+
+/// Performs an oblivious write at the specified index.
+///
+/// # Arguments
+///
+/// * `data` - A mutable slice of data.
+/// * `index` - The index to write.
+/// * `value` - The value to write at the specified index.
+#[inline]
+pub fn oblivious_write_index<T: Cmov, U: Borrow<T>>(data: &mut [T], index: usize, value: U) {
+  debug_assert!(index < data.len());
+  for (i, item) in data.iter_mut().enumerate() {
+    let choice = i == index;
+    item.cmov(value.borrow(), choice);
   }
 }
 
