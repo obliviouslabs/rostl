@@ -1,4 +1,4 @@
-//! This create implements various oblivious sorting algorithms.
+//! This create implements various oblivious sorting and permutation algorithms, as well as compaction and filtering.
 
 pub mod batcher;
 

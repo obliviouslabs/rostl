@@ -50,7 +50,6 @@ where
   /// Pushes a new element to the end of the vector
   pub fn push_back(&mut self, value: T) {
     if self.n == self.data.len() {
-      // UNDONE(): Grow first
       self.data.resize(2 * self.n);
     }
     self.data.write(self.n, value);

@@ -26,7 +26,7 @@ pub struct ShortArray<T, const N: usize>
 // where T: Cmov Default,
 {
   /// The underlying data storage, which is public
-  data: [T; N],
+  pub(crate) data: [T; N],
 }
 
 impl<T, const N: usize> ShortArray<T, N>
@@ -265,3 +265,6 @@ impl<T: Cmov + Pod> Length for DynamicArray<T> {
 // UNDONE(): Benchmark long array
 // UNDONE(): Benchmark fixed array
 // UNDONE(): Benchmark dynamic array
+// UNDONE(): If in rust update monorfization is trully 0-cost, ten we can implement the following two via an update function:
+// UNDONE(): Implement versions of read and write that hide the operation from the caller.
+// UNDONE(): Implement read and write that have an enable flag (maybe_read, maybe_write).
