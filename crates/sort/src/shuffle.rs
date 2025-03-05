@@ -1,18 +1,19 @@
-//! Basic shuffle algorithm.
+//! Basic shuffling algorithm (Tag + sort based).  
 use crate::bitonic::bitonic_sort;
-use rand::random;
+use rand::Rng;
 use rods_primitives::indexable::Indexable;
 use rods_primitives::traits::Cmov;
 use std::cmp::Ordering;
 
-/// Basic shuffle algorithm using bitonic sort.
-pub fn basic_shuffle<T, C>(arr: &mut C)
+/// Does a random shuffle of `arr` by adding a random tag to each element and sorting based on that tag.  
+pub fn shuffle<T, C>(arr: &mut C)
 where
   T: Cmov + Copy,
   C: Indexable<T>,
 {
   let mut wrapped = wrap_data(arr);
-  basic_shuffle_inner(arr, &mut wrapped);
+  bitonic_sort(&mut wrapped);
+  unwrap_data(arr, &wrapped);
 }
 
 #[derive(Copy, Clone)]
@@ -54,18 +55,18 @@ where
   C: Indexable<T>,
 {
   let mut wrapped = Vec::with_capacity(arr.len());
+  let mut rng = rand::rng();
   for i in 0..arr.len() {
-    wrapped.push(Wrapper { value: arr[i], random_key: random::<u64>() });
+    wrapped.push(Wrapper { value: arr[i], random_key: rng.random::<u64>() });
   }
   wrapped
 }
 
-fn basic_shuffle_inner<T, C>(arr: &mut C, wrapped: &mut Vec<Wrapper<T>>)
+fn unwrap_data<T, C>(arr: &mut C, wrapped: &[Wrapper<T>])
 where
-  T: Cmov + Copy,
+  T: Copy,
   C: Indexable<T>,
 {
-  bitonic_sort(wrapped);
   for i in 0..arr.len() {
     arr[i] = wrapped[i].value;
   }
@@ -76,12 +77,12 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_basic_shuffle() {
+  fn test_shuffle() {
     for sz in [100, 1000, 10000] {
       let mut arr: Vec<u32> = (0..sz as u32).collect();
       let mut mark = 0;
       println!("arr: {:?}", arr);
-      basic_shuffle(&mut arr);
+      shuffle(&mut arr);
       println!("arr: {:?}", arr);
       assert_eq!(arr.len(), sz);
       for (i, v) in arr.iter().enumerate() {

@@ -64,10 +64,9 @@ pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
     });
 
     group.bench_with_input(BenchmarkId::new("BasicShuffle", size), &size, |b, &size| {
-      let data: Vec<i32> = (0..size).collect();
+      let mut data: Vec<i32> = (0..size).collect();
       b.iter(|| {
-        let mut data_clone = black_box(data.clone());
-        basic_shuffle(&mut data_clone);
+        basic_shuffle(data);
       });
     });
   }

@@ -8,4 +8,4 @@ pub mod bitonic;
 
 pub mod utils;
 
-pub mod basic_shuffle;
+pub mod shuffle;
