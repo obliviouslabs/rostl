@@ -10,8 +10,8 @@ use rods_sort::batcher::batcher_sort;
 #[allow(deprecated)]
 use rods_sort::bose_nelson::bose_nelson_sort;
 
-use rods_sort::basic_shuffle::basic_shuffle;
 use rods_sort::bitonic::bitonic_sort;
+use rods_sort::shuffle::shuffle;
 use std::hint::black_box;
 
 pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
@@ -63,10 +63,10 @@ pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
       });
     });
 
-    group.bench_with_input(BenchmarkId::new("BasicShuffle", size), &size, |b, &size| {
+    group.bench_with_input(BenchmarkId::new("Shuffle", size), &size, |b, &size| {
       let mut data: Vec<i32> = (0..size).collect();
       b.iter(|| {
-        basic_shuffle(data);
+        shuffle(&mut data);
       });
     });
   }

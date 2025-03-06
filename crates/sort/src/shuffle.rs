@@ -85,11 +85,12 @@ mod tests {
       shuffle(&mut arr);
       println!("arr: {:?}", arr);
       assert_eq!(arr.len(), sz);
+      arr.sort();
       for (i, v) in arr.iter().enumerate() {
         if *v != i as u32 {
           mark = 1;
         }
-        assert_eq!(mark, 1);
+        assert_eq!(mark, 0);
       }
     }
   }
