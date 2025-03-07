@@ -11,6 +11,7 @@ use rods_sort::batcher::batcher_sort;
 use rods_sort::bose_nelson::bose_nelson_sort;
 
 use rods_sort::bitonic::bitonic_sort;
+use rods_sort::shuffle::shuffle;
 use std::hint::black_box;
 
 pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
@@ -59,6 +60,13 @@ pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
       b.iter(|| {
         let mut data_clone = black_box(data.clone());
         data_clone.sort();
+      });
+    });
+
+    group.bench_with_input(BenchmarkId::new("Shuffle", size), &size, |b, &size| {
+      let mut data: Vec<i32> = (0..size).collect();
+      b.iter(|| {
+        shuffle(&mut data);
       });
     });
   }
