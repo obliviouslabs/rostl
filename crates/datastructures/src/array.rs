@@ -115,7 +115,7 @@ impl<T: Cmov + Pod + Default + std::fmt::Debug, const N: usize> Default for Long
   }
 }
 
-// UNDONE(): Optimize SHORT_ARRAY_THRESHOLD
+// UNDONE(git-52): Optimize SHORT_ARRAY_THRESHOLD
 const SHORT_ARRAY_THRESHOLD: usize = 128;
 
 /// A fixed-size array that switches between `ShortArray` and `LongArray` based on the size.
@@ -231,7 +231,7 @@ where
       self.read(i, &mut value);
       new_array.write(i, value);
     }
-    // UNDONE(): Is this 0 cost in rust? DynamicArray is noncopy, so I would expect move semantics here, but double check
+    // UNDONE(git-53): Is this 0 cost in rust? DynamicArray is noncopy, so I would expect move semantics here, but double check
     *self = new_array;
   }
 
