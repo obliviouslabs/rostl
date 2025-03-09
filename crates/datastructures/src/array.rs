@@ -115,7 +115,7 @@ impl<T: Cmov + Pod + Default + std::fmt::Debug, const N: usize> Default for Long
   }
 }
 
-// UNDONE(): Optimize this constant
+// UNDONE(): Optimize SHORT_ARRAY_THRESHOLD
 const SHORT_ARRAY_THRESHOLD: usize = 128;
 
 /// A fixed-size array that switches between `ShortArray` and `LongArray` based on the size.
@@ -232,7 +232,6 @@ where
       new_array.write(i, value);
     }
     // UNDONE(): Is this 0 cost in rust? DynamicArray is noncopy, so I would expect move semantics here, but double check
-    // UNDONE(): Implement swap
     *self = new_array;
   }
 
@@ -267,14 +266,14 @@ impl<T: Cmov + Pod> Length for DynamicArray<T> {
   }
 }
 
-// UNDONE(): Test short array
-// UNDONE(): Test long array
-// UNDONE(): Test fixed array
-// UNDONE(): Test dynamic array
-// UNDONE(): Benchmark short array
-// UNDONE(): Benchmark long array
-// UNDONE(): Benchmark fixed array
-// UNDONE(): Benchmark dynamic array
-// UNDONE(): If in rust update monorfization is trully 0-cost, ten we can implement the following two via an update function:
-// UNDONE(): Implement versions of read and write that hide the operation from the caller.
-// UNDONE(): Implement read and write that have an enable flag (maybe_read, maybe_write).
+// UNDONE(git-29): Test short array
+// UNDONE(git-29): Test long array
+// UNDONE(git-29): Test fixed array
+// UNDONE(git-29): Test dynamic array
+// UNDONE(git-30): Benchmark short array
+// UNDONE(git-30): Benchmark long array
+// UNDONE(git-30): Benchmark fixed array
+// UNDONE(git-30): Benchmark dynamic array
+// If in rust update monorfization is trully 0-cost, ten we can implement the following two via an update function:
+// UNDONE(git-31): Implement versions of read and write that hide the operation from the caller.
+// UNDONE(git-31): Implement read and write that have an enable flag (maybe_read, maybe_write).

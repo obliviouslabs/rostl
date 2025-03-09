@@ -22,7 +22,7 @@ use std::hash::Hash;
 
 /// Utility trait for types that can be uses as keys in the map.
 pub trait OHash: Cmov + Pod + Hash + PartialEq {}
-// UNDONE(): Hashmaps with boolean key aren't supported until boolean implements pod.s
+// UNDONE(git-20): Hashmaps with boolean key aren't supported until boolean implements pod.s
 impl<K> OHash for K where K: Cmov + Pod + Hash + PartialEq {}
 
 /// An element in the map.
@@ -132,7 +132,7 @@ where
 
 /// An unsorted map that is oblivious to the access pattern.
 /// The maps access pattern is oblivious.
-// UNDONE(): Add more details about the map.
+// UNDONE(): Add more details about the map implementation.
 /// # Invariants
 /// * A key appears at most once in a valid element in between the two tables and the insertion queue.
 /// * The two tables have the same capacity.
@@ -252,9 +252,8 @@ where
   /// Inserts an elementn into the map. If the insertion doesn't finish, the removed element is inserted into the insertion queue.
   /// # Preconditions
   /// * The key is not in the map already.
-  // UNDONE(): Add check for this? We don't do any check, but it will cause UB
   pub fn insert(&mut self, key: K, value: V) {
-    // UNDONE(): Recover in case the insertion queue is full.
+    // UNDONE(git-32): Recover in case the insertion queue is full.
     assert!(self.insertion_queue.size < INSERTION_QUEUE_MAX_SIZE);
     self.insertion_queue.maybe_push(true, InlineElement { key, value });
     self.deamortize_insertion_queue();
@@ -292,9 +291,9 @@ where
     assert!(updated);
   }
 
-  // UNDONE(): add efficient upsert function (inserts if not present, updates if present)
-  // UNDONE(): add delete function
+  // UNDONE(git-33): add efficient upsert function (inserts if not present, updates if present)
+  // UNDONE(git-33): add delete function
 }
 
-// UNDONE(): Add tests for the map.
-// UNDONE(): Add benchmarks for the map.
+// UNDONE(git-34): Add tests for the map.
+// UNDONE(git-35): Add benchmarks for the map.

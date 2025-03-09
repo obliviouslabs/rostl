@@ -137,8 +137,8 @@ where
   }
 }
 
-// UNDONE(): Implement ShortStack and LongStack using CircuitORAM
-// UNDONE(): Implement LongQueue using CircuitORAM
+// UNDONE(git-36): Implement ShortStack and LongStack using CircuitORAM
+// UNDONE(git-37): Implement LongQueue using CircuitORAM
 
-// UNDONE(): Test ShortQueue
-// UNDONE(): Benchmark ShortQueue
+// UNDONE(git-38): Test ShortQueue
+// UNDONE(git-39): Benchmark ShortQueue
