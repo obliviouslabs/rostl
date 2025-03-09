@@ -83,7 +83,7 @@ impl<T: Cmov + Pod + Default + Debug> Default for EagerVector<T> {
   }
 }
 
-// UNDONE(): Should we implement LazyVector? (i.e. it grows lazily when needed, without leaking the length directly)
+// UNDONE(): Should we implement LazyVector? (i.e. it grows lazily when needed, without leaking the length increase at powers of 2 directly)
 
 // UNDONE(): Test EagerVector
 // UNDONE(): Benchmark EagerVector

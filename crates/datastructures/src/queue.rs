@@ -1,8 +1,6 @@
 //! This module implements oblivious map
 #![allow(clippy::needless_bitwise_bool)] // UNDONE(git-8): This is needed to enforce the bitwise operations to not short circuit. Investigate if we should be using helper functions instead.
 
-// pub type Queue<K,V> = DynamicQueue<K,V>;
-
 use bytemuck::{Pod, Zeroable};
 use rods_primitives::{
   cmov_body, impl_cmov_for_generic_pod, indexable::Length, traits::Cmov, traits::_Cmovbase,
@@ -23,10 +21,20 @@ where
   T: Cmov + Pod,
 {
   timestamp: usize,
-  value: T,
+  pub(crate) value: T,
 }
 unsafe impl<T: Cmov + Pod> Pod for ShortQueueElement<T> {}
 impl_cmov_for_generic_pod!(ShortQueueElement<T>; where T: Cmov + Pod);
+
+impl<T> ShortQueueElement<T>
+where
+  T: Cmov + Pod,
+{
+  /// Returns true if the element is empty.
+  pub const fn is_empty(&self) -> bool {
+    self.timestamp == 0
+  }
+}
 
 /// Implements a queue with a fixed maximum size.
 /// The queue access pattern and size are oblivious.
@@ -57,9 +65,9 @@ where
   // The timestamp of the oldest element added
   lowest_timestamp: usize,
   // Number of elements in the queue
-  size: usize,
+  pub(crate) size: usize,
   // The array that stores the elements and their timestamps
-  elements: ShortArray<ShortQueueElement<T>, N>,
+  pub(crate) elements: ShortArray<ShortQueueElement<T>, N>,
 }
 
 impl<T, const N: usize> ShortQueue<T, N>
@@ -81,11 +89,11 @@ where
     let mut lowest_timestamp = self.highest_timestamp;
     for i in 0..self.elements.len() {
       let curr = &mut self.elements.data[i];
-      let is_empty = curr.timestamp == 0;
-      let should_insert = real & !inserted & is_empty;
+      let is_empty = curr.is_empty();
+      let should_insert = !inserted & is_empty;
       let is_lowest_timemstamp = !is_empty & (curr.timestamp < lowest_timestamp);
-      curr.timestamp.cmov(&self.highest_timestamp, real & (curr.timestamp == 0));
-      curr.value.cmov(&element, real & (curr.timestamp == self.highest_timestamp));
+      curr.timestamp.cmov(&self.highest_timestamp, should_insert);
+      curr.value.cmov(&element, should_insert);
       lowest_timestamp.cmov(&curr.timestamp, is_lowest_timemstamp);
       inserted |= should_insert;
     }

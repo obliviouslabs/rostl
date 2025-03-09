@@ -249,6 +249,16 @@ where
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.write(old_pos, new_pos, index, value);
   }
+
+  /// Updates the value at the index using the update function.
+  pub fn update<R, F>(&mut self, index: usize, update_func: F) -> (bool, R)
+  where
+    F: FnOnce(&mut T) -> R,
+  {
+    let new_pos = self.rng.random_range(0..self.data.max_n);
+    let old_pos = self.pos_map.access_position(index, new_pos);
+    self.data.update(old_pos, new_pos, index, update_func)
+  }
 }
 
 impl<T: Cmov + Pod> Length for DynamicArray<T> {

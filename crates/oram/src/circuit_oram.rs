@@ -500,7 +500,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   }
 
   /// Updates a value in the ORAM using a provided update function.
-  ///
+  /// If the element is not in the ORAM, it is inserted with the result of calling the update function on the default value.
   /// # Arguments
   /// * `pos` - The current position of the block.
   /// * `new_pos` - The new position of the block, should be uniformly random on the size of the ORAM.
