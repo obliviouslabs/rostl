@@ -38,7 +38,7 @@ where
     Self { data: [T::default(); N] }
   }
 
-  /// Reads fromm the index
+  /// Reads from the index
   pub fn read(&self, index: usize, out: &mut T) {
     oblivious_read_index(&self.data, index, out);
   }
@@ -88,7 +88,7 @@ where
     Self { data: CircuitORAM::new(N), pos_map: RecursivePositionMap::new(N), rng: rand::rng() }
   }
 
-  /// Reads fromm the index
+  /// Reads from the index
   pub fn read(&mut self, index: usize, out: &mut T) {
     let new_pos = self.rng.random_range(0..N);
     let old_pos = self.pos_map.access_position(index, new_pos);
@@ -148,7 +148,7 @@ where
     }
   }
 
-  /// Reads fromm the index
+  /// Reads from the index
   pub fn read(&mut self, index: usize, out: &mut T) {
     if N <= SHORT_ARRAY_THRESHOLD {
       // Do an unsafe cast to avoid borrowing issues
@@ -235,7 +235,7 @@ where
     *self = new_array;
   }
 
-  /// Reads fromm the index
+  /// Reads from the index
   pub fn read(&mut self, index: usize, out: &mut T) {
     let new_pos = self.rng.random_range(0..self.data.max_n);
     let old_pos = self.pos_map.access_position(index, new_pos);
@@ -274,6 +274,6 @@ impl<T: Cmov + Pod> Length for DynamicArray<T> {
 // UNDONE(git-30): Benchmark long array
 // UNDONE(git-30): Benchmark fixed array
 // UNDONE(git-30): Benchmark dynamic array
-// If in rust update monorfization is trully 0-cost, ten we can implement the following two via an update function:
+// If in rust update monorfization is truly 0-cost, ten we can implement the following two via an update function:
 // UNDONE(git-31): Implement versions of read and write that hide the operation from the caller.
 // UNDONE(git-31): Implement read and write that have an enable flag (maybe_read, maybe_write).

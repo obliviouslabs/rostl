@@ -39,7 +39,7 @@ where
 /// Implements a queue with a fixed maximum size.
 /// The queue access pattern and size are oblivious.
 ///
-/// There are two trivial efficient ways to implment this for short queues:
+/// There are two trivial efficient ways to implement this for short queues:
 /// 1. Use oblivious compaction:
 ///  - Push: n (2 + log n)
 ///  - Pop: n

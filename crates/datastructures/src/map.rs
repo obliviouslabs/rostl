@@ -212,7 +212,7 @@ where
     found
   }
 
-  /// Tries to insert an element into some of the hash tables, in case of colisions, the element is replaced.
+  /// Tries to insert an element into some of the hash tables, in case of collisions, the element is replaced.
   /// # Returns
   /// * `true` if it was possible to insert into an empty slot
   /// * `false` if the element was replaced and therefore the new element value needs to be inserted into the insertion queue.

@@ -1,4 +1,4 @@
-//! Implements variable lenght vectors.
+//! Implements variable length vectors.
 //! The vector is oblivious to the access pattern.
 
 use std::fmt::Debug;
@@ -7,12 +7,12 @@ use crate::array::DynamicArray;
 use bytemuck::Pod;
 use rods_primitives::{indexable::Length, traits::Cmov};
 
-/// Implements a variable lenght vector.
+/// Implements a variable length vector.
 /// Leaks the length rounded to the next power of two.
 /// The vector is oblivious to the access pattern.
 pub type Vector<T> = EagerVector<T>;
 
-/// Implements a variable lenght vector.
+/// Implements a variable length vector.
 /// Leaks the length rounded to the next power of two.
 /// The vector is oblivious to the access pattern.
 #[derive(Debug)]
