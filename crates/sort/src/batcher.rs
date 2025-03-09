@@ -25,7 +25,7 @@ where
   T: Ord + Cmov + Copy,
   C: Indexable<T>,
 {
-  // Undone: optimize this code
+  // UNDONE(git-21): Optimize this code
   let n = arr.len();
   let mut p = 1;
   while p < n {
