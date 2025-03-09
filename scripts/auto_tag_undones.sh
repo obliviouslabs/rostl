@@ -1,15 +1,18 @@
 #!/bin/bash
 # Requirements: gh (GitHub CLI), sed, grep
 
+git_commit=$(git rev-parse HEAD)
 # Automatically tags untagged undones
 grep -RInE 'UNDONE\s*\(\s*\)\s*:?' crates --exclude=.git/ --exclude=target/ | while IFS=: read -r file lineno linecontent; do
     task=$(echo "$linecontent" | sed -nE 's/.*UNDONE\s*\(\s*\)\s*:?[[:space:]]*(.*)/\1/p')
     [ -z "$task" ] && task="No description provided"
 
     echo "Creating issue for $file:$lineno – $task:"
+    start=$(( lineno - 3 ))
+    [ "$start" -lt 1 ] && start=1
+    end=$(( lineno + 3 ))
 
-
-    body=$(printf "File:  https://github.com/xtrm0/rods/blob/main/%s#L%s\nTask: %s" "$file" "$lineno" "$task")
+    body=$(printf "https://github.com/xtrm0/rods/blob/%s/%s#L%s-L%s\n Task: %s" "$git_commit" "$file" "$start" "$end" "$task")
     # Create the GitHub issue (which outputs a URL ending with the issue number).
     issue_output=$(gh issue create \
                    --title "UNDONE(): $task" \

@@ -231,7 +231,7 @@ where
       self.read(i, &mut value);
       new_array.write(i, value);
     }
-    // UNDONE(git-53): Is this 0 cost in rust? DynamicArray is noncopy, so I would expect move semantics here, but double check
+    // UNDONE(git-57): Is this 0 cost in rust? DynamicArray is noncopy, so I would expect move semantics here, but double check
     *self = new_array;
   }
 
