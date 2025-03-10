@@ -116,13 +116,14 @@ where
   /// # Preconditions
   /// * real ==> The same key isn't in the bucket.
   /// # Returns
-  /// * `true` - if the element was inserted or if real = false
+  /// * `true` - if the element was inserted or if `real == false`
   /// * `false` - otherwise
   fn insert_if_available(&mut self, real: bool, element: InlineElement<K, V>) -> bool {
     let mut inserted = !real;
     for i in 0..BUCKET_SIZE {
       let element_i = &mut self.elements[i];
       let choice = !inserted & element_i.is_empty();
+      element_i.is_valid.cmov(&true, choice);
       element_i.element.cmov(&element, choice);
       inserted.cmov(&true, choice);
     }
@@ -199,7 +200,7 @@ where
       let table = &mut self.table[INDEX];
       table.read(hash, &mut tmp);
       let found_local = tmp.read_if_exists(key, ret);
-      found.cmov(&found_local, true);
+      found.cmov(&true, found_local);
     });
 
     // Tries to get the element from the deamortization queue:
@@ -215,7 +216,7 @@ where
 
   /// Tries to insert an element into some of the hash tables, in case of collisions, the element is replaced.
   /// # Returns
-  /// * `true` if it was possible to insert into an empty slot
+  /// * `true` if it was possible to insert into an empty slot or `real == false`.
   /// * `false` if the element was replaced and therefore the new element value needs to be inserted into the insertion queue.
   fn try_insert_entry(&mut self, real: bool, element: &mut InlineElement<K, V>) -> bool {
     let mut done = !real;
@@ -245,8 +246,8 @@ where
 
       // Use FIFO order so we don't get stuck in a loop in the random graph of cuckoo hashing.
       self.insertion_queue.maybe_pop(real, &mut element);
-      let has_trail = self.try_insert_entry(real, &mut element);
-      self.insertion_queue.maybe_push(has_trail, element);
+      let has_pending_element = !self.try_insert_entry(real, &mut element);
+      self.insertion_queue.maybe_push(has_pending_element, element);
     }
   }
 
@@ -304,7 +305,7 @@ mod tests {
 
   #[test]
   fn test_unsorted_map() {
-    let mut map: UnsortedMap<u32, u32> = UnsortedMap::new(10);
+    let mut map: UnsortedMap<u32, u32> = UnsortedMap::new(2);
     assert_eq!(map.size, 0);
     let mut value = 0;
     assert!(!map.get(1, &mut value));
