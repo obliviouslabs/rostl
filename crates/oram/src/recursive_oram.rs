@@ -6,12 +6,14 @@ use core::mem::size_of;
 use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
 use rods_primitives::traits::Cmov;
+use rods_primitives::utils::{max, min};
 use rods_primitives::{cmov_body, impl_cmov_for_pod, traits::_Cmovbase};
+
 use static_assertions::const_assert;
 
 use crate::circuit_oram::CircuitORAM;
 use crate::linear_oram::{oblivious_read_update_index, LinearORAM};
-use crate::prelude::{max, min, PositionType, DUMMY_POS, K};
+use crate::prelude::{PositionType, DUMMY_POS, K};
 
 // UNDONE(git-25): Optimize these constants:
 const LINEAR_MAP_SIZE: usize = 128;

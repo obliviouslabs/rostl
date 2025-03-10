@@ -182,10 +182,8 @@ where
   /// Creates a new `LongArray` with the given size `n`.
   pub fn new() -> Self {
     if N <= SHORT_ARRAY_THRESHOLD {
-      println!("Creating short array");
       FixedArray { short: ManuallyDrop::new(ShortArray::new()) }
     } else {
-      println!("Creating long array");
       FixedArray { long: ManuallyDrop::new(LongArray::new()) }
     }
   }
