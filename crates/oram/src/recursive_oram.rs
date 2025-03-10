@@ -48,8 +48,8 @@ pub struct RecursivePositionMap {
   linear_oram: LinearORAM<PositionType>,
   /// Remaining levels
   recursive_orams: Vec<CircuitORAM<InternalNode>>,
-  // The number of positions in the ORAM
-  n: usize,
+  /// The number of positions in the ORAM
+  pub n: usize,
   /// The depth of the ORAM,
   /// i.e. the number of levels in the recursive ORAM
   h: usize, // public

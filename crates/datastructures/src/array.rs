@@ -286,7 +286,7 @@ where
   /// Resizes the array to have `n` elements.
   pub fn resize(&mut self, n: usize) {
     let mut new_array = Self::new(n);
-    for i in 0..n {
+    for i in 0..self.len() {
       let mut value = Default::default();
       self.read(i, &mut value);
       new_array.write(i, value);
@@ -297,16 +297,16 @@ where
 
   /// Reads from the index
   pub fn read(&mut self, index: usize, out: &mut T) {
-    let new_pos = self.rng.random_range(0..self.data.max_n);
+    let new_pos = self.rng.random_range(0..self.len());
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.read(old_pos, new_pos, index, out);
   }
 
   /// Writes to the index
   pub fn write(&mut self, index: usize, value: T) {
-    let new_pos = self.rng.random_range(0..self.data.max_n);
+    let new_pos = self.rng.random_range(0..self.len());
     let old_pos = self.pos_map.access_position(index, new_pos);
-    self.data.write(old_pos, new_pos, index, value);
+    self.data.write_or_insert(old_pos, new_pos, index, value);
   }
 
   /// Updates the value at the index using the update function.
@@ -314,15 +314,16 @@ where
   where
     F: FnOnce(&mut T) -> R,
   {
-    let new_pos = self.rng.random_range(0..self.data.max_n);
+    let new_pos = self.rng.random_range(0..self.len());
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.update(old_pos, new_pos, index, update_func)
   }
 }
 
 impl<T: Cmov + Pod> Length for DynamicArray<T> {
+  #[inline(always)]
   fn len(&self) -> usize {
-    self.data.max_n
+    self.pos_map.n
   }
 }
 
@@ -364,6 +365,62 @@ mod tests {
     }};
   }
 
+  macro_rules! m_test_dynamic_array_exaustive {
+    ($arraytp:ident, $valtp:ty, $size:expr) => {{
+      println!("Testing {} with size {}", stringify!($arraytp), $size);
+      let mut arr = $arraytp::<$valtp>::new($size);
+      assert_eq!(arr.len(), $size);
+      for i in 0..$size {
+        let mut value = Default::default();
+        arr.read(i, &mut value);
+        assert_eq!(value, Default::default());
+      }
+      assert_eq!(arr.len(), $size);
+      for i in 0..$size {
+        let value = i as $valtp;
+        arr.write(i, value);
+      }
+      assert_eq!(arr.len(), $size);
+      for i in 0..$size {
+        let mut value = Default::default();
+        arr.read(i, &mut value);
+        let v = i as $valtp;
+        assert_eq!(value, v);
+      }
+      assert_eq!(arr.len(), $size);
+      arr.resize($size + 1);
+      assert_eq!(arr.len(), $size + 1);
+      for i in 0..$size {
+        let mut value = Default::default();
+        arr.read(i, &mut value);
+        let v = i as $valtp;
+        assert_eq!(value, v);
+      }
+      assert_eq!(arr.len(), $size + 1);
+      for i in $size..($size + 1) {
+        let mut value = Default::default();
+        arr.read(i, &mut value);
+        assert_eq!(value, Default::default());
+      }
+      assert_eq!(arr.len(), $size + 1);
+      arr.resize(2 * $size);
+      assert_eq!(arr.len(), 2 * $size);
+      for i in 0..$size {
+        let mut value = Default::default();
+        arr.read(i, &mut value);
+        let v = i as $valtp;
+        assert_eq!(value, v);
+      }
+      assert_eq!(arr.len(), 2 * $size);
+      for i in $size..(2 * $size) {
+        let mut value = Default::default();
+        arr.read(i, &mut value);
+        assert_eq!(value, Default::default());
+      }
+      assert_eq!(arr.len(), 2 * $size);
+    }};
+  }
+
   #[test]
   fn test_fixed_arrays() {
     m_test_fixed_array_exaustive!(ShortArray, u32, 1);
@@ -385,5 +442,15 @@ mod tests {
     m_test_fixed_array_exaustive!(FixedArray, u64, 15);
     m_test_fixed_array_exaustive!(FixedArray, u8, 33);
     m_test_fixed_array_exaustive!(FixedArray, u64, 200);
+  }
+
+  #[test]
+  fn test_dynamic_array() {
+    // m_test_dynamic_array_exaustive!(DynamicArray, u32, 1);
+    m_test_dynamic_array_exaustive!(DynamicArray, u32, 2);
+    m_test_dynamic_array_exaustive!(DynamicArray, u32, 3);
+    m_test_dynamic_array_exaustive!(DynamicArray, u64, 15);
+    m_test_dynamic_array_exaustive!(DynamicArray, u8, 33);
+    m_test_dynamic_array_exaustive!(DynamicArray, u64, 200);
   }
 }
