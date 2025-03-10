@@ -131,8 +131,9 @@ where
 }
 
 /// An unsorted map that is oblivious to the access pattern.
-/// The maps access pattern is oblivious.
-// UNDONE(git-54): Add more details about the map implementation.
+/// The map uses cuckoo hashing with size-2 buckets, two tables and a deamortization queue.
+/// `INSERTION_QUEUE_MAX_SIZE` is the maximum size of the deamortization queue.
+/// `DEAMORTIZED_INSERTIONS` is the number of deamortized insertions to perform per insert call.
 /// # Invariants
 /// * A key appears at most once in a valid element in between the two tables and the insertion queue.
 /// * The two tables have the same capacity.
