@@ -32,7 +32,7 @@ where
 {
   /// Creates a new `EagerVector` with the given size `n`.
   pub fn new() -> Self {
-    Self { n: 0, data: DynamicArray::new(1) }
+    Self { n: 0, data: DynamicArray::new(2) }
   }
 
   /// Reads from the index
@@ -84,6 +84,34 @@ impl<T: Cmov + Pod + Default + Debug> Default for EagerVector<T> {
 }
 
 // UNDONE(git-40): Should we implement LazyVector? (i.e. it grows lazily when needed, without leaking the length increase at powers of 2 directly)
-
-// UNDONE(git-41): Test EagerVector
 // UNDONE(git-42): Benchmark EagerVector
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_vector() {
+    let mut v: Vector<u64> = Vector::new();
+    assert_eq!(v.len(), 0);
+    assert_eq!(v.capacity(), 2);
+
+    v.push_back(1);
+    assert_eq!(v.len(), 1);
+    assert_eq!(v.capacity(), 2);
+    assert_eq!(v.pop_back(), 1);
+    assert_eq!(v.len(), 0);
+    assert_eq!(v.capacity(), 2);
+
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    assert_eq!(v.len(), 3);
+    assert_eq!(v.capacity(), 4);
+    assert_eq!(v.pop_back(), 3);
+    assert_eq!(v.pop_back(), 2);
+    assert_eq!(v.pop_back(), 1);
+    assert_eq!(v.len(), 0);
+    assert_eq!(v.capacity(), 4);
+  }
+}
