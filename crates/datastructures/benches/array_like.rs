@@ -66,11 +66,11 @@ pub fn benchmark_array_initialization<T: Measurement + 'static>(c: &mut Criterio
     });
   }});
 
-  // group.bench_function("EagerVector",  |b| {
-  //   b.iter(|| {
-  //     black_box(EagerVector::<u64>::new());
-  //   });
-  // });
+  group.bench_function("EagerVector", |b| {
+    b.iter(|| {
+      black_box(Box::new(EagerVector::<u64>::new()));
+    });
+  });
 }
 
 pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
