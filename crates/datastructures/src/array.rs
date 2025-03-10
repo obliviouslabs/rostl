@@ -2,6 +2,8 @@
 //! The array is oblivious to the access pattern.
 //!
 
+use std::mem::ManuallyDrop;
+
 use bytemuck::Pod;
 use rand::{rngs::ThreadRng, Rng};
 use rods_oram::{
@@ -99,7 +101,7 @@ where
   pub fn write(&mut self, index: usize, value: T) {
     let new_pos = self.rng.random_range(0..N);
     let old_pos = self.pos_map.access_position(index, new_pos);
-    self.data.write(old_pos, new_pos, index, value);
+    self.data.write_or_insert(old_pos, new_pos, index, value);
   }
 }
 
@@ -123,16 +125,54 @@ const SHORT_ARRAY_THRESHOLD: usize = 128;
 ///
 /// # Invariants
 /// if `N <= SHORT_ARRAY_THRESHOLD`, then `ShortArray` is used, otherwise `LongArray` is used.
+///
 #[repr(C)]
-#[derive(Debug)]
-pub enum FixedArray<T, const N: usize>
+pub union FixedArray<T, const N: usize>
 where
   T: Cmov + Pod,
 {
   /// Short variant, linear scan
-  Short(ShortArray<T, N>),
+  short: ManuallyDrop<ShortArray<T, N>>,
   /// Long variant, oram
-  Long(LongArray<T, N>),
+  long: ManuallyDrop<LongArray<T, N>>,
+}
+
+impl<T, const N: usize> Drop for FixedArray<T, N>
+where
+  T: Cmov + Pod,
+{
+  fn drop(&mut self) {
+    if N <= SHORT_ARRAY_THRESHOLD {
+      unsafe {
+        ManuallyDrop::drop(&mut self.short);
+      }
+    } else {
+      unsafe {
+        ManuallyDrop::drop(&mut self.long);
+      }
+    }
+  }
+}
+
+impl<T, const N: usize> std::fmt::Debug for FixedArray<T, N>
+where
+  T: Cmov + Pod + std::fmt::Debug,
+{
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    if N <= SHORT_ARRAY_THRESHOLD {
+      let short_array: &ManuallyDrop<ShortArray<T, N>>;
+      unsafe {
+        short_array = &self.short;
+      }
+      short_array.fmt(f)
+    } else {
+      let long_array: &ManuallyDrop<LongArray<T, N>>;
+      unsafe {
+        long_array = &self.long;
+      }
+      long_array.fmt(f)
+    }
+  }
 }
 
 impl<T, const N: usize> FixedArray<T, N>
@@ -142,9 +182,11 @@ where
   /// Creates a new `LongArray` with the given size `n`.
   pub fn new() -> Self {
     if N <= SHORT_ARRAY_THRESHOLD {
-      Self::Short(ShortArray::new())
+      println!("Creating short array");
+      FixedArray { short: ManuallyDrop::new(ShortArray::new()) }
     } else {
-      Self::Long(LongArray::new())
+      println!("Creating long array");
+      FixedArray { long: ManuallyDrop::new(LongArray::new()) }
     }
   }
 
@@ -152,15 +194,15 @@ where
   pub fn read(&mut self, index: usize, out: &mut T) {
     if N <= SHORT_ARRAY_THRESHOLD {
       // Do an unsafe cast to avoid borrowing issues
-      let short_array: &mut ShortArray<T, N>;
+      let short_array: &mut ManuallyDrop<ShortArray<T, N>>;
       unsafe {
-        short_array = std::mem::transmute::<&mut Self, &mut ShortArray<T, N>>(self);
+        short_array = &mut self.short;
       }
       short_array.read(index, out);
     } else {
-      let long_array: &mut LongArray<T, N>;
+      let long_array: &mut ManuallyDrop<LongArray<T, N>>;
       unsafe {
-        long_array = std::mem::transmute::<&mut Self, &mut LongArray<T, N>>(self);
+        long_array = &mut self.long;
       }
       long_array.read(index, out);
     }
@@ -170,15 +212,15 @@ where
   pub fn write(&mut self, index: usize, value: T) {
     if N <= SHORT_ARRAY_THRESHOLD {
       // Do an unsafe cast to avoid borrowing issues
-      let short_array: &mut ShortArray<T, N>;
+      let short_array: &mut ManuallyDrop<ShortArray<T, N>>;
       unsafe {
-        short_array = std::mem::transmute::<&mut Self, &mut ShortArray<T, N>>(self);
+        short_array = &mut self.short;
       }
       short_array.write(index, value);
     } else {
-      let long_array: &mut LongArray<T, N>;
+      let long_array: &mut ManuallyDrop<LongArray<T, N>>;
       unsafe {
-        long_array = std::mem::transmute::<&mut Self, &mut LongArray<T, N>>(self);
+        long_array = &mut self.long;
       }
       long_array.write(index, value);
     }
@@ -196,6 +238,24 @@ impl<T: Cmov + Pod + Default + std::fmt::Debug, const N: usize> Default for Fixe
     Self::new()
   }
 }
+
+// impl<T: Cmov + Pod + Default + std::fmt::Debug, const N: usize> Drop for FixedArray<T, N> {
+//   fn drop(&mut self) {
+//     if N <= SHORT_ARRAY_THRESHOLD {
+//       let short_array: &mut ShortArray<T, N>;
+//       unsafe {
+//         short_array = std::mem::transmute::<&mut Self, &mut ShortArray<T, N>>(self);
+//       }
+//       std::mem::drop(short_array);
+//     } else {
+//       let long_array: &mut LongArray<T, N>;
+//       unsafe {
+//         long_array = std::mem::transmute::<&mut Self, &mut LongArray<T, N>>(self);
+//       }
+//       std::mem::drop(long_array);
+//     }
+//   }
+// }
 
 /// An array whose size is determined at runtime.
 /// The size of the array is public.
@@ -266,10 +326,6 @@ impl<T: Cmov + Pod> Length for DynamicArray<T> {
   }
 }
 
-// UNDONE(git-29): Test short array
-// UNDONE(git-29): Test long array
-// UNDONE(git-29): Test fixed array
-// UNDONE(git-29): Test dynamic array
 // UNDONE(git-30): Benchmark short array
 // UNDONE(git-30): Benchmark long array
 // UNDONE(git-30): Benchmark fixed array
@@ -277,3 +333,57 @@ impl<T: Cmov + Pod> Length for DynamicArray<T> {
 // If in rust update monorfization is truly 0-cost, ten we can implement the following two via an update function:
 // UNDONE(git-31): Implement versions of read and write that hide the operation from the caller.
 // UNDONE(git-31): Implement read and write that have an enable flag (maybe_read, maybe_write).
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  macro_rules! m_test_fixed_array_exaustive {
+    ($arraytp:ident, $valtp:ty, $size:expr) => {{
+      println!("Testing {} with size {}", stringify!($arraytp), $size);
+      let mut arr = $arraytp::<$valtp, $size>::new();
+      assert_eq!(arr.len(), $size);
+      for i in 0..$size {
+        let mut value = Default::default();
+        arr.read(i, &mut value);
+        assert_eq!(value, Default::default());
+      }
+      assert_eq!(arr.len(), $size);
+      for i in 0..$size {
+        let value = i as $valtp;
+        arr.write(i, value);
+      }
+      assert_eq!(arr.len(), $size);
+      for i in 0..$size {
+        let mut value = Default::default();
+        arr.read(i, &mut value);
+        let v = i as $valtp;
+        assert_eq!(value, v);
+      }
+      assert_eq!(arr.len(), $size);
+    }};
+  }
+
+  #[test]
+  fn test_fixed_arrays() {
+    m_test_fixed_array_exaustive!(ShortArray, u32, 1);
+    m_test_fixed_array_exaustive!(ShortArray, u32, 2);
+    m_test_fixed_array_exaustive!(ShortArray, u32, 3);
+    m_test_fixed_array_exaustive!(ShortArray, u64, 15);
+    m_test_fixed_array_exaustive!(ShortArray, u8, 33);
+    m_test_fixed_array_exaustive!(ShortArray, u64, 200);
+
+    // m_test_fixed_array_exaustive!(LongArray, u32, 1);
+    m_test_fixed_array_exaustive!(LongArray, u32, 2);
+    m_test_fixed_array_exaustive!(LongArray, u32, 3);
+    m_test_fixed_array_exaustive!(LongArray, u64, 15);
+    m_test_fixed_array_exaustive!(LongArray, u8, 33);
+
+    m_test_fixed_array_exaustive!(FixedArray, u32, 1);
+    m_test_fixed_array_exaustive!(FixedArray, u32, 2);
+    m_test_fixed_array_exaustive!(FixedArray, u32, 3);
+    m_test_fixed_array_exaustive!(FixedArray, u64, 15);
+    m_test_fixed_array_exaustive!(FixedArray, u8, 33);
+    m_test_fixed_array_exaustive!(FixedArray, u64, 200);
+  }
+}
