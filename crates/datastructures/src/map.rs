@@ -295,5 +295,26 @@ where
   // UNDONE(git-33): add delete function
 }
 
-// UNDONE(git-34): Add tests for the map.
 // UNDONE(git-35): Add benchmarks for the map.
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_unsorted_map() {
+    let mut map: UnsortedMap<u32, u32> = UnsortedMap::new(10);
+    assert_eq!(map.size, 0);
+    let mut value = 0;
+    assert!(!map.get(1, &mut value));
+    map.insert(1, 2);
+    assert_eq!(map.size, 1);
+    assert!(map.get(1, &mut value));
+    assert_eq!(value, 2);
+    map.write(1, 3);
+    assert!(map.get(1, &mut value));
+    assert_eq!(value, 3);
+  }
+
+  // UNDONE(git-34): Add further tests for the map.
+}
