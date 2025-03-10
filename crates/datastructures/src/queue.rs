@@ -97,19 +97,23 @@ where
       lowest_timestamp.cmov(&curr.timestamp, is_lowest_timemstamp);
       inserted |= should_insert;
     }
-    self.lowest_timestamp.cmov(&lowest_timestamp, real & !inserted);
+
+    debug_assert!(inserted);
+
+    self.lowest_timestamp.cmov(&lowest_timestamp, real);
   }
 
   /// Pops an element from the queue into `out` if `real` is true.
   pub fn maybe_pop(&mut self, real: bool, out: &mut T) {
     debug_assert!(!real | (self.size > 0));
 
-    self.size.cmov(&(self.size - 1), real);
+    self.size.cmov(&(self.size.wrapping_sub(1)), real);
     let mut second_lowest_timestamp = self.highest_timestamp;
     for i in 0..self.elements.len() {
       let curr = &mut self.elements.data[i];
       let is_lowest = curr.timestamp == self.lowest_timestamp;
-      let could_be_second_lowest = !is_lowest & (curr.timestamp < second_lowest_timestamp);
+      let could_be_second_lowest =
+        !curr.is_empty() & !is_lowest & (curr.timestamp < second_lowest_timestamp);
       let should_pop = real & is_lowest;
       second_lowest_timestamp.cmov(&curr.timestamp, could_be_second_lowest);
       out.cmov(&curr.value, should_pop);
@@ -140,5 +144,48 @@ where
 // UNDONE(git-36): Implement ShortStack and LongStack using CircuitORAM
 // UNDONE(git-37): Implement LongQueue using CircuitORAM
 
-// UNDONE(git-38): Test ShortQueue
 // UNDONE(git-39): Benchmark ShortQueue
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_short_queue() {
+    let mut queue: ShortQueue<u32, 3> = ShortQueue::new();
+    assert_eq!(queue.len(), 0);
+    queue.maybe_push(true, 1); // ==> [1]
+    assert_eq!(queue.len(), 1);
+
+    queue.maybe_push(true, 2); // ==> [1, 2]
+    assert_eq!(queue.len(), 2);
+
+    queue.maybe_push(false, 42);
+    assert_eq!(queue.len(), 2);
+
+    queue.maybe_push(true, 3); // ==> [1, 2, 3]
+    assert_eq!(queue.len(), 3);
+
+    queue.maybe_push(false, 4);
+    assert_eq!(queue.len(), 3);
+
+    let mut out = 0;
+    queue.maybe_pop(true, &mut out); // ==> [2, 3]
+    assert_eq!(out, 1);
+    assert_eq!(queue.len(), 2);
+
+    queue.maybe_pop(true, &mut out); // ==> [3]
+    assert_eq!(out, 2);
+    assert_eq!(queue.len(), 1);
+
+    queue.maybe_pop(false, &mut out);
+    assert_eq!(queue.len(), 1);
+
+    queue.maybe_pop(true, &mut out); // ==> []
+    assert_eq!(out, 3);
+    assert_eq!(queue.len(), 0);
+
+    queue.maybe_pop(false, &mut out);
+    assert_eq!(queue.len(), 0);
+  }
+}
