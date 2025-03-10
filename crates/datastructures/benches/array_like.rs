@@ -73,6 +73,7 @@ pub fn benchmark_array_initialization<T: Measurement + 'static>(c: &mut Criterio
   });
 }
 
+#[allow(clippy::redundant_clone)]
 pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let mut group = c.benchmark_group(format!(
     "Array_Operations/{}",
@@ -89,9 +90,9 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
     group.bench_with_input(BenchmarkId::new("ShortArray", SIZE), &SIZE, |b, _size| {
       let mut array = Box::new(ShortArray::<u64, SIZE>::new());
-      let mut pattern = (0..SIZE).map(|x| x as u64).collect::<Vec<_>>();
-      pattern.extend_from_slice(pattern.clone().as_slice());
-      pattern.extend_from_slice(pattern.clone().as_slice());
+      let mut pattern = Box::new((0..SIZE).map(|x| x as u64).collect::<Vec<_>>());
+      pattern.extend_from_slice(&pattern.clone());
+      pattern.extend_from_slice(&pattern.clone());
       pattern.shuffle(&mut rand::rng());
 
       let mut cnt = 0;
@@ -104,9 +105,9 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
     group.bench_with_input(BenchmarkId::new("LongArray_Read", SIZE), &SIZE, |b, _size| {
       let mut array = Box::new(LongArray::<u64, SIZE>::new());
-      let mut pattern = (0..SIZE).map(|x| x as u64).collect::<Vec<_>>();
-      pattern.extend_from_slice(pattern.clone().as_slice());
-      pattern.extend_from_slice(pattern.clone().as_slice());
+      let mut pattern = Box::new((0..SIZE).map(|x| x as u64).collect::<Vec<_>>());
+      pattern.extend_from_slice(&pattern.clone());
+      pattern.extend_from_slice(&pattern.clone());
       pattern.shuffle(&mut rand::rng());
 
       let mut cnt = 0;
@@ -120,9 +121,9 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
     group.bench_with_input(BenchmarkId::new("LongArray_Write", SIZE), &SIZE, |b, _size| {
       let mut array = Box::new(LongArray::<u64, SIZE>::new());
-      let mut pattern = (0..SIZE).map(|x| x as u64).collect::<Vec<_>>();
-      pattern.extend_from_slice(pattern.clone().as_slice());
-      pattern.extend_from_slice(pattern.clone().as_slice());
+      let mut pattern = Box::new((0..SIZE).map(|x| x as u64).collect::<Vec<_>>());
+      pattern.extend_from_slice(&pattern.clone());
+      pattern.extend_from_slice(&pattern.clone());
       pattern.shuffle(&mut rand::rng());
 
       let mut cnt = 0;
@@ -136,9 +137,9 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
     group.bench_with_input(BenchmarkId::new("FixedArray_Read", SIZE), &SIZE, |b, _size| {
       let mut array = Box::new(FixedArray::<u64, SIZE>::new());
-      let mut pattern = (0..SIZE).map(|x| x as u64).collect::<Vec<_>>();
-      pattern.extend_from_slice(pattern.clone().as_slice());
-      pattern.extend_from_slice(pattern.clone().as_slice());
+      let mut pattern = Box::new((0..SIZE).map(|x| x as u64).collect::<Vec<_>>());
+      pattern.extend_from_slice(&pattern.clone());
+      pattern.extend_from_slice(&pattern.clone());
       pattern.shuffle(&mut rand::rng());
 
       let mut cnt = 0;
@@ -152,9 +153,9 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
     group.bench_with_input(BenchmarkId::new("DynamicArray_Read", SIZE), &SIZE, |b, _size| {
       let mut array = Box::new(DynamicArray::<u64>::new(SIZE));
-      let mut pattern = (0..SIZE).map(|x| x as u64).collect::<Vec<_>>();
-      pattern.extend_from_slice(pattern.clone().as_slice());
-      pattern.extend_from_slice(pattern.clone().as_slice());
+      let mut pattern = Box::new((0..SIZE).map(|x| x as u64).collect::<Vec<_>>());
+      pattern.extend_from_slice(&pattern.clone());
+      pattern.extend_from_slice(&pattern.clone());
       pattern.shuffle(&mut rand::rng());
 
       let mut cnt = 0;
@@ -181,9 +182,9 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
       const TOP: usize = min(SIZE, 1024);
 
       let mut vector = Box::new(EagerVector::<u64>::new());
-      let mut pattern = (0..TOP).map(|x| x as u64).collect::<Vec<_>>();
-      pattern.extend_from_slice(pattern.clone().as_slice());
-      pattern.extend_from_slice(pattern.clone().as_slice());
+      let mut pattern = Box::new((0..TOP).map(|x| x as u64).collect::<Vec<_>>());
+      pattern.extend_from_slice(&pattern.clone());
+      pattern.extend_from_slice(&pattern.clone());
       pattern.shuffle(&mut rand::rng());
       for i in 0..TOP {
         vector.push_back(i as u64);
@@ -201,9 +202,9 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
       const TOP: usize = min(SIZE, 1024);
 
       let mut map = Box::new(UnsortedMap::<usize, u64>::new(SIZE));
-      let mut pattern = (0..TOP).map(|x| x as u64).collect::<Vec<_>>();
-      pattern.extend_from_slice(pattern.clone().as_slice());
-      pattern.extend_from_slice(pattern.clone().as_slice());
+      let mut pattern = Box::new((0..TOP).map(|x| x as u64).collect::<Vec<_>>());
+      pattern.extend_from_slice(&pattern.clone());
+      pattern.extend_from_slice(&pattern.clone());
       pattern.shuffle(&mut rand::rng());
       for i in 0..TOP {
         map.insert(i, i as u64);
