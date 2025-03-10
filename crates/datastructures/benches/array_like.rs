@@ -7,6 +7,7 @@ use criterion::{
 use rand::seq::SliceRandom;
 use rods_datastructures::{
   array::{DynamicArray, FixedArray, LongArray, ShortArray},
+  map::UnsortedMap,
   queue::ShortQueue,
   vector::EagerVector,
 };
@@ -24,7 +25,7 @@ pub fn benchmark_array_initialization<T: Measurement + 'static>(c: &mut Criterio
 
   const TEST_SET: [usize; 3] = [128, 1 << 10, 1 << 20];
 
-  // UNDONE(): Alsot test 1<<20
+  // UNDONE(git-59): Also test 1<<20
   seq!(SIZE_IDX in 0..2 {{
     const SIZE: usize = TEST_SET[SIZE_IDX];
 
@@ -57,6 +58,12 @@ pub fn benchmark_array_initialization<T: Measurement + 'static>(c: &mut Criterio
         black_box(Box::new(ShortQueue::<u64, SIZE>::new()));
       });
     });
+
+    group.bench_with_input(BenchmarkId::new("UnsortedMap", SIZE), &SIZE, |b, _size| {
+      b.iter(|| {
+        black_box(Box::new(UnsortedMap::<usize, u64>::new(SIZE)));
+      });
+    });
   }});
 
   // group.bench_function("EagerVector",  |b| {
@@ -76,7 +83,7 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
 
   const TEST_SET: [usize; 3] = [128, 1 << 10, 1 << 20];
 
-  // UNDONE(): Alsot test 1<<20
+  // UNDONE(git-59): Also test 1<<20
   seq!(SIZE_IDX in 0..2 {{
     const SIZE: usize = TEST_SET[SIZE_IDX];
 
@@ -187,6 +194,26 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
         let idx = pattern[cnt] as usize;
         cnt = (cnt + 1) % pattern.len();
         vector.read(black_box(idx), black_box(&mut ret));
+      });
+    });
+
+    group.bench_with_input(BenchmarkId::new("UnsortedMap_Read", SIZE), &SIZE, |b, _size| {
+      const TOP: usize = min(SIZE, 1024);
+
+      let mut map = Box::new(UnsortedMap::<usize, u64>::new(SIZE));
+      let mut pattern = (0..TOP).map(|x| x as u64).collect::<Vec<_>>();
+      pattern.extend_from_slice(pattern.clone().as_slice());
+      pattern.extend_from_slice(pattern.clone().as_slice());
+      pattern.shuffle(&mut rand::rng());
+      for i in 0..TOP {
+        map.insert(i, i as u64);
+      }
+      let mut cnt = 0;
+      b.iter(|| {
+        let mut ret = 0;
+        let idx = pattern[cnt] as usize;
+        cnt = (cnt + 1) % pattern.len();
+        map.get(black_box(idx), black_box(&mut ret));
       });
     });
   }});
