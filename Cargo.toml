@@ -10,7 +10,8 @@ exclude = [".github/"]
 platform = "x86_64"
 
 [workspace]
-members = [ 
+members = [
+  "crates/datastructures",
   "crates/oram",
   "crates/primitives",
   "crates/sort",
@@ -142,16 +143,18 @@ overflow-checks = true
 
 [workspace.dependencies]
 # rods-rodb = { path = "crates/rodb" }
+rods-datastructures = { path = "crates/datastructures" }
 rods-oram = { path = "crates/oram" }
 rods-primitives = { path = "crates/primitives" }
 rods-sort = { path = "crates/sort" }
 rods-storage = { path = "crates/storage" }
 
 
-
+ahash = { version = "0.8.11" }
 bytemuck = { version = "1.21.0", features = ["derive"] }
 rand = "0.9.0"
 static_assertions = "1.1.0"
+seq-macro = "0.3.6"
 
 # [workspace.dev-dependencies]
 criterion = "0.5.1"

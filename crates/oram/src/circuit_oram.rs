@@ -179,7 +179,8 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// # Preconditions
   /// * `0 < max_n < (2**33)`
   pub fn new(max_n: usize) -> Self {
-    debug_assert!(max_n > 0);
+    // Eviction last level doesn't work for n=1 (due to last loop of evict function not checking if levels=1).
+    debug_assert!(max_n > 1);
     debug_assert!(max_n <= u32::MAX as usize);
 
     let h = {
@@ -359,7 +360,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
       dst.cmov(&target[i], has_target_flag | place_dummy_flag);
     }
 
-    // last level
+    // last level (this should not be called if h=1, but we just assert h>1)
     let place_dummy_flag = ((self.h - 1) as i32) == dst;
     let mut written = false;
     for _ in 0..Z {
@@ -500,7 +501,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   }
 
   /// Updates a value in the ORAM using a provided update function.
-  ///
+  /// If the element is not in the ORAM, it is inserted with the result of calling the update function on the default value.
   /// # Arguments
   /// * `pos` - The current position of the block.
   /// * `new_pos` - The new position of the block, should be uniformly random on the size of the ORAM.

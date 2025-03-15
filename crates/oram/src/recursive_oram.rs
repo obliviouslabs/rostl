@@ -6,12 +6,14 @@ use core::mem::size_of;
 use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
 use rods_primitives::traits::Cmov;
+use rods_primitives::utils::{max, min};
 use rods_primitives::{cmov_body, impl_cmov_for_pod, traits::_Cmovbase};
+
 use static_assertions::const_assert;
 
 use crate::circuit_oram::CircuitORAM;
 use crate::linear_oram::{oblivious_read_update_index, LinearORAM};
-use crate::prelude::{max, min, PositionType, DUMMY_POS, K};
+use crate::prelude::{PositionType, DUMMY_POS, K};
 
 // UNDONE(git-25): Optimize these constants:
 const LINEAR_MAP_SIZE: usize = 128;
@@ -48,6 +50,8 @@ pub struct RecursivePositionMap {
   linear_oram: LinearORAM<PositionType>,
   /// Remaining levels
   recursive_orams: Vec<CircuitORAM<InternalNode>>,
+  /// The number of positions in the ORAM
+  pub n: usize,
   /// The depth of the ORAM,
   /// i.e. the number of levels in the recursive ORAM
   h: usize, // public
@@ -79,13 +83,14 @@ impl RecursivePositionMap {
     let mut data_maps = Vec::with_capacity(h);
     let mut curr = min(LINEAR_MAP_SIZE, n);
     for _ in 0..h {
-      data_maps.push(CircuitORAM::new(1));
+      data_maps.push(CircuitORAM::new(curr));
       curr *= FAN_OUT;
     }
 
     // UNDONE(git-19): Optimize this (make it cache efficient)
+    let max_out_pos = min(curr, n);
     let mut positions_maps_for_level: Vec<PositionType> =
-      (0..curr).map(|_| rng.random_range(0..curr)).collect();
+      (0..curr).map(|_| rng.random_range(0..max_out_pos)).collect();
     for i in (0..h).rev() {
       curr /= FAN_OUT;
       let keys = (0..curr).map(|i| i as K).collect::<Vec<K>>();
@@ -104,7 +109,7 @@ impl RecursivePositionMap {
       first_level.write(i, *item);
     }
 
-    Self { linear_oram: first_level, recursive_orams: data_maps, h, rng }
+    Self { linear_oram: first_level, recursive_orams: data_maps, n, h, rng }
   }
 
   /// Accesses the position of a key `k` and updates it to `new_pos`.
@@ -118,6 +123,7 @@ impl RecursivePositionMap {
   ///
   /// The previous position of the key.
   pub fn access_position(&mut self, k: K, new_pos: PositionType) -> PositionType {
+    debug_assert!(new_pos < self.n as PositionType);
     let mut ret: PositionType = PositionType::default();
     let mut k = k;
     let mut curr_max_pos = 1;

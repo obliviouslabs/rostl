@@ -1,0 +1,28 @@
+[package]
+name = "rods-datastructures"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+exclude.workspace = true
+
+[dependencies]
+rods-oram.workspace = true
+rods-primitives.workspace = true
+
+ahash.workspace = true
+bytemuck.workspace = true
+static_assertions.workspace = true
+rand.workspace = true
+seq-macro.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+
+[lints]
+workspace = true
+
+[[bench]]
+name="array_like"
+harness=false
