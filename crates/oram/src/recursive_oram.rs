@@ -16,7 +16,7 @@ use crate::linear_oram::{oblivious_read_update_index, LinearORAM};
 use crate::prelude::{PositionType, DUMMY_POS, K};
 
 // UNDONE(git-25): Optimize these constants:
-const LINEAR_MAP_SIZE: usize = 128;
+const LINEAR_MAP_SIZE: usize = 512;
 const FAN_OUT: usize = max(2, 64 / size_of::<PositionType>());
 // const LINEAR_MAP_SIZE: usize = 4; // For debug
 // const FAN_OUT: usize = 4; // For debug
