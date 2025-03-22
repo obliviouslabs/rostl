@@ -9,6 +9,7 @@ use rand::{rngs::ThreadRng, Rng};
 use rods_oram::{
   circuit_oram::CircuitORAM,
   linear_oram::{oblivious_read_index, oblivious_write_index},
+  prelude::PositionType,
   recursive_oram::RecursivePositionMap,
 };
 use rods_primitives::{indexable::Length, traits::Cmov};
@@ -92,14 +93,14 @@ where
 
   /// Reads from the index
   pub fn read(&mut self, index: usize, out: &mut T) {
-    let new_pos = self.rng.random_range(0..N);
+    let new_pos = self.rng.random_range(0..N as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.read(old_pos, new_pos, index, out);
   }
 
   /// Writes to the index
   pub fn write(&mut self, index: usize, value: T) {
-    let new_pos = self.rng.random_range(0..N);
+    let new_pos = self.rng.random_range(0..N as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.write_or_insert(old_pos, new_pos, index, value);
   }
@@ -295,14 +296,14 @@ where
 
   /// Reads from the index
   pub fn read(&mut self, index: usize, out: &mut T) {
-    let new_pos = self.rng.random_range(0..self.len());
+    let new_pos = self.rng.random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.read(old_pos, new_pos, index, out);
   }
 
   /// Writes to the index
   pub fn write(&mut self, index: usize, value: T) {
-    let new_pos = self.rng.random_range(0..self.len());
+    let new_pos = self.rng.random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.write_or_insert(old_pos, new_pos, index, value);
   }
@@ -312,7 +313,7 @@ where
   where
     F: FnOnce(&mut T) -> R,
   {
-    let new_pos = self.rng.random_range(0..self.len());
+    let new_pos = self.rng.random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.update(old_pos, new_pos, index, update_func)
   }

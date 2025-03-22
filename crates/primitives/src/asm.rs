@@ -15,50 +15,115 @@ macro_rules! cmov_body {
   ($self:ident, $other:ident, $choice:ident) => {{
     let self_bytes = bytemuck::bytes_of_mut($self);
     let other_bytes = bytemuck::bytes_of($other);
+
     let mut i = 0;
+
+    #[cfg(all(target_feature = "avx512f", target_feature = "avx512vl"))]
+    {
+      // Process in chunks of 64 bytes ([u8; 64])
+      while i + 64 <= self_bytes.len() {
+        let self_chunk_1 = &mut self_bytes[i..i + 64];
+        let self_chunk: &mut [u8; 64] = unsafe { &mut *(self_chunk_1.as_mut_ptr() as *mut [u8; 64]) };
+        let other_chunk_1 = &other_bytes[i..i + 64];
+        let other_chunk: &[u8; 64] = unsafe { &*(other_chunk_1.as_ptr() as *const [u8; 64]) };
+
+        self_chunk.cmov_base(&other_chunk, $choice);
+
+        i += 64;
+      }
+    }
+
+    // // Process in chunks of 32 bytes ([u8; 32])
+    #[cfg(target_feature = "avx2")]
+    {
+      while i + 32 <= self_bytes.len() {
+        let self_chunk_1 = &mut self_bytes[i..i + 32];
+        let self_chunk: &mut [u8; 32] = unsafe { &mut *(self_chunk_1.as_mut_ptr() as *mut [u8; 32]) };
+        let other_chunk_1 = &other_bytes[i..i + 32];
+        let other_chunk: &[u8; 32] = unsafe { &*(other_chunk_1.as_ptr() as *const [u8; 32]) };
+
+        self_chunk.cmov_base(&other_chunk, $choice);
+
+        i += 32;
+      }
+    }
+
+    // This doesn't check for alignemnt, so it might fail or be slower...
+    #[cfg(target_feature = "sse2")]
+    {
+      while i + 16 <= self_bytes.len() {
+        let self_chunk = &mut self_bytes[i..i + 16];
+        let other_chunk = &other_bytes[i..i + 16];
+        let self_u64 = u128::from_ne_bytes(self_chunk.try_into().unwrap());
+        let other_u64 = u128::from_ne_bytes(other_chunk.try_into().unwrap());
+        let mut result = self_u64;
+        result.cmov_base(&other_u64, $choice);
+        self_chunk.copy_from_slice(&result.to_ne_bytes());
+        i += 16;
+      }
+    }
+
+    // This checks for alignement but it seems it isn't needed for correctness in recent cpus? (they only require 8 byte alignment??)
+    // #[cfg(target_feature = "sse2")]
+    // {
+    //   // Process in chunks of 16 bytes (u128)
+    //   while i + 16 <= self_bytes.len() {
+    //     let self_chunk = &mut self_bytes[i..i + 16];
+    //     let other_chunk = &other_bytes[i..i + 16];
+
+    //     debug_assert_eq!(self_chunk.as_ptr() as usize % std::mem::align_of::<u128>(), 0, "Not aligned");
+    //     debug_assert_eq!(other_chunk.as_ptr() as usize % std::mem::align_of::<u128>(), 0, "Not aligned");
+
+    //     let self_u128 = unsafe { &mut *(self_chunk.as_mut_ptr() as *mut u128) };
+    //     let other_u128 = unsafe { & *(other_chunk.as_ptr() as *const u128) };
+
+    //     self_u128.cmov_base(&other_u128, $choice);
+    //     i += 16;
+    //   }
+    // }
+
 
     // Process in chunks of 8 bytes (u64)
     while i + 8 <= self_bytes.len() {
       let self_chunk = &mut self_bytes[i..i + 8];
       let other_chunk = &other_bytes[i..i + 8];
 
-      let self_u64 = u64::from_ne_bytes(self_chunk.try_into().unwrap());
-      let other_u64 = u64::from_ne_bytes(other_chunk.try_into().unwrap());
+      debug_assert_eq!(self_chunk.as_ptr() as usize % std::mem::align_of::<u64>(), 0, "Not aligned");
+      debug_assert_eq!(other_chunk.as_ptr() as usize % std::mem::align_of::<u64>(), 0, "Not aligned");
 
-      let mut result = self_u64;
-      result.cmov_base(&other_u64, $choice);
+      let self_u64 = unsafe { &mut *(self_chunk.as_mut_ptr() as *mut u64) };
+      let other_u64 = unsafe { & *(other_chunk.as_ptr() as *const u64) };
 
-      self_chunk.copy_from_slice(&result.to_ne_bytes());
+      self_u64.cmov_base(&other_u64, $choice);
       i += 8;
     }
 
-    // Process in chunks of 4 bytes (u32)
+    // Process in chunnks of 4 bytes (u32)
     while i + 4 <= self_bytes.len() {
       let self_chunk = &mut self_bytes[i..i + 4];
       let other_chunk = &other_bytes[i..i + 4];
 
-      let self_u32 = u32::from_ne_bytes(self_chunk.try_into().unwrap());
-      let other_u32 = u32::from_ne_bytes(other_chunk.try_into().unwrap());
+      debug_assert_eq!(self_chunk.as_ptr() as usize % std::mem::align_of::<u32>(), 0, "Not aligned");
+      debug_assert_eq!(other_chunk.as_ptr() as usize % std::mem::align_of::<u32>(), 0, "Not aligned");
 
-      let mut result = self_u32;
-      result.cmov_base(&other_u32, $choice);
+      let self_u32 = unsafe { &mut *(self_chunk.as_mut_ptr() as *mut u32) };
+      let other_u32 = unsafe { & *(other_chunk.as_ptr() as *const u32) };
 
-      self_chunk.copy_from_slice(&result.to_ne_bytes());
+      self_u32.cmov_base(&other_u32, $choice);
       i += 4;
     }
 
-    // Process in chunks of 2 bytes (u16)
     while i + 2 <= self_bytes.len() {
       let self_chunk = &mut self_bytes[i..i + 2];
       let other_chunk = &other_bytes[i..i + 2];
 
-      let self_u16 = u16::from_ne_bytes(self_chunk.try_into().unwrap());
-      let other_u16 = u16::from_ne_bytes(other_chunk.try_into().unwrap());
+      debug_assert_eq!(self_chunk.as_ptr() as usize % std::mem::align_of::<u16>(), 0, "Not aligned");
+      debug_assert_eq!(other_chunk.as_ptr() as usize % std::mem::align_of::<u16>(), 0, "Not aligned");
 
-      let mut result = self_u16;
-      result.cmov_base(&other_u16, $choice);
+      let self_u16 = unsafe { &mut *(self_chunk.as_mut_ptr() as *mut u16) };
+      let other_u16 = unsafe { & *(other_chunk.as_ptr() as *const u16) };
 
-      self_chunk.copy_from_slice(&result.to_ne_bytes());
+      self_u16.cmov_base(&other_u16, $choice);
       i += 2;
     }
 
@@ -125,6 +190,7 @@ macro_rules! impl_cmov_for_generic_pod {
 }
 
 impl_cmov_for_pod!(usize);
+impl_cmov_for_pod!(u128);
 impl_cmov_for_pod!(u64);
 impl_cmov_for_pod!(u32);
 impl_cmov_for_pod!(u16);

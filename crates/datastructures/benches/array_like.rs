@@ -29,11 +29,30 @@ pub fn benchmark_array_initialization<T: Measurement + 'static>(c: &mut Criterio
   seq!(SIZE_IDX in 0..2 {{
     const SIZE: usize = TEST_SET[SIZE_IDX];
 
-    group.bench_with_input(BenchmarkId::new("ShortArray", SIZE), &SIZE, |b, _size| {
-      b.iter(|| {
-        black_box(Box::new(ShortArray::<u64, SIZE>::new()));
+    if SIZE < (1 << 16) {
+      group.bench_with_input(BenchmarkId::new("ShortArray", SIZE), &SIZE, |b, _size| {
+        b.iter(|| {
+          black_box(Box::new(ShortArray::<u64, SIZE>::new()));
+        });
       });
-    });
+
+      group.bench_with_input(BenchmarkId::new("ShortQueue", SIZE), &SIZE, |b, _size| {
+        b.iter(|| {
+          black_box(Box::new(ShortQueue::<u64, SIZE>::new()));
+        });
+      });
+
+      group.bench_with_input(BenchmarkId::new("FixedArray", SIZE), &SIZE, |b, _size| {
+        b.iter(|| {
+          let w = Box::new(FixedArray::<u64, SIZE>::new());
+          black_box(w);
+        });
+      });
+    }
+  }});
+
+  seq!(SIZE_IDX in 0..3 {{
+    const SIZE: usize = TEST_SET[SIZE_IDX];
 
     group.bench_with_input(BenchmarkId::new("LongArray", SIZE), &SIZE, |b, _size| {
       b.iter(|| {
@@ -41,21 +60,9 @@ pub fn benchmark_array_initialization<T: Measurement + 'static>(c: &mut Criterio
       });
     });
 
-    group.bench_with_input(BenchmarkId::new("FixedArray", SIZE), &SIZE, |b, _size| {
-      b.iter(|| {
-        black_box(Box::new(FixedArray::<u64, SIZE>::new()));
-      });
-    });
-
     group.bench_with_input(BenchmarkId::new("DynamicArray", SIZE), &SIZE, |b, _size| {
       b.iter(|| {
         black_box(Box::new(DynamicArray::<u64>::new(black_box(SIZE))));
-      });
-    });
-
-    group.bench_with_input(BenchmarkId::new("ShortQueue", SIZE), &SIZE, |b, _size| {
-      b.iter(|| {
-        black_box(Box::new(ShortQueue::<u64, SIZE>::new()));
       });
     });
 
@@ -88,20 +95,37 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
   seq!(SIZE_IDX in 0..2 {{
     const SIZE: usize = TEST_SET[SIZE_IDX];
 
-    group.bench_with_input(BenchmarkId::new("ShortArray", SIZE), &SIZE, |b, _size| {
-      let mut array = Box::new(ShortArray::<u64, SIZE>::new());
-      let mut pattern = Box::new((0..SIZE).map(|x| x as u64).collect::<Vec<_>>());
-      pattern.extend_from_slice(&pattern.clone());
-      pattern.extend_from_slice(&pattern.clone());
-      pattern.shuffle(&mut rand::rng());
+    if SIZE < 1 << 20  {
+      group.bench_with_input(BenchmarkId::new("ShortArray", SIZE), &SIZE, |b, _size| {
+        let mut array = Box::new(ShortArray::<u64, SIZE>::new());
+        let mut pattern = Box::new((0..SIZE).map(|x| x as u64).collect::<Vec<_>>());
+        pattern.extend_from_slice(&pattern.clone());
+        pattern.extend_from_slice(&pattern.clone());
+        pattern.shuffle(&mut rand::rng());
 
-      let mut cnt = 0;
-      b.iter(|| {
-        let idx = pattern[cnt] as usize;
-        cnt = (cnt + 1) % pattern.len();
-        array.write(black_box(idx), black_box( idx as u64));
+        let mut cnt = 0;
+        b.iter(|| {
+          let idx = pattern[cnt] as usize;
+          cnt = (cnt + 1) % pattern.len();
+          array.write(black_box(idx), black_box( idx as u64));
+        });
       });
-    });
+
+      group.bench_with_input(BenchmarkId::new("ShortQueue_pushpop", SIZE), &SIZE, |b, _size| {
+        let mut queue = Box::new(ShortQueue::<u64, SIZE>::new());
+
+        b.iter(|| {
+          let val = 123;
+          queue.maybe_push(black_box(true), black_box(val));
+          let mut ret = 0;
+          queue.maybe_pop(black_box(true), black_box(&mut ret));
+        });
+      });
+    }
+  }});
+
+  seq!(SIZE_IDX in 0..2 {{
+    const SIZE: usize = TEST_SET[SIZE_IDX];
 
     group.bench_with_input(BenchmarkId::new("LongArray_Read", SIZE), &SIZE, |b, _size| {
       let mut array = Box::new(LongArray::<u64, SIZE>::new());
@@ -164,17 +188,6 @@ pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
         let idx = pattern[cnt] as usize;
         cnt = (cnt + 1) % pattern.len();
         array.read(black_box(idx), black_box(&mut ret));
-      });
-    });
-
-    group.bench_with_input(BenchmarkId::new("ShortQueue_pushpop", SIZE), &SIZE, |b, _size| {
-      let mut queue = Box::new(ShortQueue::<u64, SIZE>::new());
-
-      b.iter(|| {
-        let val = 123;
-        queue.maybe_push(black_box(true), black_box(val));
-        let mut ret = 0;
-        queue.maybe_pop(black_box(true), black_box(&mut ret));
       });
     });
 

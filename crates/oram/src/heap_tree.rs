@@ -1,6 +1,8 @@
 //! Represents a heap tree as an array and provides functions to access it.
 //!
 
+use crate::prelude::PositionType;
+
 /// Represents a heap tree structure.
 #[derive(Debug)]
 pub struct HeapTree<T> {
@@ -32,17 +34,17 @@ where
 
 impl<T> HeapTree<T> {
   #[inline]
-  fn get_index(&self, depth: usize, path: usize) -> usize {
+  fn get_index(&self, depth: usize, path: PositionType) -> usize {
     debug_assert!(depth < self.height);
     let level_offset = 2usize.pow(depth as u32) - 1;
     let mask = (1 << depth) - 1;
-    level_offset + (path & mask)
+    level_offset + (path & mask) as usize
   }
 
   /// Get a node of a certain path at a certain depth
   /// Reveals depth and path
   #[inline]
-  pub fn get_path_at_depth(&self, depth: usize, path: usize) -> &T {
+  pub fn get_path_at_depth(&self, depth: usize, path: PositionType) -> &T {
     let index = self.get_index(depth, path);
 
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
@@ -52,7 +54,7 @@ impl<T> HeapTree<T> {
   /// Get a node of a certain path at a certain depth
   /// Reveals depth and path
   #[inline]
-  pub fn get_path_at_depth_mut(&mut self, depth: usize, path: usize) -> &mut T {
+  pub fn get_path_at_depth_mut(&mut self, depth: usize, path: PositionType) -> &mut T {
     let index = self.get_index(depth, path);
 
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe

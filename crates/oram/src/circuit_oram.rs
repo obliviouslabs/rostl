@@ -21,6 +21,8 @@ const EVICTIONS_PER_OP: usize = 2; // Evictions per operations
 ///
 /// # Note
 /// * It is wrong to assume anything about the block being empty or not based on the key, please use pos.
+///
+// #[repr(align(16))]
 #[repr(C)]
 #[derive(Clone, Copy, Zeroable)]
 pub struct Block<V>
@@ -89,7 +91,7 @@ pub struct CircuitORAM<V: Cmov + Pod> {
   /// The tree
   pub tree: HeapTree<Bucket<V>>,
   /// Evict counter
-  pub evict_counter: usize,
+  pub evict_counter: PositionType,
 }
 
 #[inline]
@@ -162,7 +164,7 @@ pub fn reverse_bits(n: usize, bits: usize) -> usize {
 }
 
 #[inline]
-const fn common_suffix_length(a: usize, b: usize) -> u32 {
+const fn common_suffix_length(a: PositionType, b: PositionType) -> u32 {
   let w = a ^ b;
   w.trailing_zeros()
 }
@@ -222,14 +224,14 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
 
     for (i, ((key, value), pos)) in keys.iter().zip(values.iter()).zip(positions.iter()).enumerate()
     {
-      oram.write_or_insert(i, *pos, *key, *value);
+      oram.write_or_insert(i as PositionType, *pos, *key, *value);
     }
     oram
   }
 
   /// Reads a path to the end of the stash
-  fn read_path_and_get_nodes(&mut self, pos: usize) {
-    debug_assert!(pos < self.max_n);
+  fn read_path_and_get_nodes(&mut self, pos: PositionType) {
+    debug_assert!((pos as usize) < self.max_n);
 
     for i in 0..self.h {
       let bucket = self.tree.get_path_at_depth(i, pos);
@@ -240,8 +242,8 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   }
 
   /// Writes back the path at the end of the stash
-  fn write_back_path(&mut self, pos: usize) {
-    debug_assert!(pos < self.max_n);
+  fn write_back_path(&mut self, pos: PositionType) {
+    debug_assert!((pos as usize) < self.max_n);
 
     for i in 0..self.h {
       let bucket = self.tree.get_path_at_depth_mut(i, pos);
@@ -252,7 +254,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   }
 
   /// Alg. 4 - EvictOnceFast(path) in `CircuitORAM` paper
-  fn evict_once_fast(&mut self, pos: usize) {
+  fn evict_once_fast(&mut self, pos: PositionType) {
     // UNDONE(git-10): Investigate using u8 and/or bitwise operations here instead of u32/bool cmov's
     // UNDONE(git-11): This only supports n<=32. Is it enough?
     //
@@ -372,8 +374,8 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   }
 
   // Reads a path, performs evictions and writes back the path
-  fn perform_eviction(&mut self, pos: usize) {
-    debug_assert!(pos < self.max_n);
+  fn perform_eviction(&mut self, pos: PositionType) {
+    debug_assert!((pos as usize) < self.max_n);
     self.read_path_and_get_nodes(pos);
     self.evict_once_fast(pos);
     self.write_back_path(pos);
@@ -388,7 +390,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
       // let evict_pos = reverse_bits(self.evict_counter, self.h - 1);
       let evict_pos = self.evict_counter;
       self.perform_eviction(evict_pos);
-      self.evict_counter = (self.evict_counter + 1) % self.max_n;
+      self.evict_counter = (self.evict_counter + 1) % (self.max_n as PositionType);
     }
     // UNDONE(git-12): Otherwise, if fetching a path is expensive, we should increase the stash size and do two evictions on the same path. (so read and write are only called once)
 
@@ -413,9 +415,9 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// * `true` if the element was found, `false` otherwise.
   /// # Behavior
   /// * If the element is not found, `ret` is not modified.
-  pub fn read(&mut self, pos: usize, new_pos: usize, key: K, ret: &mut V) -> bool {
-    debug_assert!(pos < self.max_n);
-    debug_assert!(new_pos < self.max_n);
+  pub fn read(&mut self, pos: PositionType, new_pos: PositionType, key: K, ret: &mut V) -> bool {
+    debug_assert!((pos as usize) < self.max_n);
+    debug_assert!((new_pos as usize) < self.max_n);
 
     self.read_path_and_get_nodes(pos);
 
@@ -444,9 +446,9 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// # Behavior
   /// * If the element is not found, no modifications are made to the logical ORAM state.
   /// * If the element is found, it is updated with the new value.
-  pub fn write(&mut self, pos: usize, new_pos: usize, key: K, val: V) -> bool {
-    debug_assert!(pos < self.max_n);
-    debug_assert!(new_pos < self.max_n);
+  pub fn write(&mut self, pos: PositionType, new_pos: PositionType, key: K, val: V) -> bool {
+    debug_assert!((pos as usize) < self.max_n);
+    debug_assert!((new_pos as usize) < self.max_n);
 
     self.read_path_and_get_nodes(pos);
 
@@ -480,9 +482,15 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// # Behavior
   /// * If the element is not found, it is inserted with the new value.
   /// * If the element is found, it is updated with the new value.
-  pub fn write_or_insert(&mut self, pos: usize, new_pos: usize, key: K, val: V) -> bool {
-    debug_assert!(pos < self.max_n);
-    debug_assert!(new_pos < self.max_n);
+  pub fn write_or_insert(
+    &mut self,
+    pos: PositionType,
+    new_pos: PositionType,
+    key: K,
+    val: V,
+  ) -> bool {
+    debug_assert!((pos as usize) < self.max_n);
+    debug_assert!((new_pos as usize) < self.max_n);
 
     self.read_path_and_get_nodes(pos);
     // println!("{:?}", self.stash);
@@ -510,12 +518,18 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   ///
   /// # Returns
   /// * A tuple containing a boolean indicating if the element was found and the result of the update function.
-  pub fn update<T, F>(&mut self, pos: usize, new_pos: usize, key: K, update_func: F) -> (bool, T)
+  pub fn update<T, F>(
+    &mut self,
+    pos: PositionType,
+    new_pos: PositionType,
+    key: K,
+    update_func: F,
+  ) -> (bool, T)
   where
     F: FnOnce(&mut V) -> T,
   {
-    debug_assert!(pos < self.max_n);
-    debug_assert!(new_pos < self.max_n);
+    debug_assert!((pos as usize) < self.max_n);
+    debug_assert!((new_pos as usize) < self.max_n);
 
     self.read_path_and_get_nodes(pos);
 
@@ -607,11 +621,11 @@ mod tests {
     assert_eq!(val, 123);
   }
 
-  fn test_circuitoram_repetitive_generic<const TOTAL_KEYS: usize>() {
-    let mut oram = CircuitORAM::<u64>::new(TOTAL_KEYS);
-    let mut pmap = vec![0; TOTAL_KEYS];
-    let mut vals = vec![0; TOTAL_KEYS];
-    let mut used = vec![false; TOTAL_KEYS];
+  fn test_circuitoram_repetitive_generic<const TOTAL_KEYS: PositionType>() {
+    let mut oram = CircuitORAM::<u64>::new(TOTAL_KEYS as usize);
+    let mut pmap = vec![0; TOTAL_KEYS as usize];
+    let mut vals = vec![0; TOTAL_KEYS as usize];
+    let mut used = vec![false; TOTAL_KEYS as usize];
     let mut rng = rng();
 
     for _ in 0..2_000 {

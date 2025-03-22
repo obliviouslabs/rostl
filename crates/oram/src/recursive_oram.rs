@@ -88,7 +88,7 @@ impl RecursivePositionMap {
     }
 
     // UNDONE(git-19): Optimize this (make it cache efficient)
-    let max_out_pos = min(curr, n);
+    let max_out_pos: PositionType = min(curr, n) as PositionType;
     let mut positions_maps_for_level: Vec<PositionType> =
       (0..curr).map(|_| rng.random_range(0..max_out_pos)).collect();
     for i in (0..h).rev() {
@@ -101,7 +101,8 @@ impl RecursivePositionMap {
           values[j].0[k] = positions_maps_for_level[j * FAN_OUT + k];
         }
       }
-      positions_maps_for_level = (0..curr).map(|_| rng.random_range(0..curr)).collect();
+      positions_maps_for_level =
+        (0..curr as PositionType).map(|_| rng.random_range(0..curr as PositionType)).collect();
       data_maps[i] =
         CircuitORAM::new_with_positions_and_values(curr, &keys, &values, &positions_maps_for_level);
     }
@@ -189,7 +190,7 @@ mod tests {
       pos_map.access_position(i, i as PositionType);
     }
     for i in 0..n {
-      assert_eq!(pos_map.access_position(i, i as PositionType), i);
+      assert_eq!(pos_map.access_position(i, i as PositionType), i as PositionType);
     }
   }
 
@@ -204,7 +205,7 @@ mod tests {
       pos_map.access_position(i, i as PositionType);
     }
     for i in 0..n {
-      assert_eq!(pos_map.access_position(i, i as PositionType), i);
+      assert_eq!(pos_map.access_position(i, i as PositionType), i as PositionType);
     }
   }
 

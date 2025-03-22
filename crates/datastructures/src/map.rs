@@ -7,6 +7,7 @@ use rods_primitives::{
   cmov_body, impl_cmov_for_generic_pod,
   traits::{Cmov, _Cmovbase, cswap},
 };
+
 use seq_macro::seq;
 
 use crate::{array::DynamicArray, queue::ShortQueue};
@@ -26,6 +27,7 @@ pub trait OHash: Cmov + Pod + Hash + PartialEq {}
 impl<K> OHash for K where K: Cmov + Pod + Hash + PartialEq {}
 
 /// An element in the map.
+#[repr(align(16))]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
 pub struct InlineElement<K, V>
 where
@@ -68,6 +70,7 @@ where
 /// * The elements in the bucket that have `is_valid == true` are non empty.
 /// * The elements in the bucket that have `is_valid == false` are empty.
 /// * No two valid elements have the same key.
+#[repr(align(64))]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
 struct Bucket<K, V>
 where
