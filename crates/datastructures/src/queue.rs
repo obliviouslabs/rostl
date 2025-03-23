@@ -1,4 +1,4 @@
-//! This module implements oblivious map
+//! This module implements oblivious queues
 #![allow(clippy::needless_bitwise_bool)] // UNDONE(git-8): This is needed to enforce the bitwise operations to not short circuit. Investigate if we should be using helper functions instead.
 
 use bytemuck::{Pod, Zeroable};

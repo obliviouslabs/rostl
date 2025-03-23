@@ -417,7 +417,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// * If the element is not found, `ret` is not modified.
   pub fn read(&mut self, pos: PositionType, new_pos: PositionType, key: K, ret: &mut V) -> bool {
     debug_assert!((pos as usize) < self.max_n);
-    debug_assert!((new_pos as usize) < self.max_n);
+    debug_assert!((new_pos as usize) < self.max_n || new_pos == DUMMY_POS);
 
     self.read_path_and_get_nodes(pos);
 
@@ -448,6 +448,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// * If the element is found, it is updated with the new value.
   pub fn write(&mut self, pos: PositionType, new_pos: PositionType, key: K, val: V) -> bool {
     debug_assert!((pos as usize) < self.max_n);
+    // I am not handling DUMMY_POS here, because it seems to never be the case where this would be needed.
     debug_assert!((new_pos as usize) < self.max_n);
 
     self.read_path_and_get_nodes(pos);
@@ -490,7 +491,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     val: V,
   ) -> bool {
     debug_assert!((pos as usize) < self.max_n);
-    debug_assert!((new_pos as usize) < self.max_n);
+    debug_assert!((new_pos as usize) < self.max_n || new_pos == DUMMY_POS);
 
     self.read_path_and_get_nodes(pos);
     // println!("{:?}", self.stash);
