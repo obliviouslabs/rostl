@@ -16,8 +16,16 @@ use crate::linear_oram::{oblivious_read_update_index, LinearORAM};
 use crate::prelude::{PositionType, DUMMY_POS, K};
 
 // UNDONE(git-25): Optimize these constants:
+#[cfg(not(test))]
 const LEVEL_0_BUCKETS: usize = 128;
+#[cfg(not(test))]
 const FAN_OUT: usize = max(2, 64 / size_of::<PositionType>());
+
+// These are for making tests reasonably faster:
+#[cfg(test)]
+const LEVEL_0_BUCKETS: usize = 8;
+#[cfg(test)]
+const FAN_OUT: usize = max(2, 32 / size_of::<PositionType>());
 
 const LINEAR_MAP_SIZE: usize = LEVEL_0_BUCKETS * FAN_OUT;
 // const LINEAR_MAP_SIZE: usize = 4; // For debug
@@ -228,12 +236,12 @@ mod tests {
   }
 
   fn test_recursive_position_generic<const TOTAL_KEYS: usize>() {
-    let mut pos_map = RecursivePositionMap::new(TOTAL_KEYS);
+    let mut pos_map = Box::new(RecursivePositionMap::new(TOTAL_KEYS));
     let mut rng = rng();
     let mut pmap = vec![0; TOTAL_KEYS];
     let mut used = vec![false; TOTAL_KEYS];
 
-    for _i in 0..2_000 {
+    for _i in 0..2000 {
       let k = rng.random_range(0..TOTAL_KEYS);
       let new_pos = rng.random_range(0..TOTAL_KEYS as PositionType);
       let old_pos = pos_map.access_position(k, new_pos);
@@ -246,7 +254,7 @@ mod tests {
   }
 
   #[test]
-  fn test_recursive_position_map() {
+  fn test_recursive_position_map_multiple() {
     const TOTAL_KEYS_0: usize = LINEAR_MAP_SIZE / 2 + 1;
     test_recursive_position_generic::<TOTAL_KEYS_0>();
     test_recursive_position_generic::<LINEAR_MAP_SIZE>();
