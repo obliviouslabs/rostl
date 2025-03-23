@@ -16,8 +16,10 @@ use crate::linear_oram::{oblivious_read_update_index, LinearORAM};
 use crate::prelude::{PositionType, DUMMY_POS, K};
 
 // UNDONE(git-25): Optimize these constants:
-const LINEAR_MAP_SIZE: usize = 512;
+const LEVEL_0_BUCKETS: usize = 128;
 const FAN_OUT: usize = max(2, 64 / size_of::<PositionType>());
+
+const LINEAR_MAP_SIZE: usize = LEVEL_0_BUCKETS * FAN_OUT;
 // const LINEAR_MAP_SIZE: usize = 4; // For debug
 // const FAN_OUT: usize = 4; // For debug
 
@@ -47,7 +49,7 @@ impl Default for InternalNode {
 #[derive(Debug)]
 pub struct RecursivePositionMap {
   /// The first level
-  linear_oram: LinearORAM<PositionType>,
+  linear_oram: LinearORAM<InternalNode>,
   /// Remaining levels
   recursive_orams: Vec<CircuitORAM<InternalNode>>,
   /// The number of positions in the ORAM
@@ -67,13 +69,14 @@ impl RecursivePositionMap {
     debug_assert!(n > 0);
     let mut h: usize;
     let mut rng = rng();
+    let l0_buckets = min(n.div_ceil(FAN_OUT), LEVEL_0_BUCKETS);
 
-    let mut first_level: LinearORAM<PositionType> = if n <= LINEAR_MAP_SIZE {
+    let mut first_level: LinearORAM<InternalNode> = if n <= LINEAR_MAP_SIZE {
       h = 0;
-      LinearORAM::new(n)
+      LinearORAM::new(l0_buckets)
     } else {
       h = (n / LINEAR_MAP_SIZE).ilog(FAN_OUT) as usize;
-      LinearORAM::new(LINEAR_MAP_SIZE)
+      LinearORAM::new(LEVEL_0_BUCKETS)
     };
     if LINEAR_MAP_SIZE * FAN_OUT.pow(h as u32) < n {
       h += 1;
@@ -106,8 +109,19 @@ impl RecursivePositionMap {
       data_maps[i] =
         CircuitORAM::new_with_positions_and_values(curr, &keys, &values, &positions_maps_for_level);
     }
-    for (i, item) in positions_maps_for_level.iter().enumerate() {
-      first_level.write(i, *item);
+
+    // Write the first level, bucket by bucket:
+    //
+    for i in 0..l0_buckets {
+      let mut inner = InternalNode::default();
+      for j in 0..FAN_OUT {
+        let pos = i * FAN_OUT + j;
+        if pos >= curr {
+          break;
+        }
+        inner.0[j] = positions_maps_for_level[pos];
+      }
+      first_level.data[i] = inner;
     }
 
     Self { linear_oram: first_level, recursive_orams: data_maps, n, h, rng }
@@ -136,7 +150,11 @@ impl RecursivePositionMap {
     let mut new_curr_pos: PositionType =
       if self.h == 0 { new_pos } else { self.rng.random_range(0..curr_max_pos) };
 
-    self.linear_oram.read_update(curr_k, new_curr_pos, &mut ret);
+    let level0_bucket_idx = curr_k >> LEVELN_BITS;
+    let mut level0_bucket = InternalNode::default();
+    self.linear_oram.read(level0_bucket_idx, &mut level0_bucket);
+    oblivious_read_update_index(&mut level0_bucket.0, curr_k & MASKN, &mut ret, new_curr_pos);
+    self.linear_oram.write(level0_bucket_idx, level0_bucket);
 
     // let mut pos = self.linear_oram.access_position(k, new_pos);
     for i in 0..self.h {
@@ -185,7 +203,7 @@ mod tests {
     let n = LINEAR_MAP_SIZE / 2 + 1;
     let mut pos_map = RecursivePositionMap::new(n);
     assert_eq!(pos_map.h, 0);
-    assert_eq!(pos_map.linear_oram.data.len(), n);
+    assert_eq!(pos_map.linear_oram.data.len(), n.div_ceil(FAN_OUT));
     for i in 0..n {
       pos_map.access_position(i, i as PositionType);
     }
@@ -199,7 +217,7 @@ mod tests {
     let n = LINEAR_MAP_SIZE * FAN_OUT;
     let mut pos_map = RecursivePositionMap::new(n);
     assert_eq!(pos_map.h, 1);
-    assert_eq!(pos_map.linear_oram.data.len(), LINEAR_MAP_SIZE);
+    assert_eq!(pos_map.linear_oram.data.len(), LEVEL_0_BUCKETS);
     pos_map.print_for_debug();
     for i in 0..n {
       pos_map.access_position(i, i as PositionType);
