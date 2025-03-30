@@ -6,8 +6,8 @@ use crate::prelude::PositionType;
 /// Represents a heap tree structure.
 #[derive(Debug)]
 pub struct HeapTree<T> {
-  tree: Vec<T>,  // Actual storage container
-  height: usize, // Height of the tree, public, tree with a single element has height 1
+  pub(crate) tree: Vec<T>,  // Actual storage container
+  pub(crate) height: usize, // Height of the tree, public, tree with a single element has height 1
 }
 
 impl<T> HeapTree<T>
@@ -34,10 +34,10 @@ where
 
 impl<T> HeapTree<T> {
   #[inline]
-  fn get_index(&self, depth: usize, path: PositionType) -> usize {
+  pub(crate) fn get_index(&self, depth: usize, path: PositionType) -> usize {
     debug_assert!(depth < self.height);
-    let level_offset = 2usize.pow(depth as u32) - 1;
-    let mask = (1 << depth) - 1;
+    let level_offset = (1 << depth) - 1;
+    let mask = level_offset as PositionType;
     level_offset + (path & mask) as usize
   }
 

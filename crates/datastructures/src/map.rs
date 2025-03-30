@@ -4,8 +4,8 @@ use ahash::RandomState;
 use bytemuck::{Pod, Zeroable};
 use rand::{rngs::ThreadRng, Rng};
 use rods_primitives::{
-  cmov_body, impl_cmov_for_generic_pod,
-  traits::{Cmov, _Cmovbase, cswap},
+  cmov_body, cxchg_body, impl_cmov_for_generic_pod,
+  traits::{Cmov, _Cmovbase},
 };
 
 use seq_macro::seq;
@@ -235,7 +235,7 @@ where
         let inserted = bucket.insert_if_available(choice, *element);
         done.cmov(&true, inserted);
         let randidx = self.rng.random_range(0..BUCKET_SIZE);
-        cswap(&mut bucket.elements[randidx].element, element, !done);
+        bucket.elements[randidx].element.cxchg(element, !done);
       });
     }});
     done

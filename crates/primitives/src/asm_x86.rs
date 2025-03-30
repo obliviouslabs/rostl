@@ -7,6 +7,9 @@ use std::arch::asm;
 
 use crate::traits::{Cmov, _Cmovbase};
 
+// CMOV -------------------------
+//
+
 #[cfg(all(target_feature = "avx512f", target_feature = "avx512vl"))]
 impl _Cmovbase for [u8; 64] {
   #[inline]
@@ -19,6 +22,30 @@ impl _Cmovbase for [u8; 64] {
       let blended =
         _mm512_or_si512(_mm512_and_si512(mask, src_vec), _mm512_andnot_si512(mask, dest_vec));
       _mm512_storeu_si512(self as *mut Self as *mut __m512i, blended);
+    }
+  }
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    // Compute blend_mask in branchless fashion:
+    // In the reference: blend_mask = (__mmask8)(!cond) - 1;
+    // When choice is true: !choice is false (0), 0 - 1 yields 0xFF.
+    // When choice is false: !choice is true (1), 1 - 1 yields 0.
+    let blend_mask: __mmask8 = ((!choice) as u8).wrapping_sub(1) as __mmask8;
+    unsafe {
+      // Create a 512-bit vector with each 32-bit lane filled with mask.
+      let mask_vec = _mm512_set1_epi32(mask);
+      // Load the full 64 bytes from each operand.
+      let mut vec1 = _mm512_loadu_si512(self.as_ptr() as *const __m512i);
+      let mut vec2 = _mm512_loadu_si512(other.as_ptr() as *const __m512i);
+      // Compute the difference via XOR.
+      let diff = _mm512_xor_si512(vec1, vec2);
+      // Mask the difference so that if choice is false, diff_masked is zero.
+      let diff_masked = _mm512_and_si512(diff, mask_vec);
+      // Apply the masked difference to swap the values.
+      vec1 = _mm512_xor_si512(vec1, diff_masked);
+      vec2 = _mm512_xor_si512(vec2, diff_masked);
+      _mm512_storeu_si512(self.as_mut_ptr() as *mut __m512i, vec1);
+      _mm512_storeu_si512(other.as_mut_ptr() as *mut __m512i, vec2);
     }
   }
 }
@@ -37,6 +64,21 @@ impl _Cmovbase for [u8; 32] {
       _mm256_storeu_si256(self as *mut Self as *mut __m256i, blended);
     }
   }
+
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    unsafe {
+      let mask = _mm256_set1_epi32(0i32.wrapping_sub(choice as i32));
+      let vec1 = _mm256_loadu_si256(self.as_ptr() as *const __m256i);
+      let vec2 = _mm256_loadu_si256(other.as_ptr() as *const __m256i);
+      let diff = _mm256_xor_si256(vec1, vec2);
+      let diff_masked = _mm256_and_si256(diff, mask);
+      let new_vec1 = _mm256_xor_si256(vec1, diff_masked);
+      let new_vec2 = _mm256_xor_si256(vec2, diff_masked);
+      _mm256_storeu_si256(self.as_mut_ptr() as *mut __m256i, new_vec1);
+      _mm256_storeu_si256(other.as_mut_ptr() as *mut __m256i, new_vec2);
+    }
+  }
 }
 
 #[cfg(target_feature = "sse2")]
@@ -52,32 +94,21 @@ impl _Cmovbase for u128 {
       _mm_storeu_si128(self as *mut Self as *mut __m128i, blended);
     }
   }
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    unsafe {
+      let mask = _mm_set1_epi16(0i16.wrapping_sub(choice as i16));
+      let vec1 = _mm_loadu_si128(self as *const Self as *const __m128i);
+      let vec2 = _mm_loadu_si128(other as *const Self as *const __m128i);
+      let diff = _mm_xor_si128(vec1, vec2);
+      let diff_masked = _mm_and_si128(diff, mask);
+      let new_vec1 = _mm_xor_si128(vec1, diff_masked);
+      let new_vec2 = _mm_xor_si128(vec2, diff_masked);
+      _mm_storeu_si128(self as *mut Self as *mut __m128i, new_vec1);
+      _mm_storeu_si128(other as *mut Self as *mut __m128i, new_vec2);
+    }
+  }
 }
-
-// This is leading to slower code:
-// impl _Cmovbase for u64 {
-//   #[inline]
-//   fn cmov_base(&mut self, other: &Self, choice: bool) {
-//     let self_ptr = self as *mut Self;
-//     let other_ptr = other as *const Self;
-
-//     // let mut tmp: u64 = unsafe { MaybeUninit::uninit().assume_init() } ;
-//     let mut tmp = MaybeUninit::<u64>::uninit();
-//     unsafe {
-//       asm!(
-//         "mov {tmp}, [{i1}]",
-//         "test {mcond}, {mcond}",
-//         "cmovnz {tmp}, [{i2}]",
-//         "mov [{i1}], {tmp}",
-//         tmp = inout(reg) tmp,
-//         i1 = in(reg) self_ptr,
-//         i2 = in(reg) other_ptr,
-//         mcond = in(reg) choice as u64,
-//         options(nostack)
-//       );
-//     }
-//   }
-// }
 
 impl _Cmovbase for u64 {
   #[inline]
@@ -92,6 +123,12 @@ impl _Cmovbase for u64 {
         options(pure,nomem,nostack)
       );
     }
+  }
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    let c = *self;
+    self.cmov_base(other, choice);
+    other.cmov_base(&c, choice);
   }
 }
 
@@ -109,6 +146,12 @@ impl _Cmovbase for u32 {
       );
     }
   }
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    let c = *self;
+    self.cmov_base(other, choice);
+    other.cmov_base(&c, choice);
+  }
 }
 
 impl _Cmovbase for u16 {
@@ -125,14 +168,27 @@ impl _Cmovbase for u16 {
       );
     }
   }
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    let c = *self;
+    self.cmov_base(other, choice);
+    other.cmov_base(&c, choice);
+  }
 }
 
 impl _Cmovbase for u8 {
   #[inline]
   fn cmov_base(&mut self, other: &Self, choice: bool) {
-    let mut su16 = *self as u16;
-    let ou16 = *other as u16;
-    su16.cmov(&ou16, choice);
-    *self = su16 as Self;
+    let mut su32 = *self as u32;
+    let ou32 = *other as u32;
+    su32.cmov(&ou32, choice);
+    *self = su32 as Self;
+  }
+
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    let c = *self;
+    self.cmov_base(other, choice);
+    other.cmov_base(&c, choice);
   }
 }

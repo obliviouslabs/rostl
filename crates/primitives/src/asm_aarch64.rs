@@ -17,6 +17,12 @@ impl _Cmovbase for u64 {
       *self = *other
     }
   }
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    let c = *self;
+    self.cmov_base(other, choice);
+    other.cmov_base(&c, choice);
+  }
 }
 
 impl _Cmovbase for u32 {
@@ -25,6 +31,12 @@ impl _Cmovbase for u32 {
     if choice {
       *self = *other
     }
+  }
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    let c = *self;
+    self.cmov_base(other, choice);
+    other.cmov_base(&c, choice);
   }
 }
 
@@ -35,6 +47,12 @@ impl _Cmovbase for u16 {
       *self = *other
     }
   }
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    let c = *self;
+    self.cmov_base(other, choice);
+    other.cmov_base(&c, choice);
+  }
 }
 
 impl _Cmovbase for u8 {
@@ -43,5 +61,11 @@ impl _Cmovbase for u8 {
     if choice {
       *self = *other
     }
+  }
+  #[inline]
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool) {
+    let c = *self;
+    self.cmov_base(other, choice);
+    other.cmov_base(&c, choice);
   }
 }

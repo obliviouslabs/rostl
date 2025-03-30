@@ -4,6 +4,7 @@ use crate::indexable::Indexable;
 #[allow(missing_docs)]
 pub trait _Cmovbase {
   fn cmov_base(&mut self, other: &Self, choice: bool);
+  fn cxchg_base(&mut self, other: &mut Self, choice: bool);
 }
 
 /// A trait for conditionally moving values with constant memory trace.
@@ -12,6 +13,9 @@ pub trait Cmov: Sized {
   /// Conditionally move `other` into `self` based on `choice`.
   /// @Oblivious
   fn cmov(&mut self, other: &Self, choice: bool);
+  /// Conditionally exchange `other` and `self` based on `choice`.
+  /// @Oblivious
+  fn cxchg(&mut self, other: &mut Self, choice: bool);
 
   /// Conditionally set `self` to either `val_false` or `val_true` based on `choice`.
   /// @Oblivious

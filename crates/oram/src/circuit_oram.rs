@@ -1,10 +1,12 @@
 //! Implementation of [Circuit ORAM](https://eprint.iacr.org/2014/672.pdf)
 //!
-#![allow(clippy::needless_bitwise_bool)] // UNDONE(git-8): This is needed to enforce the bitwise operations to not short circuit. Investigate if we should be using helper functions instead.
+#![allow(clippy::needless_bitwise_bool)]
+
+// UNDONE(git-8): This is needed to enforce the bitwise operations to not short circuit. Investigate if we should be using helper functions instead.
 use bytemuck::{Pod, Zeroable};
 use rods_primitives::{
-  cmov_body, impl_cmov_for_generic_pod,
-  traits::{Cmov, _Cmovbase, cswap},
+  cmov_body, cxchg_body, impl_cmov_for_generic_pod,
+  traits::{Cmov, _Cmovbase},
 };
 
 use crate::heap_tree::HeapTree;
@@ -66,14 +68,39 @@ impl<V: Cmov + Pod> Block<V> {
 /// A bucket in the ORAM tree
 #[repr(C)]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
-pub struct Bucket<V>
+pub struct Bucket<V>([Block<V>; Z])
 where
-  V: Cmov + Pod,
-{
-  /// The blocks in the bucket
-  pub buckets: [Block<V>; Z],
-}
+  V: Cmov + Pod;
 unsafe impl<V: Cmov + Pod> Pod for Bucket<V> {}
+impl_cmov_for_generic_pod!(Bucket<V>; where V: Cmov + Pod);
+
+impl<V: Cmov + Pod> HeapTree<Bucket<V>> {
+  /// Reads all the blocks in a path from the ORAM tree into an array in order:
+  /// [Bucket0 (Root): [Block0, Block1], Bucket1 (Level1): [Block2, Block3], ...]
+  #[inline]
+  pub fn read_path(&mut self, path: PositionType, out: &mut [Block<V>]) {
+    debug_assert!((path as usize) < (1 << self.height));
+    debug_assert!(out.len() == self.height * Z);
+    for i in 0..self.height {
+      let index = self.get_index(i, path);
+      let bucket = &self.tree[index];
+      out[i * Z..(i + 1) * Z].copy_from_slice(&bucket.0);
+    }
+  }
+
+  /// Writes a path to the ORAM tree, expectes the input to be in the correct format, no checks are done:
+  /// [Bucket0 (Root): [Block0, Block1], Bucket1 (Level1): [Block2, Block3], ...]
+  #[inline]
+  pub fn write_path(&mut self, path: PositionType, in_: &[Block<V>]) {
+    debug_assert!((path as usize) < (1 << self.height));
+    debug_assert!(in_.len() == self.height * Z);
+    for i in 0..self.height {
+      let index = self.get_index(i, path);
+      let bucket = &mut self.tree[index];
+      bucket.0.copy_from_slice(&in_[i * Z..(i + 1) * Z]);
+    }
+  }
+}
 
 /// The Circuit ORAM structure
 ///
@@ -232,25 +259,13 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   /// Reads a path to the end of the stash
   fn read_path_and_get_nodes(&mut self, pos: PositionType) {
     debug_assert!((pos as usize) < self.max_n);
-
-    for i in 0..self.h {
-      let bucket = self.tree.get_path_at_depth(i, pos);
-      for j in 0..Z {
-        self.stash[S + i * Z + j] = bucket.buckets[j];
-      }
-    }
+    self.tree.read_path(pos, &mut self.stash[S..S + self.h * Z]);
   }
 
   /// Writes back the path at the end of the stash
   fn write_back_path(&mut self, pos: PositionType) {
     debug_assert!((pos as usize) < self.max_n);
-
-    for i in 0..self.h {
-      let bucket = self.tree.get_path_at_depth_mut(i, pos);
-      for j in 0..Z {
-        bucket.buckets[j] = self.stash[S + i * Z + j];
-      }
-    }
+    self.tree.write_path(pos, &self.stash[S..S + self.h * Z]);
   }
 
   /// Alg. 4 - EvictOnceFast(path) in `CircuitORAM` paper
@@ -355,7 +370,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
         let read_and_remove_flag = is_deepest & has_target_flag;
         let write_flag = (self.stash[idx].is_empty()) & place_dummy_flag;
         let swap_flag = read_and_remove_flag | write_flag;
-        cswap(&mut hold, &mut self.stash[idx], swap_flag);
+        hold.cxchg(&mut self.stash[idx], swap_flag);
         idx += 1;
       }
 
