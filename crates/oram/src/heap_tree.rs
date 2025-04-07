@@ -7,7 +7,7 @@ use crate::prelude::PositionType;
 #[derive(Debug)]
 pub struct HeapTree<T> {
   pub(crate) tree: Vec<T>,  // Actual storage container
-  pub(crate) height: usize, // Height of the tree, public, tree with a single element has height 1
+  pub height: usize, // Height of the tree, public, tree with a single element has height 1
 }
 
 impl<T> HeapTree<T>
@@ -34,7 +34,7 @@ where
 
 impl<T> HeapTree<T> {
   #[inline]
-  pub(crate) fn get_index(&self, depth: usize, path: PositionType) -> usize {
+  pub fn get_index(&self, depth: usize, path: PositionType) -> usize {
     debug_assert!(depth < self.height);
     let level_offset = (1 << depth) - 1;
     let mask = level_offset as PositionType;
@@ -59,6 +59,49 @@ impl<T> HeapTree<T> {
 
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &mut self.tree[index]
+  }
+
+  pub fn get_node_by_index(&self, index: usize) -> &T {
+    // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
+    &self.tree[index]
+  }
+
+  pub fn get_path_depth(&self, index: usize) -> (PositionType, usize) {
+    let mut depth = 0;
+    let mut path = 0;
+    let mut index = index;
+
+    while index > 0 {
+      path |= (index & 1) << depth;
+      index >>= 1;
+      depth += 1;
+    }
+
+    (path.try_into().unwrap(), depth)
+  }
+
+  pub fn get_left_child_index(&self, index: usize) -> &T {
+    let left_child_index = 2 * index + 1;
+    if left_child_index < self.tree.len() {
+      self.get_node_by_index(left_child_index)
+    } else {
+      panic!("Left child index out of bounds")
+    }
+  }
+  pub fn get_right_child_index(&self, index: usize) -> &T {
+    let right_child_index = 2 * index + 2;
+    if right_child_index < self.tree.len() {
+      self.get_node_by_index(right_child_index)
+    } else {
+      panic!("Right child index out of bounds")
+    }
+  }
+
+  pub fn is_leaf(&self, index: usize) -> bool {
+    if index >= self.tree.len() / 2 {
+      return true;
+    }
+    return false;
   }
 }
 
