@@ -258,6 +258,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
 
   /// Reads a path to the end of the stash
   pub fn read_path_and_get_nodes(&mut self, pos: PositionType) {
+    println!("pos:{}, self.max_n: {}", pos, self.max_n);
     debug_assert!((pos as usize) < self.max_n);
     self.tree.read_path(pos, &mut self.stash[S..S + self.h * Z]);
   }

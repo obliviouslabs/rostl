@@ -35,6 +35,7 @@ where
 impl<T> HeapTree<T> {
   #[inline]
   pub fn get_index(&self, depth: usize, path: PositionType) -> usize {
+    // println!("depth: {}, self.heithgt: {}", depth, self.height);
     debug_assert!(depth < self.height);
     let level_offset = (1 << depth) - 1;
     let mask = level_offset as PositionType;
