@@ -6,8 +6,8 @@ use crate::prelude::PositionType;
 /// Represents a heap tree structure.
 #[derive(Debug)]
 pub struct HeapTree<T> {
-  pub(crate) tree: Vec<T>,  // Actual storage container
-  pub height: usize, // Height of the tree, public, tree with a single element has height 1
+  pub(crate) tree: Vec<T>, // Actual storage container
+  pub height: usize,       // Height of the tree, public, tree with a single element has height 1
 }
 
 impl<T> HeapTree<T>
@@ -102,7 +102,7 @@ impl<T> HeapTree<T> {
     if index >= self.tree.len() / 2 {
       return true;
     }
-    return false;
+    false
   }
 }
 
