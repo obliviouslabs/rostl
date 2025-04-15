@@ -61,3 +61,24 @@ impl<T> HeapTree<T> {
     &mut self.tree[index]
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use crate::prelude::PositionType;
+
+  fn print_depth_pos_index(height: usize, depth: usize, path: PositionType) {
+    debug_assert!(depth < height);
+    let level_offset = (1 << depth) - 1;
+    let mask = level_offset as PositionType;
+    let ret = level_offset + (path & mask) as usize;
+    println!("depth: {}, path: {}, index: {}", depth, path, ret);
+  }
+  #[test]
+  fn print_heap_tree_info() {
+    for depth in 0..3 {
+      for path in 0..4 {
+        print_depth_pos_index(3, depth, path);
+      }
+    }
+  }
+}

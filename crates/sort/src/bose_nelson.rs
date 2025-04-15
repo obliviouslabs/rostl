@@ -33,7 +33,7 @@ where
     CSWAP!(arr, start1 + 1, start2);
   } else {
     let s1 = size1 / 2;
-    let s2 = if (size1 % 2) == 0 { (size2 + 1) / 2 } else { size2 / 2 };
+    let s2 = if (size1 % 2) == 0 { size2.div_ceil(2) } else { size2 / 2 };
     bn_merge(arr, start1, s1, start2, s2);
     bn_merge(arr, start1 + s1, size1 - s1, start2 + s2, size2 - s2);
     bn_merge(arr, start1 + s1, size1 - s1, start2, s2);

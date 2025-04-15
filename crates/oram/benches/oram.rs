@@ -11,7 +11,7 @@ use rods_oram::{
 pub fn benchmark_oram_initialization<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let mut group = c.benchmark_group(format!(
     "ORAM_Initialization/{}",
-    std::any::type_name::<T>().split(':').last().unwrap()
+    std::any::type_name::<T>().split(':').next_back().unwrap()
   ));
   let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
   group.plot_config(plot_config);
@@ -38,8 +38,10 @@ pub fn benchmark_oram_initialization<T: Measurement + 'static>(c: &mut Criterion
 }
 
 pub fn benchmark_oram_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
-  let mut group = c
-    .benchmark_group(format!("ORAM_Ops/{}", std::any::type_name::<T>().split(':').last().unwrap()));
+  let mut group = c.benchmark_group(format!(
+    "ORAM_Ops/{}",
+    std::any::type_name::<T>().split(':').next_back().unwrap()
+  ));
   let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
   group.plot_config(plot_config);
 

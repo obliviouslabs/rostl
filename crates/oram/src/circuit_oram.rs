@@ -88,7 +88,7 @@ impl<V: Cmov + Pod> HeapTree<Bucket<V>> {
     }
   }
 
-  /// Writes a path to the ORAM tree, expectes the input to be in the correct format, no checks are done:
+  /// Writes a path to the ORAM tree, expects the input to be in the correct format, no checks are done:
   /// [Bucket0 (Root): [Block0, Block1], Bucket1 (Level1): [Block2, Block3], ...]
   #[inline]
   pub fn write_path(&mut self, path: PositionType, in_: &[Block<V>]) {
@@ -564,11 +564,19 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
 
   #[cfg(test)]
   pub(crate) fn print_for_debug(&self) {
+    println!("self.h: {}", self.h);
     println!("Stash: {:?}", self.stash);
     for i in 0..self.h {
       print!("Level {}: ", i);
       for j in 0..(1 << i) {
-        print!("{:?} ", self.tree.get_path_at_depth(i, j << (self.h - 1 - i)));
+        let w_j = reverse_bits(j, i);
+        print!(
+          "{:?} ",
+          self.tree.get_path_at_depth(
+            i,
+            reverse_bits(w_j * (1 << (self.h - 1 - i)), self.h - 1) as PositionType
+          )
+        );
       }
       println!();
     }
@@ -586,6 +594,59 @@ mod tests {
     for elem in &oram.stash[..S] {
       debug_assert!(elem.is_empty());
     }
+  }
+
+  #[test]
+  fn test_print_for_debug() {
+    let mut oram = CircuitORAM::<u64>::new(4);
+    oram.perform_deterministic_evictions();
+    assert_empty_stash(&oram);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 0, 0, 0);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 1, 1, 1);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 2, 2, 2);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 3, 3, 3);
+    oram.print_for_debug();
+    oram.perform_deterministic_evictions();
+    oram.print_for_debug();
+    oram.write_or_insert(0, 0, 4, 0);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 1, 5, 1);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 2, 6, 2);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 3, 7, 3);
+    oram.print_for_debug();
+    oram.perform_deterministic_evictions();
+    oram.print_for_debug();
+    oram.write_or_insert(0, 0, 10, 0);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 1, 11, 1);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 2, 12, 2);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 3, 13, 3);
+    oram.print_for_debug();
+    oram.perform_deterministic_evictions();
+    // Currently none of these blocks will be evicted, as the first level is not seen as sepparate from the stash itself.
+    oram.print_for_debug();
+    oram.write_or_insert(0, 0, 20, 0);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 1, 21, 1);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 2, 22, 2);
+    oram.print_for_debug();
+    oram.write_or_insert(0, 3, 23, 3);
+    oram.print_for_debug();
+    oram.perform_deterministic_evictions();
+    oram.perform_deterministic_evictions();
+    oram.perform_deterministic_evictions();
+    oram.perform_deterministic_evictions();
+    oram.perform_deterministic_evictions();
+    oram.print_for_debug();
   }
 
   #[test]

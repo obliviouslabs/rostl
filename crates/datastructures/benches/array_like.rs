@@ -18,7 +18,7 @@ use seq_macro::seq;
 pub fn benchmark_array_initialization<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let mut group = c.benchmark_group(format!(
     "Array_Initialization/{}",
-    std::any::type_name::<T>().split(':').last().unwrap()
+    std::any::type_name::<T>().split(':').next_back().unwrap()
   ));
   let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
   group.plot_config(plot_config);
@@ -84,7 +84,7 @@ pub fn benchmark_array_initialization<T: Measurement + 'static>(c: &mut Criterio
 pub fn benchmark_array_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let mut group = c.benchmark_group(format!(
     "Array_Operations/{}",
-    std::any::type_name::<T>().split(':').last().unwrap()
+    std::any::type_name::<T>().split(':').next_back().unwrap()
   ));
   let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
   group.plot_config(plot_config);

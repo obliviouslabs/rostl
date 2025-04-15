@@ -15,8 +15,10 @@ use rods_sort::shuffle::shuffle;
 use std::hint::black_box;
 
 pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {
-  let mut group =
-    c.benchmark_group(format!("Sorting/{}", std::any::type_name::<T>().split(':').last().unwrap()));
+  let mut group = c.benchmark_group(format!(
+    "Sorting/{}",
+    std::any::type_name::<T>().split(':').next_back().unwrap()
+  ));
   let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
   group.plot_config(plot_config);
 
