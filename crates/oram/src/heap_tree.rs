@@ -35,19 +35,48 @@ where
 impl<T> HeapTree<T> {
   #[inline]
   pub fn get_index(&self, depth: usize, path: PositionType) -> usize {
-    // println!("depth: {}, self.heithgt: {}", depth, self.height);
     debug_assert!(depth < self.height);
     let level_offset = (1 << depth) - 1;
     let mask = level_offset as PositionType;
     level_offset + (path & mask) as usize
   }
 
+  // index in the heap tree
+  //       0   
+  //   1        2 
+  // 3    4    5    6 
+  // 00   10  01    11
+  // 0    2    1     3
+  // 0    1    2     3
+
+
+  //                 0   
+  //             1        2
+  //           3   5   4    6
+  //             
+  //           0   2   1    3
+
+  //                 0
+  //           1            2
+  //       3       5    4        6
+  //     7             8            14
+  //  0  1  2 3        7
+  //  000  100  010   110  001   101  011   111
+  //  0     4    2     6     1     5     3     7
+
+
+  //       0
+  //   1        2
+  //
+  //
+
+
   /// Get a node of a certain path at a certain depth
   /// Reveals depth and path
   #[inline]
   pub fn get_path_at_depth(&self, depth: usize, path: PositionType) -> &T {
     let index = self.get_index(depth, path);
-
+    print!("depth:{},pos:{},index:{}", depth, path, index);
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &self.tree[index]
   }

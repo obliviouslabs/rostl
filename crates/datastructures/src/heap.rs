@@ -1,7 +1,7 @@
 #![allow(missing_docs)]
 #![allow(unused_imports)]
 #![allow(deprecated)]
-use std::cmp;
+use std::{cmp, default};
 use std::mem::ManuallyDrop;
 
 use bytemuck::{Pod, Zeroable};
@@ -63,15 +63,36 @@ where
 {
   pub fn new(n: usize) -> Self {
     let data = CircuitORAM::new(n); // Initialize `data` first
-    let metadata = HeapTree::new(data.h); // Use `data.h` after `data` is initialized
+    let default_heapV = HeapV::<V> {
+      key: K::MAX,
+      value: V::default(),
+    };
+    let default_value = Block::<HeapV<V>> {
+      pos: 0,
+      key: K::MAX,
+      value: default_heapV,
+    };
+    let metadata = HeapTree::new_with(data.h,default_value); // Use `data.h` after `data` is initialized
     Self { data, metadata, rng: rand::thread_rng() }
   }
 
   pub fn find_min(&mut self) -> (PositionType, K, V) {
     let min_node = self.metadata.get_node_by_index(0);
-    let ret_pos = min_node.pos;
-    let ret_k = min_node.key;
-    let ret_v = min_node.value.value;
+    let mut ret_pos = min_node.pos;
+    let mut ret_k = min_node.key;
+    let mut ret_v = min_node.value.value;
+    println!("min_node_elem_key: {}, ", ret_k);
+    // also scan the stash for the min and compare that with min_node 
+    for elem in &self.data.stash[0..S] {
+      let elem_key = if elem.is_empty() { K::MAX } else { elem.value.key };
+      println!("elem_key: {}, ", elem_key);
+      if elem_key < ret_k {
+        ret_k = elem_key;
+        ret_v = elem.value.value;
+        ret_pos = elem.pos;
+        println!("return value updated! elem_key: {}, ", elem_key);
+      }
+    }
     (ret_pos, ret_k, ret_v)
   }
 
@@ -95,7 +116,9 @@ where
     for i in 0..data.h {
       print!("Level {}: ", i);
       for j in 0..(1 << i) {
-        print!("{:?} ", data.tree.get_path_at_depth(i, j << (data.h - 1 - i)));
+        print!("{} ", j << (data.h - 1 - i));
+        print!("data.h:{} ", data.h);
+        print!("{:?} ", data.tree.get_path_at_depth(i, ((j << (data.h - 1 - i)) as u32) .reverse_bits()>>(32-data.h+1)    ));
       }
       println!();
     }
@@ -108,31 +131,34 @@ where
 
     for elem in data.stash[S..(S + self.data.h * Z)].chunks(2).rev() {
       let metadata_index = metadata.get_index(h_index, pos);
+      println!("pos:{}, h_index:{}, metadata_index:{}", pos, h_index, metadata_index);
       let elem0_key = if elem[0].is_empty() { K::MAX } else { elem[0].value.key };
       let elem1_key = if elem[1].is_empty() { K::MAX } else { elem[1].value.key };
+      let mut new_metadata_node = elem[0];
+      new_metadata_node.value.key = elem0_key;
+      if elem0_key > elem1_key {
+        new_metadata_node = elem[1];
+        new_metadata_node.value.key = elem1_key;
+      }
 
-      println!("left key: {}, right key: {}", elem0_key, elem1_key);
-
-      let (chosen, _) =
-        if elem0_key < elem1_key { (&elem[0], &elem[1]) } else { (&elem[1], &elem[0]) };
-
-      let mut new_metadata_node = *chosen;
+      print!("new_metadata_node:{}", new_metadata_node.value.key);
 
       if h_index == metadata.height - 1 {
         *metadata.get_path_at_depth_mut(h_index, pos) = new_metadata_node;
+        h_index = h_index.saturating_sub(1);
         continue;
       }
 
       let left_child = metadata.get_left_child_index(metadata_index);
       let right_child = metadata.get_right_child_index(metadata_index);
 
-      if left_child.key < new_metadata_node.key {
+      if left_child.value.key < new_metadata_node.value.key {
         new_metadata_node = *left_child;
       }
-      if right_child.key < new_metadata_node.key {
+      if right_child.value.key < new_metadata_node.value.key {
         new_metadata_node = *right_child;
       }
-
+      println!("left_child:{:?}, right_child:{:?}, new_metadata_node:{:?}", left_child.value.key, right_child.value.key, new_metadata_node.value.key);
       *metadata.get_path_at_depth_mut(h_index, pos) = new_metadata_node;
       h_index = h_index.saturating_sub(1);
     }
@@ -180,80 +206,83 @@ where
   }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     // Heap<usize, u64> where K = usize and V = u64
-//     fn create_test_heap() -> Heap<u64> {
-//         Heap::new(4) // small test size
-//     }
+    // Heap<usize, u64> where K = usize and V = u64
+    fn create_test_heap() -> Heap<u64> {
+        Heap::new(4) // small test size
+    }
 
-//     // #[test]
-//     // fn test_insert_and_find_min() {
-//     //     let mut heap = create_test_heap();
+    #[test]
+    fn test_insert_and_find_min() {
+        let mut heap = create_test_heap();
 
-//     //     heap.insert(10, 100);
-//     //     let (_pos, min_key, min_val) = heap.find_min();
-//     //     println!("min_key: {}, min_val: {}", min_key, min_val);
-//     //     heap.insert(5, 50);
-//     //     let (_pos, min_key, min_val) = heap.find_min();
-//     //     println!("min_key: {}, min_val: {}", min_key, min_val);
-//     //     heap.insert(20, 200);
-//     //     let (_pos, min_key, min_val) = heap.find_min();
-//     //     println!("min_key: {}, min_val: {}", min_key, min_val);
+        heap.insert(10, 100);
+        let (_pos, min_key, min_val) = heap.find_min();
+        assert_eq!(min_key, 10);
+        assert_eq!(min_val, 100);
+        heap.insert(5, 50);
+        let (_pos, min_key, min_val) = heap.find_min();
+        println!("min_key: {}, min_val: {}", min_key, min_val);
+        heap.insert(20, 200);
+        let (_pos, min_key, min_val) = heap.find_min();
+        println!("min_key: {}, min_val: {}", min_key, min_val);
 
-//     //     let (_pos, min_key, min_val) = heap.find_min();
-//     //     assert_eq!(min_key, 5);
-//     //     assert_eq!(min_val, 50);
-//     // }
+        let (_pos, min_key, min_val) = heap.find_min();
+        assert_eq!(min_key, 5);
+        assert_eq!(min_val, 50);
+    }
 
-//     // #[test]
-//     // fn test_insert_and_extract_min() {
-//     //     let mut heap = create_test_heap();
 
-//     //     heap.insert(30, 300);
-//     //     heap.insert(10, 100);
-//     //     heap.insert(20, 200);
 
-//     //     let (_pos, min_key, min_val) = heap.find_min();
-//     //     assert_eq!(min_key, 10);
-//     //     assert_eq!(min_val, 100);
+    // #[test]
+    // fn test_insert_and_extract_min() {
+    //     let mut heap = create_test_heap();
 
-//     //     heap.extract_min();
+    //     heap.insert(30, 300);
+    //     heap.insert(10, 100);
+    //     heap.insert(20, 200);
 
-//     //     let (_, new_min_key, new_min_val) = heap.find_min();
-//     //     assert_ne!(new_min_key, 10);
-//     //     assert_ne!(new_min_val, 100);
-//     // }
+    //     let (_pos, min_key, min_val) = heap.find_min();
+    //     assert_eq!(min_key, 10);
+    //     assert_eq!(min_val, 100);
 
-//     // #[test]
-//     // fn test_delete() {
-//     //     let mut heap = create_test_heap();
+    //     heap.extract_min();
 
-//     //     let pos = heap.insert(15, 150);
-//     //     let (_pos, key, val) = heap.find_min();
+    //     let (_, new_min_key, new_min_val) = heap.find_min();
+    //     assert_ne!(new_min_key, 10);
+    //     assert_ne!(new_min_val, 100);
+    // }
 
-//     //     heap.delete(pos, key);
+    // #[test]
+    // fn test_delete() {
+    //     let mut heap = create_test_heap();
 
-//     //     let (_, min_key, min_val) = heap.find_min();
-//     //     assert!(min_key != 15 || min_val != 150);
-//     // }
+    //     let pos = heap.insert(15, 150);
+    //     let (_pos, key, val) = heap.find_min();
 
-//     // #[test]
-//     // fn test_multiple_inserts_and_extracts() {
-//     //     let mut heap = create_test_heap();
+    //     heap.delete(pos, key);
 
-//     //     for i in (1..=5).rev() {
-//     //         heap.insert(i, (i * 10) as u64);
-//     //     }
+    //     let (_, min_key, min_val) = heap.find_min();
+    //     assert!(min_key != 15 || min_val != 150);
+    // }
 
-//     //     let mut last_val = 0;
-//     //     for _ in 0..5 {
-//     //         let (_, key, val) = heap.find_min();
-//     //         assert!(val >= last_val);
-//     //         last_val = val;
-//     //         heap.extract_min();
-//     //     }
-//     // }
-// }
+    // #[test]
+    // fn test_multiple_inserts_and_extracts() {
+    //     let mut heap = create_test_heap();
+
+    //     for i in (1..=5).rev() {
+    //         heap.insert(i, (i * 10) as u64);
+    //     }
+
+    //     let mut last_val = 0;
+    //     for _ in 0..5 {
+    //         let (_, key, val) = heap.find_min();
+    //         assert!(val >= last_val);
+    //         last_val = val;
+    //         heap.extract_min();
+    //     }
+    // }
+}
