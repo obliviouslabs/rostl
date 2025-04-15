@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743326435230,
+  "lastUpdate": 1744732408580,
   "repoUrl": "https://github.com/xtrm0/rods",
   "entries": {
     "Benchmark": [
@@ -10467,6 +10467,498 @@ window.BENCHMARK_DATA = {
             "name": "Sorting/WallTime/Shuffle/1000",
             "value": 72684,
             "range": "± 1090",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "committer": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "distinct": true,
+          "id": "86964a7a0310dc11bd91a6511afb168982fef262",
+          "message": "Cleanup",
+          "timestamp": "2025-04-15T11:21:14-04:00",
+          "tree_id": "1ebf9e341758edddf3454e283732fce333d96260",
+          "url": "https://github.com/xtrm0/rods/commit/86964a7a0310dc11bd91a6511afb168982fef262"
+        },
+        "date": 1744732407532,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "Array_Initialization/WallTime/ShortArray/128",
+            "value": 44,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/ShortQueue/128",
+            "value": 81,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/FixedArray/128",
+            "value": 40,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/ShortArray/1024",
+            "value": 152,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/ShortQueue/1024",
+            "value": 221,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/FixedArray/1024",
+            "value": 8504,
+            "range": "± 92",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/LongArray/128",
+            "value": 1063,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/DynamicArray/128",
+            "value": 1057,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/UnsortedMap/128",
+            "value": 4378,
+            "range": "± 57",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/LongArray/1024",
+            "value": 8253,
+            "range": "± 83",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/DynamicArray/1024",
+            "value": 8255,
+            "range": "± 96",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/UnsortedMap/1024",
+            "value": 32843,
+            "range": "± 2434",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/LongArray/1048576",
+            "value": 1376175279,
+            "range": "± 13224390",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/DynamicArray/1048576",
+            "value": 1347370112,
+            "range": "± 14768491",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/UnsortedMap/1048576",
+            "value": 2840755532,
+            "range": "± 51911125",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/EagerVector",
+            "value": 102,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/ShortArray/128",
+            "value": 86,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/ShortQueue_pushpop/128",
+            "value": 487,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/ShortArray/1024",
+            "value": 643,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/ShortQueue_pushpop/1024",
+            "value": 3835,
+            "range": "± 114",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/LongArray_Read/128",
+            "value": 749,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/LongArray_Write/128",
+            "value": 772,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/FixedArray_Read/128",
+            "value": 86,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/DynamicArray_Read/128",
+            "value": 748,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/EagerVector_Read/128",
+            "value": 794,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/UnsortedMap_Read/128",
+            "value": 2416,
+            "range": "± 74",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/LongArray_Read/1024",
+            "value": 1099,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/LongArray_Write/1024",
+            "value": 1157,
+            "range": "± 56",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/FixedArray_Read/1024",
+            "value": 1100,
+            "range": "± 75",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/DynamicArray_Read/1024",
+            "value": 1099,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/EagerVector_Read/1024",
+            "value": 1175,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/UnsortedMap_Read/1024",
+            "value": 3723,
+            "range": "± 41",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "mov-4k",
+            "value": 3364,
+            "range": "± 83",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "memstore-4k",
+            "value": 3381,
+            "range": "± 66",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov",
+            "value": 2850,
+            "range": "± 18",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov2",
+            "value": 2854,
+            "range": "± 42",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "mov",
+            "value": 1519,
+            "range": "± 16",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/LinearORAM/128",
+            "value": 41,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/CircuitORAM/128",
+            "value": 363,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/RecursivePositionMap/128",
+            "value": 678,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/LinearORAM/1024",
+            "value": 152,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/CircuitORAM/1024",
+            "value": 3001,
+            "range": "± 40",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/RecursivePositionMap/1024",
+            "value": 5253,
+            "range": "± 55",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/LinearORAM/1048576",
+            "value": 152068,
+            "range": "± 3089",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/CircuitORAM/1048576",
+            "value": 11303748,
+            "range": "± 222786",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/RecursivePositionMap/1048576",
+            "value": 1328208535,
+            "range": "± 55943405",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/LinearORAM_Read/128",
+            "value": 85,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Read/128",
+            "value": 683,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Write/128",
+            "value": 664,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/RecursivePositionMap/128",
+            "value": 45,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/LinearORAM_Read/1024",
+            "value": 642,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Read/1024",
+            "value": 827,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Write/1024",
+            "value": 812,
+            "range": "± 46",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/RecursivePositionMap/1024",
+            "value": 254,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/LinearORAM_Read/1048576",
+            "value": 656917,
+            "range": "± 5183",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Read/1048576",
+            "value": 1409,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Write/1048576",
+            "value": 1398,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/RecursivePositionMap/1048576",
+            "value": 6611,
+            "range": "± 455",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/32",
+            "value": 661,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/32",
+            "value": 810,
+            "range": "± 41",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/32",
+            "value": 1050,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/32",
+            "value": 157,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Shuffle/32",
+            "value": 988,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/100",
+            "value": 2794,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/100",
+            "value": 4953,
+            "range": "± 46",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/100",
+            "value": 6442,
+            "range": "± 491",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/100",
+            "value": 624,
+            "range": "± 26",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Shuffle/100",
+            "value": 4192,
+            "range": "± 256",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/320",
+            "value": 11957,
+            "range": "± 171",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/320",
+            "value": 25364,
+            "range": "± 285",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/320",
+            "value": 39481,
+            "range": "± 582",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/320",
+            "value": 2426,
+            "range": "± 278",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Shuffle/320",
+            "value": 17609,
+            "range": "± 231",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/1000",
+            "value": 51062,
+            "range": "± 6160",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/1000",
+            "value": 100515,
+            "range": "± 1089",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/1000",
+            "value": 274865,
+            "range": "± 3459",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/1000",
+            "value": 8737,
+            "range": "± 160",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Shuffle/1000",
+            "value": 73285,
+            "range": "± 906",
             "unit": "ns/iter"
           }
         ]
