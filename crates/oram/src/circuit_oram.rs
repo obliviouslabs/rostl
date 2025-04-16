@@ -781,7 +781,7 @@ mod tests {
     }
   }
 
-  //this test is failing now, but ORAM still works with the elements that should be moved to root left in stash 
+  //this test is failing now, but ORAM still works with the elements that should be moved to root left in stash
   //UNDONE(git-62): Fix this test
   // #[test]
   // fn test_eviction_once_fast() {

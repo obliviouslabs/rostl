@@ -42,18 +42,17 @@ impl<T> HeapTree<T> {
   }
 
   // index in the heap tree
-  //       0   
-  //   1        2 
-  // 3    4    5    6 
+  //       0
+  //   1        2
+  // 3    4    5    6
   // 00   10  01    11
   // 0    2    1     3
   // 0    1    2     3
 
-
-  //                 0   
+  //                 0
   //             1        2
   //           3   5   4    6
-  //             
+  //
   //           0   2   1    3
 
   //                 0
@@ -64,19 +63,16 @@ impl<T> HeapTree<T> {
   //  000  100  010   110  001   101  011   111
   //  0     4    2     6     1     5     3     7
 
-
   //       0
   //   1        2
   //
   //
-
 
   /// Get a node of a certain path at a certain depth
   /// Reveals depth and path
   #[inline]
   pub fn get_path_at_depth(&self, depth: usize, path: PositionType) -> &T {
     let index = self.get_index(depth, path);
-    print!("depth:{},pos:{},index:{}", depth, path, index);
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &self.tree[index]
   }
@@ -96,35 +92,23 @@ impl<T> HeapTree<T> {
     &self.tree[index]
   }
 
-  pub fn get_path_depth(&self, index: usize) -> (PositionType, usize) {
-    let mut depth = 0;
-    let mut path = 0;
-    let mut index = index;
+  // pub fn get_path_depth(&self, index: usize) -> (PositionType, usize) {
+  //   let mut depth = 0;
+  //   let mut path = 0;
+  //   let mut index = index;
 
-    while index > 0 {
-      path |= (index & 1) << depth;
-      index >>= 1;
-      depth += 1;
-    }
+  //   while index > 0 {
+  //     path |= (index & 1) << depth;
+  //     index >>= 1;
+  //     depth += 1;
+  //   }
 
-    (path.try_into().unwrap(), depth)
-  }
+  //   (path.try_into().unwrap(), depth)
+  // }
 
-  pub fn get_left_child_index(&self, index: usize) -> &T {
-    let left_child_index = 2 * index + 1;
-    if left_child_index < self.tree.len() {
-      self.get_node_by_index(left_child_index)
-    } else {
-      panic!("Left child index out of bounds")
-    }
-  }
-  pub fn get_right_child_index(&self, index: usize) -> &T {
-    let right_child_index = 2 * index + 2;
-    if right_child_index < self.tree.len() {
-      self.get_node_by_index(right_child_index)
-    } else {
-      panic!("Right child index out of bounds")
-    }
+  pub fn get_the_other_child(&self, depth: usize, path: PositionType) -> &T {
+    let new_path = path ^ (1 << depth);
+    self.get_path_at_depth(depth + 1, new_path)
   }
 
   pub fn is_leaf(&self, index: usize) -> bool {
@@ -144,7 +128,6 @@ mod tests {
     let level_offset = (1 << depth) - 1;
     let mask = level_offset as PositionType;
     let ret = level_offset + (path & mask) as usize;
-    println!("depth: {}, path: {}, index: {}", depth, path, ret);
   }
   #[test]
   fn print_heap_tree_info() {
