@@ -41,33 +41,6 @@ impl<T> HeapTree<T> {
     level_offset + (path & mask) as usize
   }
 
-  // index in the heap tree
-  //       0
-  //   1        2
-  // 3    4    5    6
-  // 00   10  01    11
-  // 0    2    1     3
-  // 0    1    2     3
-
-  //                 0
-  //             1        2
-  //           3   5   4    6
-  //
-  //           0   2   1    3
-
-  //                 0
-  //           1            2
-  //       3       5    4        6
-  //     7             8            14
-  //  0  1  2 3        7
-  //  000  100  010   110  001   101  011   111
-  //  0     4    2     6     1     5     3     7
-
-  //       0
-  //   1        2
-  //
-  //
-
   /// Get a node of a certain path at a certain depth
   /// Reveals depth and path
   #[inline]
@@ -127,7 +100,7 @@ mod tests {
     debug_assert!(depth < height);
     let level_offset = (1 << depth) - 1;
     let mask = level_offset as PositionType;
-    let ret = level_offset + (path & mask) as usize;
+    let _ret = level_offset + (path & mask) as usize;
   }
   #[test]
   fn print_heap_tree_info() {

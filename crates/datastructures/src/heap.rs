@@ -1,14 +1,11 @@
-use std::mem::ManuallyDrop;
-use std::{cmp, default};
-
+//! This modeul implements oblivious heap, it supports insert, `find_min`, delete and `extract_min` operations.
+//! Note: delete only supports delete the element with the given path and randomly assigned oram key at the time of insertion.
 use bytemuck::{Pod, Zeroable};
 use rand::{rngs::ThreadRng, Rng};
 use rods_oram::{
   circuit_oram::{remove_element, write_block_to_empty_slot, Block, CircuitORAM, S, Z},
   heap_tree::HeapTree,
-  linear_oram::{oblivious_read_index, oblivious_write_index},
   prelude::{PositionType, K},
-  recursive_oram::RecursivePositionMap,
 };
 use rods_primitives::{cmov_body, cxchg_body, impl_cmov_for_generic_pod};
 use rods_primitives::{
@@ -19,29 +16,37 @@ use rods_primitives::{
 // --- HeapV definition ---
 #[derive(Clone, Copy, Debug, Zeroable)]
 #[repr(C)]
+/// A struct combining both key and value of an heap element to be one struct, which will be stored as "value" in ORAM block.
 pub struct HeapV<V>
 where
   V: Cmov + Pod,
 {
+  /// The key associated with the heap element.
   pub key: K,
+  /// The value associated with the heap element.
   pub value: V,
 }
 unsafe impl<V: Cmov + Pod> Pod for HeapV<V> {}
 impl_cmov_for_generic_pod!(HeapV<V>; where V: Cmov + Pod);
 impl<V: Cmov + Pod> Default for HeapV<V> {
   fn default() -> Self {
-    HeapV { key: K::MAX, value: V::zeroed() }
+    Self { key: K::MAX, value: V::zeroed() }
   }
 }
 
 // --- Heap struct ---
 #[derive(Debug)]
+/// A struct representing a heap data structure.
+/// It contains a `CircuitORAM` instance and a metadata tree for storing the pos, `oram_key`, key and value associated with the element with minimum key in the subtree.
 pub struct Heap<V>
 where
   V: Cmov + Pod,
 {
+  /// The `CircuitORAM` instance used for storing the heap elements.
   pub data: CircuitORAM<HeapV<V>>,
+  /// The metadata tree used for storing the pos, `oram_key`, key and value associated with the element with minimum key in the subtree.
   pub metadata: HeapTree<Block<HeapV<V>>>,
+  /// The random number generator used for generating random numbers.
   pub rng: ThreadRng,
 }
 
@@ -61,6 +66,8 @@ impl<V> Heap<V>
 where
   V: Cmov + Pod + Default + std::fmt::Debug,
 {
+  /// Creates a new instance of the Heap struct.
+  /// The `n` parameter specifies the number of elements in the heap.
   pub fn new(n: usize) -> Self {
     let data = CircuitORAM::new(n); // Initialize `data` first
     let default_heap_v = HeapV::<V> { key: K::MAX, value: V::default() };
@@ -69,6 +76,8 @@ where
     Self { data, metadata, rng: rand::rng() }
   }
 
+  /// Finds the minimum element in the heap.
+  /// Returns a tuple containing the position, `oram_key`, key and value of the minimum element.
   pub fn find_min(&mut self) -> (PositionType, K, K, V) {
     let min_node = self.metadata.get_node_by_index(0);
     let mut ret_pos = min_node.pos;
@@ -94,25 +103,26 @@ where
     self.data.write_back_path(pos);
   }
 
-  fn print_for_debug(&self) {
-    let data = &self.data;
-    println!("Stash: {:?}", data.stash);
-    for i in 0..data.h {
-      print!("Level {}: ", i);
-      for j in 0..(1 << i) {
-        print!("{} ", j << (data.h - 1 - i));
-        print!("data.h:{} ", data.h);
-        print!(
-          "{:?} ",
-          data.tree.get_path_at_depth(
-            i,
-            ((j << (data.h - 1 - i)) as u32).reverse_bits() >> (32 - data.h + 1)
-          )
-        );
-      }
-      println!();
-    }
-  }
+  // /// Prints the heap for debugging purposes.
+  // fn print_for_debug(&self) {
+  //   let data = &self.data;
+  //   println!("Stash: {:?}", data.stash);
+  //   for i in 0..data.h {
+  //     print!("Level {}: ", i);
+  //     for j in 0..(1 << i) {
+  //       print!("{} ", j << (data.h - 1 - i));
+  //       print!("data.h:{} ", data.h);
+  //       print!(
+  //         "{:?} ",
+  //         data.tree.get_path_at_depth(
+  //           i,
+  //           ((j << (data.h - 1 - i)) as u32).reverse_bits() >> (32 - data.h + 1)
+  //         )
+  //       );
+  //     }
+  //     println!();
+  //   }
+  // }
 
   fn update_min(&mut self, pos: PositionType) {
     let data = &self.data;
@@ -147,6 +157,8 @@ where
     }
   }
 
+  /// Inserts a new element into the heap.
+  /// The `key` and `value` parameters specify the key and value of the new element.
   pub fn insert(&mut self, key: K, value: V) -> PositionType {
     let new_pos = self.rng.random_range(0..self.len() as PositionType);
     let oram_key: K = self.rng.random_range(0..usize::MAX);
@@ -168,6 +180,7 @@ where
     new_pos
   }
 
+  /// Deletes an element from the heap. Element identified by path and the oram key assigned when adding the element.
   pub fn delete(&mut self, pos: PositionType, oram_key: K) {
     self.data.read_path_and_get_nodes(pos);
     remove_element(&mut self.data.stash, oram_key);
@@ -180,8 +193,9 @@ where
     self.update_min(pos_to_evict);
   }
 
+  /// Find and delete the minimum element from the heap.
   pub fn extract_min(&mut self) {
-    let (pos, oram_k, k, _) = self.find_min();
+    let (pos, oram_k, _, _) = self.find_min();
     self.delete(pos, oram_k);
   }
 }
@@ -232,7 +246,7 @@ mod tests {
     let mut heap = create_test_heap();
 
     let pos = heap.insert(15, 150);
-    let (_pos, oram_key, key, val) = heap.find_min();
+    let (_pos, oram_key, _, _) = heap.find_min();
 
     heap.delete(pos, oram_key);
 
@@ -250,7 +264,7 @@ mod tests {
 
     let mut last_val = 0;
     for _ in 0..5 {
-      let (_, oram_key, key, val) = heap.find_min();
+      let (_, _, _, val) = heap.find_min();
       assert!(val >= last_val);
       last_val = val;
       heap.extract_min();
