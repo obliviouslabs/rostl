@@ -79,6 +79,7 @@ impl<T> HeapTree<T> {
   //   (path.try_into().unwrap(), depth)
   // }
 
+  //Given a path and a node at certain depth, return the other child of that node.
   pub fn get_the_other_child(&self, depth: usize, path: PositionType) -> &T {
     let new_path = path ^ (1 << depth);
     self.get_path_at_depth(depth + 1, new_path)
