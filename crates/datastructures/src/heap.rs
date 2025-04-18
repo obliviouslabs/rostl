@@ -103,26 +103,26 @@ where
     self.data.write_back_path(pos);
   }
 
-  // /// Prints the heap for debugging purposes.
-  // fn print_for_debug(&self) {
-  //   let data = &self.data;
-  //   println!("Stash: {:?}", data.stash);
-  //   for i in 0..data.h {
-  //     print!("Level {}: ", i);
-  //     for j in 0..(1 << i) {
-  //       print!("{} ", j << (data.h - 1 - i));
-  //       print!("data.h:{} ", data.h);
-  //       print!(
-  //         "{:?} ",
-  //         data.tree.get_path_at_depth(
-  //           i,
-  //           ((j << (data.h - 1 - i)) as u32).reverse_bits() >> (32 - data.h + 1)
-  //         )
-  //       );
-  //     }
-  //     println!();
-  //   }
-  // }
+  /// Prints the heap for debugging purposes.
+  pub fn print_for_debug(&self) {
+    let data = &self.data;
+    println!("Stash: {:?}", data.stash);
+    for i in 0..data.h {
+      print!("Level {}: ", i);
+      for j in 0..(1 << i) {
+        print!("{} ", j << (data.h - 1 - i));
+        print!("data.h:{} ", data.h);
+        print!(
+          "{:?} ",
+          data.tree.get_path_at_depth(
+            i,
+            ((j << (data.h - 1 - i)) as u32).reverse_bits() >> (32 - data.h + 1)
+          )
+        );
+      }
+      println!();
+    }
+  }
 
   fn update_min(&mut self, pos: PositionType) {
     let data = &self.data;
@@ -202,6 +202,8 @@ where
 
 #[cfg(test)]
 mod tests {
+  use std::{cmp::Reverse, collections::BinaryHeap};
+
   use super::*;
 
   // Heap<usize, u64> where K = usize and V = u64
@@ -268,6 +270,62 @@ mod tests {
       assert!(val >= last_val);
       last_val = val;
       heap.extract_min();
+    }
+  }
+
+  #[test]
+  fn test_stress_with_many_operations() {
+    let mut heap = Heap::new(32); // Larger heap for stress test
+    let mut reference_heap = BinaryHeap::new();
+    let operations = 100;
+
+    // Track inserted items for potential deletion
+    let mut inserted = Vec::new();
+
+    for _ in 0..operations {
+      let op = rand::rng().random_range(0..2);
+      //heap.print_for_debug();
+      match op {
+        0 => {
+          // Insert
+          let key = rand::rng().random_range(0..1000);
+          let value = key as u64 * 10;
+          let pos = heap.insert(key, value);
+          let (_pos, oram_key, _, _) = heap.find_min();
+          inserted.push((pos, oram_key, key, value));
+          reference_heap.push(Reverse((key, value)));
+        }
+        1 => {
+          // Extract min
+          if !reference_heap.is_empty() {
+            let (_, _, oblivious_min_key, oblivious_min_val) = heap.find_min();
+            heap.extract_min();
+
+            if let Some(Reverse((reference_min_key, reference_min_val))) = reference_heap.pop() {
+              assert_eq!(
+                oblivious_min_key, reference_min_key,
+                "Extract min returned incorrect key"
+              );
+              assert_eq!(
+                oblivious_min_val, reference_min_val,
+                "Extract min returned incorrect value"
+              );
+            }
+          }
+        }
+        _ => unreachable!(),
+      }
+
+      // Verify minimum is consistent
+      if !inserted.is_empty() {
+        let (_, _, oblivious_min_key, _) = heap.find_min();
+        if let Some(Reverse((reference_min_key, _))) = reference_heap.peek() {
+          assert_eq!(
+            oblivious_min_key, *reference_min_key,
+            "Heap minimum doesn't match reference after operation"
+          );
+        }
+      }
     }
   }
 }
