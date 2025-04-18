@@ -4,8 +4,7 @@ use criterion::{
   Criterion, PlotConfiguration,
 };
 
-use bytemuck::Pod;
-use rand::{rngs::ThreadRng, Rng};
+use rand::Rng;
 use rods_datastructures::heap::Heap;
 
 pub fn benchmark_heap_initialization<T: Measurement + 'static>(c: &mut Criterion<T>) {
@@ -41,18 +40,18 @@ pub fn benchmark_heap_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
     // Benchmark Insert operation
     group.bench_with_input(BenchmarkId::new("Heap_Insert", size), &size, |b, &size| {
       let mut heap = Heap::<u64>::new(size);
-      let mut rng = rand::thread_rng();
+      let mut rng = rand::rng();
 
       // Pre-insert some elements (half capacity)
       for _ in 0..size / 2 {
         let key = rng.random_range(0..usize::MAX);
-        let value = rng.gen::<u64>();
+        let value = rng.random::<u64>();
         heap.insert(key, value);
       }
 
       b.iter(|| {
         let key = rng.random_range(0..usize::MAX);
-        let value = rng.gen::<u64>();
+        let value = rng.random::<u64>();
         black_box(heap.insert(black_box(key), black_box(value)));
       });
     });
@@ -60,7 +59,7 @@ pub fn benchmark_heap_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
     // Benchmark Find Min operation
     group.bench_with_input(BenchmarkId::new("Heap_FindMin", size), &size, |b, &size| {
       let mut heap = Heap::<u64>::new(size);
-      let mut rng = rand::thread_rng();
+      let mut rng = rand::rng();
 
       // Fill the heap with random values
       for i in 0..size / 2 {
@@ -79,7 +78,7 @@ pub fn benchmark_heap_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
         || {
           // Setup: Create a new heap and fill it
           let mut heap = Heap::<u64>::new(size);
-          let mut rng = rand::thread_rng();
+          let mut rng = rand::rng();
 
           for i in 0..size / 2 {
             let key = rng.random_range(0..usize::MAX);
@@ -88,7 +87,8 @@ pub fn benchmark_heap_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
           heap
         },
         |mut heap| {
-          black_box(heap.extract_min());
+          heap.extract_min();
+          black_box(());
         },
         criterion::BatchSize::SmallInput,
       );
@@ -100,7 +100,7 @@ pub fn benchmark_heap_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
         || {
           // Setup: Create a new heap, fill it, and keep track of inserted elements
           let mut heap = Heap::<u64>::new(size);
-          let mut rng = rand::thread_rng();
+          let mut rng = rand::rng();
           let mut positions = Vec::new();
           let mut oram_keys = Vec::new();
 
@@ -116,7 +116,8 @@ pub fn benchmark_heap_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
         },
         |(mut heap, positions, oram_keys)| {
           let idx = positions.len() / 2; // Delete an element from the middle
-          black_box(heap.delete(black_box(positions[idx]), black_box(oram_keys[idx])));
+          heap.delete(black_box(positions[idx]), black_box(oram_keys[idx]));
+          black_box(());
         },
         criterion::BatchSize::SmallInput,
       );
