@@ -1,5 +1,10 @@
 //! Represents a heap tree as an array and provides functions to access it.
 //!
+//! The tree is represented in a reverse binary tree structure
+//!                            0
+//!                     1             2
+//!                3         5    4       6
+//! Path:          0         2    1       3
 
 use crate::prelude::PositionType;
 
@@ -7,7 +12,8 @@ use crate::prelude::PositionType;
 #[derive(Debug)]
 pub struct HeapTree<T> {
   pub(crate) tree: Vec<T>, // Actual storage container
-  pub height: usize,       // Height of the tree, public, tree with a single element has height 1
+  /// Height of the tree, public, tree with a single element has height 1
+  pub height: usize,       
 }
 
 impl<T> HeapTree<T>
@@ -33,6 +39,7 @@ where
 }
 
 impl<T> HeapTree<T> {
+  /// Get the index of a node at a certain depth and path
   #[inline]
   pub fn get_index(&self, depth: usize, path: PositionType) -> usize {
     debug_assert!(depth < self.height);
@@ -60,6 +67,7 @@ impl<T> HeapTree<T> {
     &mut self.tree[index]
   }
 
+  /// Get a node by the index in the tree
   pub fn get_node_by_index(&self, index: usize) -> &T {
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &self.tree[index]
@@ -79,12 +87,13 @@ impl<T> HeapTree<T> {
   //   (path.try_into().unwrap(), depth)
   // }
 
-  //Given a path and a node at certain depth, return the other child of that node.
+  ///Given a path and a node at certain depth, return the other child of that node.
   pub fn get_the_other_child(&self, depth: usize, path: PositionType) -> &T {
     let new_path = path ^ (1 << depth);
     self.get_path_at_depth(depth + 1, new_path)
   }
 
+  ///Check if this is the leaf node which has no child
   pub fn is_leaf(&self, index: usize) -> bool {
     if index >= self.tree.len() / 2 {
       return true;

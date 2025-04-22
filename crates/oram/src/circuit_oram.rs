@@ -12,8 +12,10 @@ use rods_primitives::{
 use crate::heap_tree::HeapTree;
 use crate::prelude::{PositionType, DUMMY_POS, K};
 
-pub const Z: usize = 2; // Blocks per bucket
-pub const S: usize = 20; // Initial stash size
+/// Blocks per bucket
+pub const Z: usize = 2; 
+/// Initial stash size
+pub const S: usize = 20;
 const EVICTIONS_PER_OP: usize = 2; // Evictions per operations
 
 /// A block in the ORAM tree
@@ -137,6 +139,7 @@ fn read_and_remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K, ret: &mut 
   rv
 }
 
+/// Removes an element from the stash, in the form of an array, if it exists.
 #[inline]
 pub fn remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K) -> bool {
   let mut rv = false;
@@ -152,6 +155,8 @@ pub fn remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K) -> bool {
   rv
 }
 
+/// Writes a block to an empty slot in the stash, if it exists.
+/// If there are no empty slots, it will not write anything and return false.
 #[inline]
 pub fn write_block_to_empty_slot<V: Cmov + Pod>(arr: &mut [Block<V>], val: &Block<V>) -> bool {
   let mut rv = false;
@@ -444,41 +449,6 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     self.evict_once_fast(pos);
     self.write_back_path(pos);
     self.perform_deterministic_evictions();
-
-    found
-  }
-
-  /// Reads a value from the ORAM without performing the deterministic evictions at the end.
-  ///
-  /// # Arguments
-  /// * `pos` - The current position of the block.
-  /// * `new_pos` - The new position of the block, should be uniformly random on the size of the ORAM.
-  /// * `key` - The key of the block.
-  /// * `ret` - The value to be read.
-  ///
-  /// # Returns
-  /// * `true` if the element was found, `false` otherwise.
-  /// # Behavior
-  /// * If the element is not found, `ret` is not modified.
-  pub fn read_wo_deterministic_evictions(
-    &mut self,
-    pos: PositionType,
-    new_pos: PositionType,
-    key: K,
-    ret: &mut V,
-  ) -> bool {
-    debug_assert!((pos as usize) < self.max_n);
-    debug_assert!((new_pos as usize) < self.max_n || new_pos == DUMMY_POS);
-
-    self.read_path_and_get_nodes(pos);
-
-    let found = read_and_remove_element(&mut self.stash, key, ret);
-    let mut to_write = Block { pos: new_pos, key, value: *ret };
-    to_write.pos.cmov(&DUMMY_POS, !found);
-    write_block_to_empty_slot(&mut self.stash[..S], &to_write); // Succeeds due to Inv1.
-
-    self.evict_once_fast(pos);
-    self.write_back_path(pos);
 
     found
   }

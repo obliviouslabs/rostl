@@ -1,5 +1,4 @@
 //! This crates implement oram algorithms
-#![allow(missing_docs)]
 pub mod heap_tree;
 
 pub mod linear_oram;
