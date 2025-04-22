@@ -13,7 +13,7 @@ use crate::heap_tree::HeapTree;
 use crate::prelude::{PositionType, DUMMY_POS, K};
 
 /// Blocks per bucket
-pub const Z: usize = 2; 
+pub const Z: usize = 2;
 /// Initial stash size
 pub const S: usize = 20;
 const EVICTIONS_PER_OP: usize = 2; // Evictions per operations

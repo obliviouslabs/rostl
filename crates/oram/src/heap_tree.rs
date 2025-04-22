@@ -13,7 +13,7 @@ use crate::prelude::PositionType;
 pub struct HeapTree<T> {
   pub(crate) tree: Vec<T>, // Actual storage container
   /// Height of the tree, public, tree with a single element has height 1
-  pub height: usize,       
+  pub height: usize,
 }
 
 impl<T> HeapTree<T>

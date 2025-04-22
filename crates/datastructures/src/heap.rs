@@ -1,4 +1,4 @@
-//! This modeul implements oblivious heap, it supports insert, `find_min`, delete and `extract_min` operations.
+//! This module implements oblivious heap, it supports insert, `find_min`, delete and `extract_min` operations.
 //! Note: delete only supports delete the element with the given path and randomly assigned oram key at the time of insertion.
 use bytemuck::{Pod, Zeroable};
 use rand::{rngs::ThreadRng, Rng};
