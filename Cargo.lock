@@ -473,6 +473,7 @@ dependencies = [
  "rand",
  "rods-oram",
  "rods-primitives",
+ "rods-sort",
  "seq-macro",
  "static_assertions",
 ]

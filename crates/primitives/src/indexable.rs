@@ -12,6 +12,11 @@ impl<T> Length for [T] {
     <[T]>::len(self)
   }
 }
+impl<T> Length for &mut [T] {
+  fn len(&self) -> usize {
+    <[T]>::len(self)
+  }
+}
 impl<T> Length for Vec<T> {
   fn len(&self) -> usize {
     Self::len(self)
@@ -23,6 +28,6 @@ impl<T> Length for Vec<T> {
 pub trait Indexable<T>: Index<usize, Output = T> + IndexMut<usize, Output = T> + Length {}
 
 impl<T, C> Indexable<T> for C where
-  C: Index<usize, Output = T> + IndexMut<usize, Output = T> + Length
+  C: Index<usize, Output = T> + IndexMut<usize, Output = T> + Length + ?Sized
 {
 }

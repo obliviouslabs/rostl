@@ -44,7 +44,7 @@ pub trait CswapIndex<T> {
 
 impl<T, C> CswapIndex<T> for C
 where
-  C: Indexable<T>,
+  C: Indexable<T> + ?Sized,
   T: Cmov + Copy,
 {
   fn cswap(&mut self, i: usize, j: usize, choice: bool) {
