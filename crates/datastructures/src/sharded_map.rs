@@ -2,7 +2,6 @@
 
 use ahash::RandomState;
 use bytemuck::{Pod, Zeroable};
-use rand::{rngs::ThreadRng, Rng};
 use rods_primitives::{
   cmov_body, cxchg_body, impl_cmov_for_generic_pod,
   traits::{Cmov, _Cmovbase},
@@ -18,7 +17,7 @@ const DEAMORTIZED_INSERTIONS: usize = 2;
 // Number of elements in each map bucket.
 const BUCKET_SIZE: usize = 2;
 
-use std::{hash::Hash, mem::MaybeUninit};
+use std::mem::MaybeUninit;
 
 /// A shardad hashmap implementation.
 /// The map is split across multiple partitions and each partition is a separate hashmap.
@@ -29,7 +28,7 @@ use std::{hash::Hash, mem::MaybeUninit};
 /// * `P`: The number of partitions in the map.
 /// * `B`: The maximum number of non-distinct keys in any partition in a batch.
 #[derive(Debug)]
-pub struct ShardedMap<K, V, const P: usize> 
+pub struct ShardedMap<K, V, const P: usize>
 where
   K: OHash + Pod + Default + std::fmt::Debug,
   V: Cmov + Pod + Default + std::fmt::Debug,
@@ -72,19 +71,18 @@ where
 {
   /// Creates a new `ShardedMap` with the given number of partitions.
   pub fn new(capacity: usize) -> Self {
-    let capacity_per_partition = (capacity+P-1) / P;
+    let capacity_per_partition = (capacity + P - 1) / P;
     let capacity_rounded = capacity_per_partition * P;
     let mut partitions: [MaybeUninit<UnsortedMap<K, V>>; P] =
-        unsafe { MaybeUninit::uninit().assume_init() };
+      unsafe { MaybeUninit::uninit().assume_init() };
     // let mut partitions :[UnsortedMap<K, V>; P] = unsafe { std::mem::zeroed() };
     for slot in partitions.iter_mut() {
       slot.write(UnsortedMap::new(capacity_per_partition));
     }
-    let partitions = unsafe {
-      std::ptr::read(&partitions as *const _ as *const [UnsortedMap<K, V>; P])
-    };
+    let partitions =
+      unsafe { std::ptr::read(&partitions as *const _ as *const [UnsortedMap<K, V>; P]) };
     // for i in 0..P {
-      // partitions[i] = UnsortedMap::new(capacity_per_partition);
+    // partitions[i] = UnsortedMap::new(capacity_per_partition);
     // }
     Self {
       size: 0,
@@ -103,15 +101,11 @@ where
   /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
   /// # Preconditions
   /// * No repeated keys in the input array.
-  pub fn get_batch<const N: usize, const B: usize>(
-    &self,
-    keys: &[K; N],
-  ) -> [Option<V>; N] {
+  pub fn get_batch<const N: usize, const B: usize>(&self, keys: &[K; N]) -> [Option<V>; N] {
     // 1. Create P arrays of size N.
-    let mut partitions : [[BatchBlock<K, V>; N]; P] = [unsafe {
-      std::mem::MaybeUninit::<[BatchBlock<K, V>; N]>::uninit().assume_init()
-    }; P];
-    
+    let mut partitions: [[BatchBlock<K, V>; N]; P] =
+      [unsafe { std::mem::MaybeUninit::<[BatchBlock<K, V>; N]>::uninit().assume_init() }; P];
+
     // 2. Map each key at index i to a partition: to p[h(keys[i])][i],
     for (i, k) in keys.iter().enumerate() {
       let target_p = self.get_partition(k);
@@ -122,7 +116,7 @@ where
       }
     }
 
-    // 3. Apply oblivious compaction to each parition.
+    // 3. Apply oblivious compaction to each parition.``
     // UNDONE(): auto generated code
     for (p, partition) in partitions.iter_mut().enumerate() {
       let mut dummy = BatchBlock::<K, V>::default();
@@ -140,8 +134,9 @@ where
       let ret = compact(partition, |x| x.k == dummy.k);
       // ret is the number of elements in the compacted array.
       // We need to set the rest of the array to dummy.
-      for i in ret..N {
-        partition[i] = dummy;
+      for i in 0..N {
+        let set_dummy = i >= ret;
+        partition[i].k.cmov(&dummy.k, set_dummy);
       }
     }
 
