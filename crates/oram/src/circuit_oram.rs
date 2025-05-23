@@ -139,7 +139,9 @@ fn read_and_remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K, ret: &mut 
   rv
 }
 
-/// Removes an element from the stash, in the form of an array, if it exists.
+/// Removes an element identified by key k from an array.
+/// If the key is not in the array nothing happens.
+/// Expects the element to appear at most once in the array.
 #[inline]
 pub fn remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K) -> bool {
   let mut rv = false;
@@ -155,8 +157,8 @@ pub fn remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K) -> bool {
   rv
 }
 
-/// Writes a block to an empty slot in the stash, if it exists.
-/// If there are no empty slots, it will not write anything and return false.
+/// Writes a block to an empty slot in an array.
+/// If there are no empty slots, nothing happens and returns false.
 #[inline]
 pub fn write_block_to_empty_slot<V: Cmov + Pod>(arr: &mut [Block<V>], val: &Block<V>) -> bool {
   let mut rv = false;

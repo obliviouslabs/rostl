@@ -67,7 +67,7 @@ where
   /// * The minimum element in the heap. => if the heap is non-empty.
   /// * A `HeapElement<V>` with `pos = DUMMY` => if the heap is empty.
   pub fn find_min(&self) -> Block<HeapElement<V>> {
-    let mut min_node = *self.metadata.get_node_by_index(0);
+    let mut min_node = *self.metadata.get_path_at_depth(0, 0);
 
     for elem in &self.data.stash[0..S] {
       let should_mov = (!elem.is_empty()) & (elem.value.key < min_node.value.key);
@@ -124,15 +124,10 @@ where
       }
 
       if h_index != metadata.height - 1 {
-        // UNDONE(): Optimize this (we only need to look at the other node in each iteration)
-        let one_child = metadata.get_path_at_depth(h_index + 1, pos);
-        let the_other_child = metadata.get_the_other_child(h_index, pos);
+        let sibling = metadata.get_sibling(h_index + 1, pos);
 
-        let should_mov = (!one_child.is_empty()) & (one_child.value.key < curr_min.value.key);
-        curr_min.cmov(one_child, should_mov);
-        let should_mov =
-          (!the_other_child.is_empty()) & (the_other_child.value.key < curr_min.value.key);
-        curr_min.cmov(the_other_child, should_mov);
+        let should_mov = (!sibling.is_empty()) & (sibling.value.key < curr_min.value.key);
+        curr_min.cmov(sibling, should_mov);
       }
 
       *metadata.get_path_at_depth_mut(h_index, pos) = curr_min;
