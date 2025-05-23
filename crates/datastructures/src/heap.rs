@@ -143,7 +143,6 @@ where
   /// * the position and timestamp of the inserted element.
   pub fn insert(&mut self, key: K, value: V) -> (PositionType, K) {
     let new_pos = self.rng.random_range(0..self.data.max_n as PositionType);
-    // UNDONE(): make this incremental instead of random.
     let oram_key: K = self.timestamp;
     self.timestamp += 1;
     let heap_value = HeapElement::<V> { key, value };
