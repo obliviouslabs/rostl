@@ -113,7 +113,7 @@ where
   // * All the metadata except for this path is correct.
   fn update_min(&mut self, pos: PositionType) {
     let data = &self.data;
-    let mut h_index = self.metadata.height - 1;
+    let mut h_index = self.metadata.height;
     let metadata = &mut self.metadata;
 
     let mut curr_min = Block::<HeapElement<V>>::default();
@@ -125,17 +125,16 @@ where
         curr_min.cmov(elem, should_mov);
       }
 
-      if h_index != metadata.height - 1 {
-        let sibling = metadata.get_sibling(h_index + 1, pos);
+      if h_index != metadata.height {
+        let sibling = metadata.get_sibling(h_index, pos);
 
         let should_mov = (!sibling.is_empty()) & (sibling.value.key < curr_min.value.key);
         curr_min.cmov(sibling, should_mov);
       }
 
-      *metadata.get_path_at_depth_mut(h_index, pos) = curr_min;
+      *metadata.get_path_at_depth_mut(h_index - 1, pos) = curr_min;
 
-      // UNDONE(): Why is this saturating sub?
-      h_index = h_index.saturating_sub(1);
+      h_index -= 1;
     }
   }
 
