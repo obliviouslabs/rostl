@@ -48,6 +48,8 @@ where
   pub rng: ThreadRng,
   /// maximum size of the heap.
   pub max_size: usize,
+  /// timestamp: usize,
+  pub timestamp: K,
 }
 
 impl<V> Heap<V>
@@ -59,7 +61,7 @@ where
     let data = CircuitORAM::new(n);
     let default_value = Block::<HeapElement<V>>::default();
     let metadata = HeapTree::new_with(data.h, default_value);
-    Self { data, metadata, rng: rand::rng(), max_size: n }
+    Self { data, metadata, rng: rand::rng(), max_size: n, timestamp: 0 }
   }
 
   /// Finds the minimum element in the heap.
@@ -143,7 +145,8 @@ where
   pub fn insert(&mut self, key: K, value: V) -> (PositionType, K) {
     let new_pos = self.rng.random_range(0..self.data.max_n as PositionType);
     // UNDONE(): make this incremental instead of random.
-    let oram_key: K = self.rng.random_range(0..usize::MAX);
+    let oram_key: K = self.timestamp;
+    self.timestamp += 1;
     let heap_value = HeapElement::<V> { key, value };
 
     write_block_to_empty_slot(
