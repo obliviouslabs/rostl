@@ -5,6 +5,7 @@ use rods_primitives::traits::{Cmov, CswapIndex};
 // use rods_primitives::indexable::{Indexable, Length};
 
 /// Stably compacts an array `arr` of length n in place using nlogn oblivious compaction.
+/// Uses `https://arxiv.org/pdf/1103.5102`
 /// # Behavior
 /// * returns `ret` - the number of non-dummy elements (new real length of the array).
 /// * first `ret` elements of `arr` are the non-dummy elements in the same order as they were in the original array.
@@ -17,7 +18,9 @@ where
   F: Fn(&T) -> bool,
   T: Cmov + Copy,
 {
-  if arr.is_empty() { return 0; }
+  if arr.is_empty() {
+    return 0;
+  }
   let l2len = arr.len().next_power_of_two().trailing_zeros() as usize;
   let mut csum = vec![0; arr.len()];
   let mut dummy_count = 0;
