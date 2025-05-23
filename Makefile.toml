@@ -40,6 +40,14 @@ sh ./scripts/find_untagged_undones.sh
 cargo deny check all
 '''
 
+[tasks.docsserver]
+description = "Generate documentation and start a local server"
+script = '''
+cargo doc --workspace --lib --examples --all-features --locked --no-deps
+echo "Go ahead and open http://localhost:8000/rods_oram/index.html"
+python -m http.server --directory target/doc
+'''
+
 
 [config]
 default_to_workspace = false

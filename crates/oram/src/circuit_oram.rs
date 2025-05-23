@@ -108,7 +108,7 @@ impl<V: Cmov + Pod> HeapTree<Bucket<V>> {
 ///
 /// # External Invariants
 /// * Inv1 - There is an empty slot in the first S slots of the stash.
-/// * use <Circuit ORAM invariants>
+/// * use "Circuit ORAM invariants"
 #[derive(Debug)]
 pub struct CircuitORAM<V: Cmov + Pod> {
   /// Number of blocks, ilog2 of it is public via h
