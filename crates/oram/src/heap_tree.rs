@@ -1,13 +1,20 @@
 //! Represents a heap tree as an array and provides functions to access it.
 //!
+//! The tree is represented by a reverse lexicographical order binary tree.
+//!                            0
+//!                     1             2
+//!                3         5    4       6
+//! Path:          0         2    1       3
 
 use crate::prelude::PositionType;
 
 /// Represents a heap tree structure.
 #[derive(Debug)]
 pub struct HeapTree<T> {
-  pub(crate) tree: Vec<T>,  // Actual storage container
-  pub(crate) height: usize, // Height of the tree, public, tree with a single element has height 1
+  /// Actual storage container
+  pub(crate) tree: Vec<T>,
+  /// Height of the tree, public (tree with a single element has height 1)
+  pub height: usize,
 }
 
 impl<T> HeapTree<T>
@@ -33,8 +40,9 @@ where
 }
 
 impl<T> HeapTree<T> {
+  /// Get the index of a node at a certain depth and path
   #[inline]
-  pub(crate) fn get_index(&self, depth: usize, path: PositionType) -> usize {
+  pub fn get_index(&self, depth: usize, path: PositionType) -> usize {
     debug_assert!(depth < self.height);
     let level_offset = (1 << depth) - 1;
     let mask = level_offset as PositionType;
@@ -46,7 +54,6 @@ impl<T> HeapTree<T> {
   #[inline]
   pub fn get_path_at_depth(&self, depth: usize, path: PositionType) -> &T {
     let index = self.get_index(depth, path);
-
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &self.tree[index]
   }
@@ -60,6 +67,12 @@ impl<T> HeapTree<T> {
     // UNDONE(git-10): Make sure this doesn't have bounds checking and is safe
     &mut self.tree[index]
   }
+
+  /// Given a path and a node at certain depth, return the other child of that node's parent.
+  pub fn get_sibling(&self, depth: usize, path: PositionType) -> &T {
+    let new_path = path ^ (1 << (depth - 1));
+    self.get_path_at_depth(depth, new_path)
+  }
 }
 
 #[cfg(test)]
@@ -70,8 +83,7 @@ mod tests {
     debug_assert!(depth < height);
     let level_offset = (1 << depth) - 1;
     let mask = level_offset as PositionType;
-    let ret = level_offset + (path & mask) as usize;
-    println!("depth: {}, path: {}, index: {}", depth, path, ret);
+    let _ret = level_offset + (path & mask) as usize;
   }
   #[test]
   fn print_heap_tree_info() {

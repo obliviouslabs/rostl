@@ -12,8 +12,10 @@ use rods_primitives::{
 use crate::heap_tree::HeapTree;
 use crate::prelude::{PositionType, DUMMY_POS, K};
 
-const Z: usize = 2; // Blocks per bucket
-const S: usize = 20; // Initial stash size
+/// Blocks per bucket
+pub const Z: usize = 2;
+/// Initial stash size
+pub const S: usize = 20;
 const EVICTIONS_PER_OP: usize = 2; // Evictions per operations
 
 /// A block in the ORAM tree
@@ -137,8 +139,11 @@ fn read_and_remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K, ret: &mut 
   rv
 }
 
+/// Removes an element identified by key k from an array.
+/// If the key is not in the array nothing happens.
+/// Expects the element to appear at most once in the array.
 #[inline]
-fn remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K) -> bool {
+pub fn remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K) -> bool {
   let mut rv = false;
 
   for item in arr {
@@ -152,8 +157,10 @@ fn remove_element<V: Cmov + Pod>(arr: &mut [Block<V>], k: K) -> bool {
   rv
 }
 
+/// Writes a block to an empty slot in an array.
+/// If there are no empty slots, nothing happens and returns false.
 #[inline]
-fn write_block_to_empty_slot<V: Cmov + Pod>(arr: &mut [Block<V>], val: &Block<V>) -> bool {
+pub fn write_block_to_empty_slot<V: Cmov + Pod>(arr: &mut [Block<V>], val: &Block<V>) -> bool {
   let mut rv = false;
 
   for item in arr {
@@ -257,19 +264,19 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
   }
 
   /// Reads a path to the end of the stash
-  fn read_path_and_get_nodes(&mut self, pos: PositionType) {
+  pub fn read_path_and_get_nodes(&mut self, pos: PositionType) {
     debug_assert!((pos as usize) < self.max_n);
     self.tree.read_path(pos, &mut self.stash[S..S + self.h * Z]);
   }
 
   /// Writes back the path at the end of the stash
-  fn write_back_path(&mut self, pos: PositionType) {
+  pub fn write_back_path(&mut self, pos: PositionType) {
     debug_assert!((pos as usize) < self.max_n);
     self.tree.write_path(pos, &self.stash[S..S + self.h * Z]);
   }
 
   /// Alg. 4 - EvictOnceFast(path) in `CircuitORAM` paper
-  fn evict_once_fast(&mut self, pos: PositionType) {
+  pub fn evict_once_fast(&mut self, pos: PositionType) {
     // UNDONE(git-10): Investigate using u8 and/or bitwise operations here instead of u32/bool cmov's
     // UNDONE(git-11): This only supports n<=32. Is it enough?
     //
@@ -745,6 +752,19 @@ mod tests {
       pmap[key] = new_pos;
     }
   }
+
+  //this test is failing now, but ORAM still works with the elements that should be moved to root left in stash
+  //UNDONE(git-62): Fix this test
+  // #[test]
+  // fn test_eviction_once_fast() {
+  //   let mut oram = CircuitORAM::<u32>::new(4);
+  //   write_block_to_empty_slot(
+  //     &mut oram.stash[..S],
+  //     &Block::<u32> { pos:1, key: 100, value: 100 },
+  //   );
+  //   oram.evict_once_fast(0);
+  //   assert!(oram.stash[0].is_empty());
+  // }
 
   #[test]
   fn test_circuitoram_repetitive() {
