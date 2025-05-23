@@ -101,23 +101,19 @@ pub fn benchmark_heap_ops<T: Measurement + 'static>(c: &mut Criterion<T>) {
           // Setup: Create a new heap, fill it, and keep track of inserted elements
           let mut heap = Heap::<u64>::new(size);
           let mut rng = rand::rng();
-          let mut positions = Vec::new();
-          let mut oram_keys = Vec::new();
+          let mut locations = Vec::new();
 
           for i in 0..size / 2 {
             let key = rng.random_range(0..usize::MAX);
-            let pos = heap.insert(key, i as u64);
-            let (_, oram_key, _, _) = heap.find_min();
-            positions.push(pos);
-            oram_keys.push(oram_key);
+            let location = heap.insert(key, i as u64);
+            locations.push(location);
           }
 
-          (heap, positions, oram_keys)
+          (heap, locations)
         },
-        |(mut heap, positions, oram_keys)| {
-          let idx = positions.len() / 2; // Delete an element from the middle
-          heap.delete(black_box(positions[idx]), black_box(oram_keys[idx]));
-          black_box(());
+        |(mut heap, locations)| {
+          let idx = locations.len() / 2; // Delete an element from the middle
+          heap.delete(black_box(locations[idx].0), black_box(locations[idx].1));
         },
         criterion::BatchSize::SmallInput,
       );

@@ -1,5 +1,4 @@
-//! This module implements oblivious heap, it supports insert, `find_min`, delete and `extract_min` operations.
-//! Note: delete only supports delete the element with the given path and randomly assigned oram key at the time of insertion.
+//! Implements [path oblivious heap](https://eprint.iacr.org/2019/274).
 use bytemuck::{Pod, Zeroable};
 use rand::{rngs::ThreadRng, Rng};
 use rods_oram::{
@@ -7,17 +6,13 @@ use rods_oram::{
   heap_tree::HeapTree,
   prelude::{PositionType, K},
 };
+use rods_primitives::traits::{Cmov, _Cmovbase};
 use rods_primitives::{cmov_body, cxchg_body, impl_cmov_for_generic_pod};
-use rods_primitives::{
-  indexable::Length,
-  traits::{Cmov, _Cmovbase},
-};
 
-// --- HeapV definition ---
 #[derive(Clone, Copy, Debug, Zeroable)]
 #[repr(C)]
-/// A struct combining both key and value of an heap element to be one struct, which will be stored as "value" in ORAM block.
-pub struct HeapV<V>
+/// A logical heap element.
+pub struct HeapElement<V>
 where
   V: Cmov + Pod,
 {
@@ -26,75 +21,60 @@ where
   /// The value associated with the heap element.
   pub value: V,
 }
-unsafe impl<V: Cmov + Pod> Pod for HeapV<V> {}
-impl_cmov_for_generic_pod!(HeapV<V>; where V: Cmov + Pod);
-impl<V: Cmov + Pod> Default for HeapV<V> {
+unsafe impl<V: Cmov + Pod> Pod for HeapElement<V> {}
+impl_cmov_for_generic_pod!(HeapElement<V>; where V: Cmov + Pod);
+impl<V: Cmov + Pod> Default for HeapElement<V> {
   fn default() -> Self {
     Self { key: K::MAX, value: V::zeroed() }
   }
 }
 
-// --- Heap struct ---
 #[derive(Debug)]
-/// A struct representing a heap data structure.
-/// It contains a `CircuitORAM` instance and a metadata tree for storing the pos, `oram_key`, key and value associated with the element with minimum key in the subtree.
+/// An oblivious heap.
+/// Elements are stored in an ORAM, along with information about the location of the minimum element in each subtree.
+/// # Invariants
+/// * `metadata` stores the minimum element in each subtree.
+/// * Heap elements are stored in a non-recursive ORAM.
+/// * After insertion, the oram key (timestamp) and path for an element do not change.
 pub struct Heap<V>
 where
   V: Cmov + Pod,
 {
-  /// The `CircuitORAM` instance used for storing the heap elements.
-  pub data: CircuitORAM<HeapV<V>>,
-  /// The metadata tree used for storing the pos, `oram_key`, key and value associated with the element with minimum key in the subtree.
-  pub metadata: HeapTree<Block<HeapV<V>>>,
-  /// The random number generator used for generating random numbers.
+  /// The heap elements.
+  pub data: CircuitORAM<HeapElement<V>>,
+  /// The metadata tree used for storing the element with minimum key in the subtree.
+  pub metadata: HeapTree<Block<HeapElement<V>>>,
+  /// Thread local rng.
   pub rng: ThreadRng,
+  /// maximum size of the heap.
+  pub max_size: usize,
 }
 
-// --- Implement Length ---
-impl<V> Length for Heap<V>
-where
-  V: Cmov + Pod,
-{
-  #[inline(always)]
-  fn len(&self) -> usize {
-    1usize << (self.data.h - 1)
-  }
-}
-
-// --- Main Impl ---
 impl<V> Heap<V>
 where
-  V: Cmov + Pod + Default + std::fmt::Debug,
+  V: Cmov + Pod + std::fmt::Debug,
 {
-  /// Creates a new instance of the Heap struct.
-  /// The `n` parameter specifies the number of elements in the heap.
+  /// Creates a Heap with maximum size of `n` elements.
   pub fn new(n: usize) -> Self {
-    let data = CircuitORAM::new(n); // Initialize `data` first
-    let default_heap_v = HeapV::<V> { key: K::MAX, value: V::default() };
-    let default_value = Block::<HeapV<V>> { pos: 0, key: K::MAX, value: default_heap_v };
-    let metadata = HeapTree::new_with(data.h, default_value); // Use `data.h` after `data` is initialized
-    Self { data, metadata, rng: rand::rng() }
+    let data = CircuitORAM::new(n);
+    let default_value = Block::<HeapElement<V>>::default();
+    let metadata = HeapTree::new_with(data.h, default_value);
+    Self { data, metadata, rng: rand::rng(), max_size: n }
   }
 
   /// Finds the minimum element in the heap.
-  /// Returns a tuple containing the position, `oram_key`, key and value of the minimum element.
-  pub fn find_min(&mut self) -> (PositionType, K, K, V) {
-    let min_node = self.metadata.get_node_by_index(0);
-    let mut ret_pos = min_node.pos;
-    let mut ret_oram_key = min_node.key;
-    let mut ret_k = min_node.value.key;
-    let mut ret_v = min_node.value.value;
-    // println!("pos: {}, oram_key: {}, k: {}, v: {:?}", ret_pos, ret_oram_key, ret_k, ret_v);
+  /// # Returns
+  /// * The minimum element in the heap. => if the heap is non-empty.
+  /// * A `HeapElement<V>` with `pos = DUMMY` => if the heap is empty.
+  pub fn find_min(&self) -> Block<HeapElement<V>> {
+    let mut min_node = *self.metadata.get_node_by_index(0);
+
     for elem in &self.data.stash[0..S] {
-      let elem_key = if elem.is_empty() { K::MAX } else { elem.value.key };
-      if elem_key < ret_k {
-        ret_k = elem_key;
-        ret_v = elem.value.value;
-        ret_pos = elem.pos;
-        ret_oram_key = elem.key;
-      }
+      let should_mov = (!elem.is_empty()) & (elem.value.key < min_node.value.key);
+      min_node.cmov(elem, should_mov);
     }
-    (ret_pos, ret_oram_key, ret_k, ret_v)
+
+    min_node
   }
 
   fn evict(&mut self, pos: PositionType) {
@@ -104,6 +84,7 @@ where
   }
 
   /// Prints the heap for debugging purposes.
+  #[cfg(test)]
   pub fn print_for_debug(&self) {
     let data = &self.data;
     println!("Stash: {:?}", data.stash);
@@ -124,79 +105,85 @@ where
     }
   }
 
+  // Updates the metadata for the minimum element along a path `pos`.
+  // # Preconditions:
+  // * The path is already loaded into the stash.
+  // * All the metadata except for this path is correct.
   fn update_min(&mut self, pos: PositionType) {
     let data = &self.data;
     let mut h_index = self.metadata.height - 1;
     let metadata = &mut self.metadata;
 
-    for elem in data.stash[S..(S + self.data.h * Z)].chunks(2).rev() {
-      let elem0_key = if elem[0].is_empty() { K::MAX } else { elem[0].value.key };
-      let elem1_key = if elem[1].is_empty() { K::MAX } else { elem[1].value.key };
-      let mut new_metadata_node = elem[0];
-      new_metadata_node.value.key = elem0_key;
-      if elem0_key > elem1_key {
-        new_metadata_node = elem[1];
+    let mut curr_min = Block::<HeapElement<V>>::default();
+    curr_min.value.key = K::MAX;
+
+    for elems in data.stash[S..(S + self.data.h * Z)].chunks(2).rev() {
+      for elem in elems {
+        let should_mov = (!elem.is_empty()) & (elem.value.key < curr_min.value.key);
+        curr_min.cmov(elem, should_mov);
       }
 
-      if h_index == metadata.height - 1 {
-        *metadata.get_path_at_depth_mut(h_index, pos) = new_metadata_node;
-        h_index = h_index.saturating_sub(1);
-        continue;
-      }
-      let one_child = metadata.get_path_at_depth(h_index + 1, pos);
-      let the_other_child = metadata.get_the_other_child(h_index, pos);
-      if one_child.value.key < new_metadata_node.value.key {
-        new_metadata_node = *one_child;
-      }
-      if the_other_child.value.key < new_metadata_node.value.key {
-        new_metadata_node = *the_other_child;
+      if h_index != metadata.height - 1 {
+        // UNDONE(): Optimize this (we only need to look at the other node in each iteration)
+        let one_child = metadata.get_path_at_depth(h_index + 1, pos);
+        let the_other_child = metadata.get_the_other_child(h_index, pos);
+
+        let should_mov = (!one_child.is_empty()) & (one_child.value.key < curr_min.value.key);
+        curr_min.cmov(one_child, should_mov);
+        let should_mov =
+          (!the_other_child.is_empty()) & (the_other_child.value.key < curr_min.value.key);
+        curr_min.cmov(the_other_child, should_mov);
       }
 
-      *metadata.get_path_at_depth_mut(h_index, pos) = new_metadata_node;
+      *metadata.get_path_at_depth_mut(h_index, pos) = curr_min;
+
+      // UNDONE(): Why is this saturating sub?
       h_index = h_index.saturating_sub(1);
     }
   }
 
-  /// Inserts a new element into the heap.
-  /// The `key` and `value` parameters specify the key and value of the new element.
-  pub fn insert(&mut self, key: K, value: V) -> PositionType {
-    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+  /// Inserts a new element `value` with priority `key` into the heap.
+  /// # Returns
+  /// * the position and timestamp of the inserted element.
+  pub fn insert(&mut self, key: K, value: V) -> (PositionType, K) {
+    let new_pos = self.rng.random_range(0..self.data.max_n as PositionType);
+    // UNDONE(): make this incremental instead of random.
     let oram_key: K = self.rng.random_range(0..usize::MAX);
-    let heap_value = HeapV::<V> { key, value };
+    let heap_value = HeapElement::<V> { key, value };
+
     write_block_to_empty_slot(
       &mut self.data.stash[..S],
-      &Block::<HeapV<V>> { pos: new_pos, key: oram_key, value: heap_value },
+      &Block::<HeapElement<V>> { pos: new_pos, key: oram_key, value: heap_value },
     );
-    //self.print_for_debug();
+
     for _ in 0..2 {
-      let pos_to_evict = self.rng.random_range(0..self.len() as PositionType);
-      //let pos_to_evict = 1;
+      let pos_to_evict = self.rng.random_range(0..self.data.max_n as PositionType);
       self.evict(pos_to_evict);
-      //self.print_for_debug();
       self.update_min(pos_to_evict);
-      //self.print_for_debug();
     }
 
-    new_pos
+    (new_pos, oram_key)
   }
 
-  /// Deletes an element from the heap. Element identified by path and the oram key assigned when adding the element.
-  pub fn delete(&mut self, pos: PositionType, oram_key: K) {
+  /// Deletes an element from the heap given it's timestamp and path.
+  /// # Behavior
+  /// * If the element is not in the heap, nothing happens.
+  pub fn delete(&mut self, pos: PositionType, timestamp: K) {
     self.data.read_path_and_get_nodes(pos);
-    remove_element(&mut self.data.stash, oram_key);
+    remove_element(&mut self.data.stash, timestamp);
     self.data.evict_once_fast(pos);
     self.data.write_back_path(pos);
     self.update_min(pos);
 
-    let pos_to_evict = self.rng.random_range(0..self.len() as PositionType);
+    let pos_to_evict = self.rng.random_range(0..self.data.max_n as PositionType);
     self.evict(pos_to_evict);
     self.update_min(pos_to_evict);
   }
 
   /// Find and delete the minimum element from the heap.
   pub fn extract_min(&mut self) {
-    let (pos, oram_k, _, _) = self.find_min();
-    self.delete(pos, oram_k);
+    let to_delete = self.find_min();
+    self.delete(to_delete.pos, to_delete.key);
   }
 }
 
@@ -206,69 +193,67 @@ mod tests {
 
   use super::*;
 
-  // Heap<usize, u64> where K = usize and V = u64
-  fn create_test_heap() -> Heap<u64> {
-    Heap::new(4) // small test size
-  }
-
   #[test]
   fn test_insert_and_find_min() {
-    let mut heap = create_test_heap();
+    let mut heap = Heap::new(4);
 
     heap.insert(10, 100);
     heap.insert(5, 50);
     heap.insert(20, 200);
 
-    let (_pos, _, min_key, min_val) = heap.find_min();
-    assert_eq!(min_key, 5);
-    assert_eq!(min_val, 50);
+    let min_element = heap.find_min();
+
+    assert_eq!(min_element.value.key, 5);
+    assert_eq!(min_element.value.value, 50);
   }
 
   #[test]
   fn test_insert_and_extract_min() {
-    let mut heap = create_test_heap();
+    let mut heap = Heap::new(4);
 
     heap.insert(30, 300);
     heap.insert(10, 100);
     heap.insert(20, 200);
 
-    let (_pos, _, min_key, min_val) = heap.find_min();
-    assert_eq!(min_key, 10);
-    assert_eq!(min_val, 100);
+    let min_element = heap.find_min();
+    assert_eq!(min_element.value.key, 10);
+    assert_eq!(min_element.value.value, 100);
 
     heap.extract_min();
 
-    let (_, _, new_min_key, new_min_val) = heap.find_min();
-    assert_eq!(new_min_key, 20);
-    assert_eq!(new_min_val, 200);
+    let new_min_element = heap.find_min();
+    assert_eq!(new_min_element.value.key, 20);
+    assert_eq!(new_min_element.value.value, 200);
   }
 
   #[test]
   fn test_delete() {
-    let mut heap = create_test_heap();
+    let mut heap = Heap::new(4);
 
-    let pos = heap.insert(15, 150);
-    let (_pos, oram_key, _, _) = heap.find_min();
+    let _location = heap.insert(15, 150);
 
-    heap.delete(pos, oram_key);
+    let min_element = heap.find_min();
 
-    let (_, _, min_key, min_val) = heap.find_min();
-    assert!(min_key != 15 || min_val != 150);
+    heap.delete(min_element.pos, min_element.key);
+
+    let min_element_after_delete = heap.find_min();
+    assert!(min_element_after_delete.is_empty())
   }
 
   #[test]
   fn test_multiple_inserts_and_extracts() {
-    let mut heap = create_test_heap();
+    let mut heap = Heap::new(8);
 
-    for i in (1..=5).rev() {
+    for i in (1..=8).rev() {
       heap.insert(i, (i * 10) as u64);
     }
 
-    let mut last_val = 0;
-    for _ in 0..5 {
-      let (_, _, _, val) = heap.find_min();
-      assert!(val >= last_val);
-      last_val = val;
+    let mut last_key = 0;
+    for _i in 0..8 {
+      let min_element = heap.find_min();
+      assert!(!min_element.is_empty());
+      assert!(min_element.value.key >= last_key);
+      last_key = min_element.value.key;
       heap.extract_min();
     }
   }
@@ -290,24 +275,24 @@ mod tests {
           // Insert
           let key = rand::rng().random_range(0..1000);
           let value = key as u64 * 10;
-          let pos = heap.insert(key, value);
-          let (_pos, oram_key, _, _) = heap.find_min();
-          inserted.push((pos, oram_key, key, value));
+          let _inserted_location = heap.insert(key, value);
+          let min_element = heap.find_min();
+          inserted.push(min_element);
           reference_heap.push(Reverse((key, value)));
         }
         1 => {
           // Extract min
           if !reference_heap.is_empty() {
-            let (_, _, oblivious_min_key, oblivious_min_val) = heap.find_min();
+            let min_element = heap.find_min();
             heap.extract_min();
 
             if let Some(Reverse((reference_min_key, reference_min_val))) = reference_heap.pop() {
               assert_eq!(
-                oblivious_min_key, reference_min_key,
+                min_element.value.key, reference_min_key,
                 "Extract min returned incorrect key"
               );
               assert_eq!(
-                oblivious_min_val, reference_min_val,
+                min_element.value.value, reference_min_val,
                 "Extract min returned incorrect value"
               );
             }
@@ -318,10 +303,10 @@ mod tests {
 
       // Verify minimum is consistent
       if !inserted.is_empty() {
-        let (_, _, oblivious_min_key, _) = heap.find_min();
+        let min_element = heap.find_min();
         if let Some(Reverse((reference_min_key, _))) = reference_heap.peek() {
           assert_eq!(
-            oblivious_min_key, *reference_min_key,
+            min_element.value.key, *reference_min_key,
             "Heap minimum doesn't match reference after operation"
           );
         }
