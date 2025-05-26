@@ -23,6 +23,8 @@ impl<T> Length for Vec<T> {
   }
 }
 
+
+
 /// An Indexable that can be used in the algorithms in this library
 /// An indexable trait. `IndexMux` should modify in place, `length` should be consistent with the indexable.
 pub trait Indexable<T>: Index<usize, Output = T> + IndexMut<usize, Output = T> + Length {}

@@ -471,6 +471,7 @@ dependencies = [
  "bytemuck",
  "criterion",
  "rand",
+ "rayon",
  "rods-oram",
  "rods-primitives",
  "rods-sort",

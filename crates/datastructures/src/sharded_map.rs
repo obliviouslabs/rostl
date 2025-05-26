@@ -6,7 +6,8 @@ use rods_primitives::{
   cmov_body, cxchg_body, impl_cmov_for_generic_pod,
   traits::{Cmov, _Cmovbase},
 };
-use rods_sort::compaction::compact;
+use rods_sort::{bitonic::bitonic_sort, compaction::compact};
+use rayon::prelude::*;
 
 use crate::map::{OHash, UnsortedMap};
 
@@ -16,6 +17,8 @@ const INSERTION_QUEUE_MAX_SIZE: usize = 20;
 const DEAMORTIZED_INSERTIONS: usize = 2;
 // Number of elements in each map bucket.
 const BUCKET_SIZE: usize = 2;
+// Number of partitions in the map.
+const P: usize = 15;
 
 use std::mem::MaybeUninit;
 
@@ -28,10 +31,10 @@ use std::mem::MaybeUninit;
 /// * `P`: The number of partitions in the map.
 /// * `B`: The maximum number of non-distinct keys in any partition in a batch.
 #[derive(Debug)]
-pub struct ShardedMap<K, V, const P: usize>
+pub struct ShardedMap<K, V>
 where
-  K: OHash + Pod + Default + std::fmt::Debug,
-  V: Cmov + Pod + Default + std::fmt::Debug,
+  K: OHash + Pod + Default + std::fmt::Debug + Send + Ord,
+  V: Cmov + Pod + Default + std::fmt::Debug + Send,
 {
   /// Number of elements in the map
   size: usize,
@@ -46,10 +49,10 @@ where
 }
 
 #[repr(C)]
-#[derive(Default, Debug, Clone, Copy, Zeroable)]
+#[derive(Default, Debug, Clone, Copy, Zeroable, PartialEq, Eq, PartialOrd, Ord)]
 struct BatchBlock<K, V>
 where
-  K: OHash + Pod + Default + std::fmt::Debug,
+  K: OHash + Pod + Default + std::fmt::Debug + Ord,
   V: Cmov + Pod + Default + std::fmt::Debug,
 {
   k: K,
@@ -58,16 +61,18 @@ where
 }
 unsafe impl<K, V> Pod for BatchBlock<K, V>
 where
-  K: OHash + Pod + Default + std::fmt::Debug,
+  K: OHash + Pod + Default + std::fmt::Debug + Ord,
   V: Cmov + Pod + Default + std::fmt::Debug,
 {
 }
-impl_cmov_for_generic_pod!(BatchBlock<K, V>; where K: OHash + Pod + Default + std::fmt::Debug, V: Cmov + Pod + Default + std::fmt::Debug);
+impl_cmov_for_generic_pod!(BatchBlock<K, V>; where K: OHash + Pod + Default + std::fmt::Debug + Ord, V: Cmov + Pod + Default + std::fmt::Debug);
 
-impl<K, V, const P: usize> ShardedMap<K, V, P>
+impl<K, V> ShardedMap<K, V>
 where
-  K: OHash + Default + std::fmt::Debug,
-  V: Cmov + Pod + Default + std::fmt::Debug,
+  K: OHash + Default + std::fmt::Debug + Send + Ord,
+  V: Cmov + Pod + Default + std::fmt::Debug + Send,
+  BatchBlock<K, V>: Ord + Send,
+  UnsortedMap<K, V>: Send + Sync 
 {
   /// Creates a new `ShardedMap` with the given number of partitions.
   pub fn new(capacity: usize) -> Self {
@@ -101,50 +106,62 @@ where
   /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
   /// # Preconditions
   /// * No repeated keys in the input array.
-  pub fn get_batch<const N: usize, const B: usize>(&self, keys: &[K; N]) -> [Option<V>; N] {
+  pub fn get_batch<const N: usize, const B: usize>(&mut self, keys: &[K; N]) -> [Option<V>; N] {
     // 1. Create P arrays of size N.
     let mut partitions: [[BatchBlock<K, V>; N]; P] =
       [unsafe { std::mem::MaybeUninit::<[BatchBlock<K, V>; N]>::uninit().assume_init() }; P];
-
+    const INVALID_ID: usize = usize::max_value();
     // 2. Map each key at index i to a partition: to p[h(keys[i])][i],
+    // UNDONE(): this is O(P*N), we could do N log^2 N
     for (i, k) in keys.iter().enumerate() {
       let target_p = self.get_partition(k);
       for (p, partition) in partitions.iter_mut().enumerate() {
         partition[i].k = *k;
         partition[i].index = i;
-        partition[i].index.cmov(&usize::max_value(), target_p != p);
+        partition[i].index.cmov(&INVALID_ID, target_p != p);
       }
     }
 
-    // 3. Apply oblivious compaction to each parition.``
-    // UNDONE(): auto generated code
+    // 3. Apply oblivious compaction to each partition.
     for (p, partition) in partitions.iter_mut().enumerate() {
-      let mut dummy = BatchBlock::<K, V>::default();
-      let mut dummy_count = 0;
-      let mut count = 0;
-      for i in 0..N {
-        if partition[i].k == dummy.k {
-          dummy_count += 1;
-        } else {
-          partition[count] = partition[i];
-          count += 1;
-        }
-      }
-      // Compact the array
-      let ret = compact(partition, |x| x.k == dummy.k);
-      // ret is the number of elements in the compacted array.
-      // We need to set the rest of the array to dummy.
-      for i in 0..N {
-        let set_dummy = i >= ret;
-        partition[i].k.cmov(&dummy.k, set_dummy);
-      }
+      let cnt = compact(partition, |x| x.index == INVALID_ID);
+      debug_assert!(cnt <= B);
     }
 
     // 4. Read the first B values from each partition in the corresponding partition.
+    (&mut partitions[..])
+      .par_iter_mut().zip((&mut self.partitions[..]).par_iter_mut()).for_each(
+      |(partition, map)| {
+        for i in 0..B {
+          let block = &mut partition[i];
+          let _ret = map.get(block.k, &mut block.v);
+          debug_assert!(_ret >= (block.index != INVALID_ID));
+        }
+      },
+    );
 
-    // 5. Oblivious sort according to the index (we actually have P sorted arrays already, so we just need to merge them).
+    // 5. Accumulate the first B values from each partition into the results array.
+    let mut merged: Vec<BatchBlock<K, V>> = vec![BatchBlock::default(); P * B];
 
-    // 6. Return the results array.
+    for p in 0..P {
+        for b in 0..B {
+            merged[p * B + b] = partitions[p][b];
+        }
+    }
+
+    // 6. Oblivious sort according to the index (we actually have P sorted arrays already, so we just need to merge them).
+    bitonic_sort(&mut merged);
+
+    // 7. Return the first N values from the results array.
+    // UNDONE(): we are leaking the result of each queried value
+    let mut ret: [Option<V>; N] = [None; N];
+    for i in 0..N {
+      let block = &merged[i];
+      if block.index != INVALID_ID {
+        ret[block.index] = Some(block.v);
+      }
+    }
+
     let ret = [None; N];
     ret
   }

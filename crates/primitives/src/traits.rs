@@ -26,6 +26,7 @@ pub trait Cmov: Sized {
   }
 }
 
+
 /// A trait for conditionally swapping values with constant memory trace.
 ///
 #[inline]
