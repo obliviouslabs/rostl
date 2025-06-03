@@ -1,6 +1,6 @@
+//! Implements an option type with constant-time conditional move operations.
+
 use crate::traits::Cmov;
-///! Implements an option type with constant-time conditional move operations.
-///
 use bytemuck::{Pod, Zeroable};
 
 /// An alternative option implementation that is easier to use in constant-time algorithms.
@@ -23,12 +23,12 @@ where
   T: Cmov + Pod + Zeroable,
 {
   /// Creates a new `OOption` with the given value and presence flag.
-  pub fn new(value: T, is_some: bool) -> Self {
+  pub const fn new(value: T, is_some: bool) -> Self {
     Self { value, is_some }
   }
 
   /// Returns whether the option contains a value.
-  pub fn is_some(&self) -> bool {
+  pub const fn is_some(&self) -> bool {
     self.is_some
   }
 

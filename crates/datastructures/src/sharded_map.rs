@@ -42,8 +42,8 @@ where
   Get { blocks: Box<[BatchBlock<K, V>; B]>, ret_tx: Sender<Reply<K, V, B>> },
   /// Insert a batch of blocks into the map.
   Insert { blocks: Box<[BatchBlock<K, V>; B]>, ret_tx: Sender<Reply<K, V, B>> },
-  /// Shutdown the worker thread.
-  Shutdown,
+  // UNDONE(): Implement shutdown logic.
+  // Shutdown,
 }
 
 /// A worker is the thread that manages a partition of the map.
@@ -65,6 +65,8 @@ where
   BatchBlock<K, V>: Ord + Send,
 {
   /// Creates a new worker partition `pid`, with max size `n`.
+  ///
+  #[allow(tail_expr_drop_order)]
   fn new(n: usize, pid: usize, startup_barrier: Arc<Barrier>) -> Self {
     // UNDONE(): this bound is a bit arbitrary, 2 should be enough.
     let (tx, rx): (Sender<Cmd<_, _, B>>, Receiver<_>) = bounded(10);
@@ -96,15 +98,11 @@ where
                 map.insert(blk.k, blk.v.unwrap());
               }
               let _ = ret_tx.send(Reply::Unit(()));
-            }
-            Cmd::Shutdown => {
-              // We don't need to do anything here, the worker will exit.
-              break;
-            }
-            _ => {
-              // UNDONE(): Should we panic here or just remove the branch?
-              panic!("unexpected command received in worker thread");
-            }
+            } // UNDONE(): Implement shutdown logic.
+              // Cmd::Shutdown => {
+              //   // We don't need to do anything here, the worker will exit.
+              //   break;
+              // }
           }
         }
       })
@@ -139,9 +137,10 @@ where
   random_state: RandomState,
 }
 
+/// A block in a batch, that containts the key, the value and the index of the block in the original full batch.
 #[repr(C)]
 #[derive(Default, Debug, Clone, Copy, Zeroable, PartialEq, Eq, PartialOrd, Ord)]
-struct BatchBlock<K, V>
+pub struct BatchBlock<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord,
   V: Cmov + Pod + Default + std::fmt::Debug,
@@ -166,7 +165,7 @@ where
 {
   /// Creates a new `ShardedMap` with the given number of partitions.
   pub fn new(capacity: usize) -> Self {
-    let per_part = (capacity + P - 1) / P;
+    let per_part = capacity.div_ceil(P);
     let startup = Arc::new(Barrier::new(P + 1));
 
     let workers = std::array::from_fn(|i| Worker::new(per_part, i, startup.clone()));
@@ -192,7 +191,7 @@ where
     let mut per_p: [Box<[BatchBlock<K, V>; B]>; P] =
       std::array::from_fn(|_| Box::new([BatchBlock::default(); B]));
 
-    const INVALID_ID: usize = usize::max_value();
+    const INVALID_ID: usize = usize::MAX;
 
     // 2. Map each key at index i to a partition: to p[h(keys[i])][i],
     // UNDONE(): this is O(P*N), we could do N log^2 N
@@ -206,7 +205,7 @@ where
     }
 
     // 3. Apply oblivious compaction to each partition.
-    for (p, partition) in per_p.iter_mut().enumerate() {
+    for partition in &mut per_p {
       let cnt = compact(&mut **partition, |x: &BatchBlock<K, V>| x.index == INVALID_ID);
       // UNDONE(): deal with overflow.
       assert!(cnt <= B);
@@ -215,8 +214,8 @@ where
     let (done_tx, done_rx) = bounded::<Reply<K, V, B>>(P);
 
     // 4. Read the first B values from each partition in the corresponding partition.
-    for p in 0..P {
-      let blocks = std::mem::replace(&mut per_p[p], Box::new([BatchBlock::default(); B]));
+    for (p, partition) in per_p.iter_mut().enumerate() {
+      let blocks = std::mem::replace(partition, Box::new([BatchBlock::default(); B]));
       self.workers[p].tx.send(Cmd::Get { blocks, ret_tx: done_tx.clone() }).unwrap();
     }
 
@@ -253,12 +252,14 @@ where
   /// # Preconditions
   /// * No repeated keys in the input array.
   /// * All of the inserted keys are not already present in the map.
+  /// * There is enough space in the map to insert all N keys.
   pub fn insert_batch_distinct<const N: usize>(&mut self, keys: &[K; N], values: &[V; N]) {
+    assert!(self.size + N <= self.capacity, "Map is full, cannot insert more elements.");
     // 1. Create P arrays of size N.
     let mut per_p: [Box<[BatchBlock<K, V>; B]>; P] =
       std::array::from_fn(|_| Box::new([BatchBlock::default(); B]));
 
-    const INVALID_ID: usize = usize::max_value();
+    const INVALID_ID: usize = usize::MAX;
 
     // 2. Map each key at index i to a partition: to p[h(keys[i])][i],
     // UNDONE(): this is O(P*N), we could do N log^2 N
@@ -273,7 +274,7 @@ where
     }
 
     // 3. Apply oblivious compaction to each partition.
-    for (p, partition) in per_p.iter_mut().enumerate() {
+    for partition in &mut per_p {
       let cnt = compact(&mut **partition, |x| x.index == INVALID_ID);
       // UNDONE(): deal with overflow.
       assert!(cnt <= B);
@@ -282,8 +283,8 @@ where
     let (done_tx, done_rx) = bounded::<Reply<K, V, B>>(P);
 
     // 4. Insert the first B values from each partition in the corresponding partition.
-    for p in 0..P {
-      let blocks = std::mem::replace(&mut per_p[p], Box::new([BatchBlock::default(); B]));
+    for (p, partition) in per_p.iter_mut().enumerate() {
+      let blocks = std::mem::replace(partition, Box::new([BatchBlock::default(); B]));
       self.workers[p].tx.send(Cmd::Insert { blocks, ret_tx: done_tx.clone() }).unwrap();
     }
 
@@ -317,7 +318,7 @@ mod tests {
     let map: ShardedMap<u64, u64, B> = ShardedMap::new(requested);
 
     // Inside the same module we can see private fields.
-    let per_part = (requested + P - 1) / P;
+    let per_part = requested.div_ceil(P);
     assert_eq!(map.capacity, per_part * P); // rounded up
     assert_eq!(map.size, 0);
   }
