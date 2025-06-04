@@ -52,7 +52,6 @@ where
   ret
 }
 
-// UNDONE(): test compaction
 #[cfg(test)]
 mod tests {
   use rand::Rng;

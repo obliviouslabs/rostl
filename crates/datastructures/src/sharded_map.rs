@@ -39,11 +39,17 @@ where
   BatchBlock<K, V>: Ord + Send,
 {
   /// Get a batch of blocks from the map.
-  Get { blocks: Box<[BatchBlock<K, V>; B]>, ret_tx: Sender<Reply<K, V, B>> },
+  Get {
+    blocks: Box<[BatchBlock<K, V>; B]>,
+    ret_tx: Sender<Reply<K, V, B>>,
+  },
   /// Insert a batch of blocks into the map.
-  Insert { blocks: Box<[BatchBlock<K, V>; B]>, ret_tx: Sender<Reply<K, V, B>> },
-  // UNDONE(): Implement shutdown logic.
-  // Shutdown,
+  Insert {
+    blocks: Box<[BatchBlock<K, V>; B]>,
+    ret_tx: Sender<Reply<K, V, B>>,
+  },
+  // Shutdown the worker thread.
+  Shutdown,
 }
 
 /// A worker is the thread that manages a partition of the map.
@@ -56,6 +62,7 @@ where
   BatchBlock<K, V>: Ord + Send,
 {
   tx: Sender<Cmd<K, V, B>>,
+  join_handle: Option<thread::JoinHandle<()>>,
 }
 
 impl<K, V, const B: usize> Worker<K, V, B>
@@ -68,10 +75,10 @@ where
   ///
   #[allow(tail_expr_drop_order)]
   fn new(n: usize, pid: usize, startup_barrier: Arc<Barrier>) -> Self {
-    // UNDONE(): this bound is a bit arbitrary, 2 should be enough.
+    // Note: this bound is a bit arbitrary, 2 is enough for the map as it is implemented now.
     let (tx, rx): (Sender<Cmd<_, _, B>>, Receiver<_>) = bounded(10);
 
-    thread::Builder::new()
+    let handler = thread::Builder::new()
       .name(format!("partition-{pid}"))
       .spawn(move || {
         // block until all workers are running
@@ -98,17 +105,39 @@ where
                 map.insert(blk.k, blk.v.unwrap());
               }
               let _ = ret_tx.send(Reply::Unit(()));
-            } // UNDONE(): Implement shutdown logic.
-              // Cmd::Shutdown => {
-              //   // We don't need to do anything here, the worker will exit.
-              //   break;
-              // }
+            }
+            Cmd::Shutdown => {
+              // We don't need to do anything here, the worker will exit.
+              println!("worker {pid} received shutdown command, exiting");
+              break;
+            }
           }
         }
       })
       .expect("failed to spawn worker thread");
 
-    Self { tx }
+    Self { tx, join_handle: Some(handler) }
+  }
+}
+
+impl<K, V, const B: usize> Drop for Worker<K, V, B>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord,
+  V: Cmov + Pod + Default + std::fmt::Debug,
+  BatchBlock<K, V>: Ord + Send,
+{
+  fn drop(&mut self) {
+    // Send a shutdown command to the worker thread.
+    let _ = self.tx.send(Cmd::Shutdown);
+    // Wait for the worker thread to finish.
+    match self.join_handle.take() {
+      Some(handle) => {
+        let _ = handle.join();
+      }
+      None => {
+        panic!("Exception while dropping worker thread, handler was already taken");
+      }
+    }
   }
 }
 
@@ -194,7 +223,7 @@ where
     const INVALID_ID: usize = usize::MAX;
 
     // 2. Map each key at index i to a partition: to p[h(keys[i])][i],
-    // UNDONE(): this is O(P*N), we could do N log^2 N
+    // UNDONE(git-65): this is O(P*N), we could do N log^2 N
     for (i, k) in keys.iter().enumerate() {
       let target_p = self.get_partition(k);
       for (p, partition) in per_p.iter_mut().enumerate() {
@@ -207,7 +236,7 @@ where
     // 3. Apply oblivious compaction to each partition.
     for partition in &mut per_p {
       let cnt = compact(&mut **partition, |x: &BatchBlock<K, V>| x.index == INVALID_ID);
-      // UNDONE(): deal with overflow.
+      // UNDONE(git-64): deal with overflow.
       assert!(cnt <= B);
     }
 
@@ -262,7 +291,7 @@ where
     const INVALID_ID: usize = usize::MAX;
 
     // 2. Map each key at index i to a partition: to p[h(keys[i])][i],
-    // UNDONE(): this is O(P*N), we could do N log^2 N
+    // UNDONE(git-65): this is O(P*N), we could do N log^2 N
     for (i, k) in keys.iter().enumerate() {
       let target_p = self.get_partition(k);
       for (p, partition) in per_p.iter_mut().enumerate() {
@@ -276,7 +305,7 @@ where
     // 3. Apply oblivious compaction to each partition.
     for partition in &mut per_p {
       let cnt = compact(&mut **partition, |x| x.index == INVALID_ID);
-      // UNDONE(): deal with overflow.
+      // UNDONE(git-64): deal with overflow.
       assert!(cnt <= B);
     }
 
