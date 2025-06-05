@@ -53,7 +53,7 @@ where
 }
 
 /// A worker is the thread that manages a partition of the map.
-/// Worker threads are kept hot while while there are new queries to proccess.
+/// Worker threads are kept hot while while there are new queries to process.
 #[derive(Debug)]
 struct Worker<K, V, const B: usize>
 where
@@ -166,7 +166,7 @@ where
   random_state: RandomState,
 }
 
-/// A block in a batch, that containts the key, the value and the index of the block in the original full batch.
+/// A block in a batch, that contains the key, the value and the index of the block in the original full batch.
 #[repr(C)]
 #[derive(Default, Debug, Clone, Copy, Zeroable, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BatchBlock<K, V>
