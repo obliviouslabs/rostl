@@ -6,6 +6,8 @@ pub mod traits;
 
 pub mod indexable;
 
+pub mod ooption;
+
 pub mod utils;
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

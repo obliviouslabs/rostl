@@ -6,6 +6,8 @@ pub mod bose_nelson;
 
 pub mod bitonic;
 
-pub mod utils;
+pub mod compaction;
 
 pub mod shuffle;
+
+pub mod utils;

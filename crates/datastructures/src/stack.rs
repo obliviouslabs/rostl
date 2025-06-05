@@ -12,6 +12,7 @@ use rods_primitives::{
   traits::_Cmovbase,
 };
 
+#[repr(align(8))]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
 struct StackElement<T>
 where
@@ -78,11 +79,12 @@ where
     let target_id = self.size; // inv1 - the position of the top of the stack is the size of the stack.
     let mut read_pos = self.rng.random_range(0..self.oram.max_n as PositionType);
     read_pos.cmov(&self.top, real);
+    let mut new_pos = read_pos;
+    new_pos.cmov(&DUMMY_POS, real); // if real, we should delete the top element. if not real, we should not change the read element.
 
     let mut imse = StackElement::default();
 
-    let _found = self.oram.read(read_pos, DUMMY_POS, target_id, &mut imse);
-    debug_assert!(_found == real);
+    self.oram.read(read_pos, read_pos, target_id, &mut imse);
 
     out.cmov(&imse.value, real);
     self.top.cmov(&imse.next, real);

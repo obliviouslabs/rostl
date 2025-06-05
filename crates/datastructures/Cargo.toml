@@ -10,11 +10,14 @@ exclude.workspace = true
 [dependencies]
 rods-oram.workspace = true
 rods-primitives.workspace = true
+rods-sort.workspace = true
 
 ahash.workspace = true
 bytemuck.workspace = true
+kanal.workspace = true
 static_assertions.workspace = true
 rand.workspace = true
+# rayon.workspace = true
 seq-macro.workspace = true
 
 [dev-dependencies]
