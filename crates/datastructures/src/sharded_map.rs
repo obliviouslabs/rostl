@@ -73,7 +73,6 @@ where
 {
   /// Creates a new worker partition `pid`, with max size `n`.
   ///
-  #[allow(tail_expr_drop_order)]
   fn new(n: usize, pid: usize, startup_barrier: Arc<Barrier>) -> Self {
     // Note: this bound is a bit arbitrary, 2 is enough for the map as it is implemented now.
     let (tx, rx): (Sender<Cmd<_, _, B>>, Receiver<_>) = bounded(10);
@@ -89,9 +88,9 @@ where
         //
         let mut map = UnsortedMap::<K, V>::new(n);
 
-        while let Ok(cmd) = rx.recv() {
-          match cmd {
-            Cmd::Get { mut blocks, ret_tx } => {
+        loop {
+          match rx.recv() {
+            Ok(Cmd::Get { mut blocks, ret_tx }) => {
               println!("worker {pid} received get command with {} blocks", blocks.len());
               for blk in blocks.iter_mut() {
                 blk.v = OOption::new(Default::default(), true);
@@ -99,17 +98,20 @@ where
               }
               let _ = ret_tx.send(Reply::Blocks { pid, blocks }); // move blocks back
             }
-            Cmd::Insert { blocks, ret_tx } => {
+            Ok(Cmd::Insert { blocks, ret_tx }) => {
               println!("worker {pid} received insert command with {} blocks", blocks.len());
               for blk in blocks.iter() {
                 map.insert(blk.k, blk.v.unwrap());
               }
               let _ = ret_tx.send(Reply::Unit(()));
             }
-            Cmd::Shutdown => {
+            Ok(Cmd::Shutdown) => {
               // We don't need to do anything here, the worker will exit.
               println!("worker {pid} received shutdown command, exiting");
               break;
+            }
+            Err(_) => {
+              panic!("unexpected error received in worker thread command channel");
             }
           }
         }
