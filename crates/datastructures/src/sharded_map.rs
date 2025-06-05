@@ -89,8 +89,15 @@ where
         let mut map = UnsortedMap::<K, V>::new(n);
 
         loop {
-          match rx.recv() {
-            Ok(Cmd::Get { mut blocks, ret_tx }) => {
+          let cmd = match rx.recv() {
+            Ok(cmd) => cmd,
+            Err(_) => {
+              panic!("worker thread command channel disconnected unexpectedly");
+            }
+          };
+
+          match cmd {
+            Cmd::Get { mut blocks, ret_tx } => {
               println!("worker {pid} received get command with {} blocks", blocks.len());
               for blk in blocks.iter_mut() {
                 blk.v = OOption::new(Default::default(), true);
@@ -98,20 +105,17 @@ where
               }
               let _ = ret_tx.send(Reply::Blocks { pid, blocks }); // move blocks back
             }
-            Ok(Cmd::Insert { blocks, ret_tx }) => {
+            Cmd::Insert { blocks, ret_tx } => {
               println!("worker {pid} received insert command with {} blocks", blocks.len());
               for blk in blocks.iter() {
                 map.insert(blk.k, blk.v.unwrap());
               }
               let _ = ret_tx.send(Reply::Unit(()));
             }
-            Ok(Cmd::Shutdown) => {
+            Cmd::Shutdown => {
               // We don't need to do anything here, the worker will exit.
               println!("worker {pid} received shutdown command, exiting");
               break;
-            }
-            Err(_) => {
-              panic!("unexpected error received in worker thread command channel");
             }
           }
         }
