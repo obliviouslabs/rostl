@@ -3,7 +3,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/TODO.svg)](https://crates.io/crates/TODO)
 [![Docs](https://docs.rs/TODO/badge.svg)](https://docs.rs/TODO)
-[![CI](https://github.com/xtrm0/rods/actions/workflows/bench.yml/badge.svg)](https://github.com/xtrm0/rods/actions/workflows/bench.yml)
+[![CI](https://github.com/xtrm0/rods/actions/workflows/unit.yml/badge.svg)](https://github.com/xtrm0/rods/actions/workflows/unit.yml)
 [![Codecov](https://codecov.io/gh/xtrm0/rods/branch/main/graph/badge.svg)](https://codecov.io/gh/xtrm0/rods)
 
 **rods** (Rust Oblivious Data Structures) is a Rust library providing a suite of high-performance, data- and instruction-trace oblivious data structures and algorithms, designed for use in Trusted Execution Environments (TEEs) such as Intel TDX. All memory accesses and instructions executed are independent of the data being processed, providing strong security guarantees against side-channel attacks.
@@ -49,7 +49,7 @@ Add the relevant crate(s) to your `Cargo.toml`:
 rods-datastructures = "1.0"
 ```
 
-Example: Creating and using an oblivious array
+**Creating and using an oblivious array**
 
 ```rust
 use rods_datastructures::array::LongArray;
@@ -60,6 +60,42 @@ let mut value = 0;
 arr.read(42, &mut value);
 assert_eq!(value, 1234);
 ```
+
+**Creating and using an oblivious map**
+
+```rust
+use rods_datastructures::map::UnsortedMap;
+
+let mut map = UnsortedMap::<u64, u64>::new(128);
+map.insert(42, 1234);
+let mut value = 0;
+let found = map.get(42, &mut value);
+assert!(found);
+assert_eq!(value, 1234);
+```
+
+
+**Creating and using an oblivious heap**
+
+```rust
+use rods_datastructures::heap::Heap;
+
+let mut heap = Heap::<u64>::new(16);
+heap.insert(10, 100);
+heap.insert(5, 50);
+heap.insert(20, 200);
+
+let min_element = heap.find_min();
+assert_eq!(min_element.value.key, 5);
+assert_eq!(min_element.value.value, 50);
+
+heap.extract_min();
+let new_min = heap.find_min();
+assert_eq!(new_min.value.key, 10);
+assert_eq!(new_min.value.value, 100);
+```
+
+
 
 All APIs are designed to be as close as possible to their standard Rust counterparts, but with obliviousness guarantees.
 
