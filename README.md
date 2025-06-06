@@ -109,7 +109,7 @@ assert_eq!(new_min.value.value, 100);
 
 - **Automated Benchmarks**: Benchmarks are run on every commit via GitHub Actions. See `.github/workflows/bench.yml`.
 - **Performance Regression Checks**: Benchmarks are compared against rules in `scripts/benchmark_rules.txt` to catch regressions.
-- **Comparisons**: For cross-project benchmarks, see the companion benchmarking repository (link in the main repo).
+- **Comparisons**: For cross-project benchmarks, see the companion benchmarking repository (TODO: add link).
 
 ## Code Quality
 
@@ -135,9 +135,10 @@ We welcome contributions! If you are interested in:
 Please open an issue or pull request. See the code comments and module-level docs for guidance. All contributions must pass code quality and benchmark checks.
 
 ## Research & References
-
 - [Circuit ORAM](https://eprint.iacr.org/2014/672.pdf)
 - [Path Oblivious Heap](https://eprint.iacr.org/2019/274)
+- [EnigMap](https://eprint.iacr.org/2022/1083)
+- [Flexway O-Sort](https://eprint.iacr.org/2023/1258.pdf)
 - [Intel TDX](https://www.intel.com/content/www/us/en/architecture-and-technology/tdx.html)
 
 ## License
