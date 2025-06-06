@@ -22,7 +22,6 @@ cargo llvm-cov --lcov --output-path target/lcov.info nextest --no-fail-fast
 [tasks.precommit]
 description = "Run pre-commit checks"
 script = '''
-cargo nextest run
 cargo llvm-cov --lcov --output-path target/lcov.info nextest
 cargo clippy --all-targets --all-features -- -D warnings
 cargo fmt --all -- --check
