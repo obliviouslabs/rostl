@@ -32,9 +32,10 @@ jobs:
       - name: Run tests and collect coverage data
         run: cargo llvm-cov --lcov --output-path target/lcov.info nextest --workspace --no-fail-fast
       - name: Upload coverage data to codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           files: target/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   unit-success:
     name: unit success
