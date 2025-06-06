@@ -29,7 +29,7 @@ jobs:
           cache-on-failure: true
       - uses: taiki-e/install-action@nextest
       - name: Run tests to collect coverage data
-        run: cargo nextest --workspace --no-fail-fast --profile ci
+        run: cargo nextest run --workspace --no-fail-fast --profile ci
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
