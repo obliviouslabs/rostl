@@ -1,8 +1,10 @@
 # rods: Rust Oblivious Data Structures
 
+
 [![Crates.io](https://img.shields.io/crates/v/TODO.svg)](https://crates.io/crates/TODO)
 [![Docs](https://docs.rs/TODO/badge.svg)](https://docs.rs/TODO)
 [![CI](https://github.com/xtrm0/rods/actions/workflows/bench.yml/badge.svg)](https://github.com/xtrm0/rods/actions/workflows/bench.yml)
+[![Codecov](https://codecov.io/gh/xtrm0/rods/branch/main/graph/badge.svg)](https://codecov.io/gh/xtrm0/rods)
 
 **rods** (Rust Oblivious Data Structures) is a Rust library providing a suite of high-performance, data- and instruction-trace oblivious data structures and algorithms, designed for use in Trusted Execution Environments (TEEs) such as Intel TDX. All memory accesses and instructions executed are independent of the data being processed, providing strong security guarantees against side-channel attacks.
 
@@ -77,11 +79,12 @@ All APIs are designed to be as close as possible to their standard Rust counterp
 - **Strict Linting**: All code is checked with `clippy`, `cargo fmt`, and custom lints.
 - **Pre-commit & Pre-merge Checks**: Automated via `Makefile.toml` and GitHub Actions.
 - **Dependency Auditing**: Uses `cargo-deny` for dependency and license checks.
+- **Test Coverage**: `cargo make coverage` generates `target/lcov.info`. Every commit coverage information is reported to [Codecov](https://codecov.io/gh/xtrm0/rods)
 
 ## Testing
 
 - **Comprehensive Tests**: All data structures and algorithms are covered by unit and property-based tests.
-- **How to Run**: `cargo test --workspace`
+- **How to Run**: `cargo make tests`
 
 ## Contributing
 
