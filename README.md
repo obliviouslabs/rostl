@@ -49,6 +49,10 @@ Add the relevant crate(s) to your `Cargo.toml`:
 rods-datastructures = "1.0"
 ```
 
+### A few code examples
+
+All APIs are designed to be as close as possible to their standard Rust counterparts, but with obliviousness guarantees.
+
 **Creating and using an oblivious array**
 
 ```rust
@@ -74,7 +78,6 @@ assert!(found);
 assert_eq!(value, 1234);
 ```
 
-
 **Creating and using an oblivious heap**
 
 ```rust
@@ -96,8 +99,6 @@ assert_eq!(new_min.value.value, 100);
 ```
 
 
-
-All APIs are designed to be as close as possible to their standard Rust counterparts, but with obliviousness guarantees.
 
 ## Documentation
 
