@@ -15,25 +15,58 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
     env:
       RUST_BACKTRACE: 1
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
       - uses: taiki-e/install-action@nextest
-      - name: Run tests
-        run: cargo nextest run --workspace
+      - name: Run tests to collect coverage data
+        run: cargo nextest run --workspace --no-fail-fast --profile ci
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: target/nextest/ci/junit.xml
+
+  coverage:
+    name: coverage
+    env:
+      RUST_BACKTRACE: 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - uses: taiki-e/install-action@nextest
+      - name: Run tests to collect coverage data
+        run: cargo llvm-cov --lcov --output-path target/lcov.info nextest --workspace --no-fail-fast
+      - name: Upload coverage data to codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: target/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   unit-success:
     name: unit success
     runs-on: ubuntu-latest
     if: always()
-    needs: [test]
+    needs: [test, coverage]
     timeout-minutes: 5
     steps:
       - name: Decide whether the needed jobs succeeded or failed

@@ -2,7 +2,7 @@
 description = "Build the project and benchmarks"
 script = '''
 cargo build
-cargo test
+cargo nextest run
 cargo criterion --output-format bencher 2>&1 | tee target/bencher.log
 python scripts/benchmark_rules.py --input target/bencher.log --rules scripts/benchmark_rules.txt
 '''
@@ -10,13 +10,19 @@ python scripts/benchmark_rules.py --input target/bencher.log --rules scripts/ben
 [tasks.tests]
 description = "Run the tests"
 script = '''
-cargo nextest run
+cargo nextest run --no-fail-fast
+'''
+
+[tasks.coverage]
+description = "Generates the coverage report"
+script = '''
+cargo llvm-cov --lcov --output-path target/lcov.info nextest --no-fail-fast
 '''
 
 [tasks.precommit]
 description = "Run pre-commit checks"
 script = '''
-cargo test
+cargo llvm-cov --lcov --output-path target/lcov.info nextest
 cargo clippy --all-targets --all-features -- -D warnings
 cargo fmt --all -- --check
 cargo hack check --feature-powerset
