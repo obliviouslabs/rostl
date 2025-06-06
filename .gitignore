@@ -5,3 +5,4 @@ target/
 .idea
 .DS_Store
 .vscode
+lcov.info

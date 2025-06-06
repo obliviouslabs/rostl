@@ -22,12 +22,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
+      - uses: taiki-e/install-action@cargo-llvm-cov
       - uses: taiki-e/install-action@nextest
-      - name: Run tests
-        run: cargo nextest run --workspace
+      - name: Run tests and collect coverage data
+        run: cargo llvm-cov nextest --workspace --no-fail-fast
 
   unit-success:
     name: unit success
