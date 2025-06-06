@@ -30,7 +30,11 @@ jobs:
       - uses: taiki-e/install-action@cargo-llvm-cov
       - uses: taiki-e/install-action@nextest
       - name: Run tests and collect coverage data
-        run: cargo llvm-cov nextest --workspace --no-fail-fast
+        run: cargo llvm-cov --lcov --output-path target/lcov.info nextest --workspace --no-fail-fast
+      - name: Upload coverage data to codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: target/lcov.info
 
   unit-success:
     name: unit success

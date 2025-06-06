@@ -8,7 +8,7 @@
 
 ## Why Oblivious Data Structures?
 
-In TEEs, attackers may observe memory access patterns or instruction traces, even if the data itself is encrypted. Traditional data structures can leak sensitive information through these side channels. Oblivious data structures and algorithms ensure that both of the following do not depend on secret data being processsed:
+In TEEs, attackers may observe memory access patterns or instruction traces, even if the data itself is encrypted. Traditional data structures can leak sensitive information through these side channels. Oblivious data structures and algorithms ensure that both of the following do not depend on secret data being processed:
 
 - **Memory access patterns** 
 - **Instruction traces** 
