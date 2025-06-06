@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/TODO.svg)](https://crates.io/crates/TODO)
 [![Docs](https://docs.rs/TODO/badge.svg)](https://docs.rs/TODO)
 [![CI](https://github.com/xtrm0/rods/actions/workflows/unit.yml/badge.svg)](https://github.com/xtrm0/rods/actions/workflows/unit.yml)
-[![Codecov](https://codecov.io/gh/xtrm0/rods/branch/main/graph/badge.svg)](https://codecov.io/gh/xtrm0/rods)
+[![codecov](https://codecov.io/gh/xtrm0/rods/graph/badge.svg?token=L26XUTDO79)](https://codecov.io/gh/xtrm0/rods)
 
 **rods** (Rust Oblivious Data Structures) is a Rust library providing a suite of high-performance, data- and instruction-trace oblivious data structures and algorithms, designed for use in Trusted Execution Environments (TEEs) such as Intel TDX. All memory accesses and instructions executed are independent of the data being processed, providing strong security guarantees against side-channel attacks.
 
