@@ -223,8 +223,8 @@ where
     // 1. Create P arrays of size N.
     // let mut per_p: [[BatchBlock<K, V>; N]; P] =
     //   [unsafe { std::mem::MaybeUninit::<[BatchBlock<K, V>; N]>::uninit().assume_init() }; P];
-    let mut per_p: [Box<[BatchBlock<K, V>; B]>; P] =
-      std::array::from_fn(|_| Box::new([BatchBlock::default(); B]));
+    let mut per_p: [Box<[BatchBlock<K, V>; N]>; P] =
+      std::array::from_fn(|_| Box::new([BatchBlock::default(); N]));
 
     const INVALID_ID: usize = usize::MAX;
 
@@ -250,7 +250,11 @@ where
 
     // 4. Read the first B values from each partition in the corresponding partition.
     for (p, partition) in per_p.iter_mut().enumerate() {
-      let blocks = std::mem::replace(partition, Box::new([BatchBlock::default(); B]));
+      let blocks = {
+        let mut new_blocks = [BatchBlock::default(); B];
+        new_blocks.copy_from_slice(&partition[..B]);
+        Box::new(new_blocks)
+      };
       self.workers[p].tx.send(Cmd::Get { blocks, ret_tx: done_tx.clone() }).unwrap();
     }
 
