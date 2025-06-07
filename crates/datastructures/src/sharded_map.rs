@@ -98,7 +98,7 @@ where
 
           match cmd {
             Cmd::Get { mut blocks, ret_tx } => {
-              println!("worker {pid} received get command with {} blocks", blocks.len());
+              // println!("worker {pid} received get command with {} blocks", blocks.len());
               for blk in blocks.iter_mut() {
                 blk.v = OOption::new(Default::default(), true);
                 blk.v.is_some = map.get(blk.k, &mut blk.v.value);
@@ -106,7 +106,7 @@ where
               let _ = ret_tx.send(Reply::Blocks { pid, blocks }); // move blocks back
             }
             Cmd::Insert { blocks, ret_tx } => {
-              println!("worker {pid} received insert command with {} blocks", blocks.len());
+              // println!("worker {pid} received insert command with {} blocks", blocks.len());
               for blk in blocks.iter() {
                 map.insert(blk.k, blk.v.unwrap());
               }
@@ -114,7 +114,7 @@ where
             }
             Cmd::Shutdown => {
               // We don't need to do anything here, the worker will exit.
-              println!("worker {pid} received shutdown command, exiting");
+              // println!("worker {pid} received shutdown command, exiting");
               break;
             }
           }
