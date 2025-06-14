@@ -46,7 +46,7 @@ echo "Publishing crates with version $VERSION..."
 # Update the changelogs
 cargo changelog --write $CRATES
 
-echo "Please review the generated changelogs and README files before proceeding. Make sure you bump the version in the changelogs and README files."
+echo "Please review the generated changelogs and README files before proceeding. Make sure you bump the version in the changelogs and README files and add the date of the release."
 read -p "Press Enter to continue or Ctrl+C to cancel..."
 
 git add ./crates/*/CHANGELOG.md

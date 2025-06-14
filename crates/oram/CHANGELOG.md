@@ -5,14 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.1.0
+## [0.1.0-alpha] - 2025-06-14
+
+### Other
+
+ - <csr-id-66270107a067960190afb9cf46a3e9963b0f3ae2/> cleanup readme generation and changelog versions
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 29 commits contributed to the release.
- - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 30 commits contributed to the release.
+ - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 5 unique issues were worked on: [#23](https://github.com/obliviouslabs/rostl/issues/23), [#28](https://github.com/obliviouslabs/rostl/issues/28), [#58](https://github.com/obliviouslabs/rostl/issues/58), [#63](https://github.com/obliviouslabs/rostl/issues/63), [#68](https://github.com/obliviouslabs/rostl/issues/68)
 
 ### Commit Details
@@ -32,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **[#68](https://github.com/obliviouslabs/rostl/issues/68)**
     - Rename package names to rostl ([`332c664`](https://github.com/obliviouslabs/rostl/commit/332c664ab509038cc181a39fa616d02f8df2bf36))
  * **Uncategorized**
+    - Cleanup readme generation and changelog versions ([`6627010`](https://github.com/obliviouslabs/rostl/commit/66270107a067960190afb9cf46a3e9963b0f3ae2))
     - Prepare release 0.1.0: update CHANGELOG files ([`cc5bd22`](https://github.com/obliviouslabs/rostl/commit/cc5bd22765bd22de2eb284c70e649370c1242135))
     - Adds release script ([`9dd936d`](https://github.com/obliviouslabs/rostl/commit/9dd936dcaf40ef9a502c5d22775a9f2c9e6342c0))
     - Adds homepage ([`4847107`](https://github.com/obliviouslabs/rostl/commit/4847107adece9f60486a7a05323f7675104aedbb))
@@ -57,4 +62,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Added documentations ([`5d3cddc`](https://github.com/obliviouslabs/rostl/commit/5d3cddc6439b7ed5054ef26efdcf6e327e4a0f45))
     - New oram crate created (empty crate) ([`0ad274d`](https://github.com/obliviouslabs/rostl/commit/0ad274d1eec879df802e6c3100aac0f91cd58fb0))
 </details>
-

@@ -5,14 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.1.0
+## [0.1.0-alpha] - 2025-06-14
+
+### Other
+
+ - <csr-id-66270107a067960190afb9cf46a3e9963b0f3ae2/> cleanup readme generation and changelog versions
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 14 commits contributed to the release over the course of 90 calendar days.
- - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 16 commits contributed to the release over the course of 90 calendar days.
+ - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 4 unique issues were worked on: [#58](https://github.com/obliviouslabs/rostl/issues/58), [#63](https://github.com/obliviouslabs/rostl/issues/63), [#66](https://github.com/obliviouslabs/rostl/issues/66), [#68](https://github.com/obliviouslabs/rostl/issues/68)
 
 ### Commit Details
@@ -30,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **[#68](https://github.com/obliviouslabs/rostl/issues/68)**
     - Rename package names to rostl ([`332c664`](https://github.com/obliviouslabs/rostl/commit/332c664ab509038cc181a39fa616d02f8df2bf36))
  * **Uncategorized**
+    - Fix typos ([`a49f307`](https://github.com/obliviouslabs/rostl/commit/a49f307b17abdcb34703af193ed644ad68d09996))
+    - Cleanup readme generation and changelog versions ([`6627010`](https://github.com/obliviouslabs/rostl/commit/66270107a067960190afb9cf46a3e9963b0f3ae2))
     - Prepare release 0.1.0: update CHANGELOG files ([`cc5bd22`](https://github.com/obliviouslabs/rostl/commit/cc5bd22765bd22de2eb284c70e649370c1242135))
     - Adds release script ([`9dd936d`](https://github.com/obliviouslabs/rostl/commit/9dd936dcaf40ef9a502c5d22775a9f2c9e6342c0))
     - Adds homepage ([`4847107`](https://github.com/obliviouslabs/rostl/commit/4847107adece9f60486a7a05323f7675104aedbb))
@@ -41,4 +47,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Implements Stack ([`381f23c`](https://github.com/obliviouslabs/rostl/commit/381f23c076361710baeed66e56469b1d18d511af))
     - Optimize cmov and recursive oram ([`3100659`](https://github.com/obliviouslabs/rostl/commit/3100659bdfac273877f9cecc14602fe2e94f9f1e))
 </details>
-
