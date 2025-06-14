@@ -50,7 +50,7 @@ cargo deny check all
 description = "Generate documentation and start a local server"
 script = '''
 cargo doc --workspace --lib --examples --all-features --locked --no-deps
-echo "Go ahead and open http://localhost:8000/rods_oram/index.html"
+echo "Go ahead and open http://localhost:8000/rostl_oram/index.html"
 python -m http.server --directory target/doc
 '''
 

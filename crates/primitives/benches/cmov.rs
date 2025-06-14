@@ -9,8 +9,8 @@ use criterion::{
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use criterion_cycles_per_byte::CyclesPerByte;
-use rods_primitives::traits::Cmov;
-use rods_primitives::traits::_Cmovbase;
+use rostl_primitives::traits::Cmov;
+use rostl_primitives::traits::_Cmovbase;
 use std::hint::black_box;
 
 pub fn benchmark_cmov_u64<T: Measurement + 'static>(c: &mut Criterion<T>) {

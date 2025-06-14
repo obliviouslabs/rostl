@@ -4,7 +4,7 @@
 
 // UNDONE(git-8): This is needed to enforce the bitwise operations to not short circuit. Investigate if we should be using helper functions instead.
 use bytemuck::{Pod, Zeroable};
-use rods_primitives::{
+use rostl_primitives::{
   cmov_body, cxchg_body, impl_cmov_for_generic_pod,
   traits::{Cmov, _Cmovbase},
 };

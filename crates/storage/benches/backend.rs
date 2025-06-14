@@ -9,7 +9,7 @@ use criterion::{
 };
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use criterion_cycles_per_byte::CyclesPerByte;
-use rods_storage::{memstore::MemStore, traits::PageStorage};
+use rostl_storage::{memstore::MemStore, traits::PageStorage};
 use std::hint::black_box;
 
 pub fn benchmark_storage<T: Measurement + 'static>(c: &mut Criterion<T>) {

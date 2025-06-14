@@ -1,12 +1,12 @@
-# rods: Rust Oblivious Data Structures
+# rostl: Rust Oblivious Standard Library
 
 
 [![Crates.io](https://img.shields.io/crates/v/TODO.svg)](https://crates.io/crates/TODO)
 [![Docs](https://docs.rs/TODO/badge.svg)](https://docs.rs/TODO)
-[![CI](https://github.com/xtrm0/rods/actions/workflows/unit.yml/badge.svg)](https://github.com/xtrm0/rods/actions/workflows/unit.yml)
-[![codecov](https://codecov.io/gh/xtrm0/rods/graph/badge.svg?token=L26XUTDO79)](https://codecov.io/gh/xtrm0/rods)
+[![CI](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml/badge.svg)](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml)
+[![codecov](https://codecov.io/gh/obliviouslabs/rostl/graph/badge.svg?token=L26XUTDO79)](https://codecov.io/gh/obliviouslabs/rostl)
 
-**rods** (Rust Oblivious Data Structures) is a Rust library providing a suite of high-performance, data- and instruction-trace oblivious data structures and algorithms, designed for use in Trusted Execution Environments (TEEs) such as Intel TDX. All memory accesses and instructions executed are independent of the data being processed, providing strong security guarantees against side-channel attacks.
+**rostl** (Rust Oblivious Standard Library) is a Rust library providing a suite of high-performance, data- and instruction-trace oblivious data structures and algorithms, designed for use in Trusted Execution Environments (TEEs) such as Intel TDX. All memory accesses and instructions executed are independent of the data being processed, providing strong security guarantees against side-channel attacks.
 
 ## Why Oblivious Data Structures?
 
@@ -46,7 +46,7 @@ Add the relevant crate(s) to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rods-datastructures = "1.0"
+rostl-datastructures = "1.0"
 ```
 
 ### A few code examples
@@ -56,7 +56,7 @@ All APIs are designed to be as close as possible to their standard Rust counterp
 **Creating and using an oblivious array**
 
 ```rust
-use rods_datastructures::array::LongArray;
+use rostl_datastructures::array::LongArray;
 
 let mut arr = LongArray::<u64, 1024>::new();
 arr.write(42, 1234);
@@ -68,7 +68,7 @@ assert_eq!(value, 1234);
 **Creating and using an oblivious map**
 
 ```rust
-use rods_datastructures::map::UnsortedMap;
+use rostl_datastructures::map::UnsortedMap;
 
 let mut map = UnsortedMap::<u64, u64>::new(128);
 map.insert(42, 1234);
@@ -81,7 +81,7 @@ assert_eq!(value, 1234);
 **Creating and using an oblivious heap**
 
 ```rust
-use rods_datastructures::heap::Heap;
+use rostl_datastructures::heap::Heap;
 
 let mut heap = Heap::<u64>::new(16);
 heap.insert(10, 100);
@@ -116,7 +116,7 @@ assert_eq!(new_min.value.value, 100);
 - **Strict Linting**: All code is checked with `clippy`, `cargo fmt`, and custom lints.
 - **Pre-commit & Pre-merge Checks**: Automated via `Makefile.toml` and GitHub Actions.
 - **Dependency Auditing**: Uses `cargo-deny` for dependency and license checks.
-- **Test Coverage**: `cargo make coverage` generates `target/lcov.info`. Every commit coverage information is reported to [Codecov](https://codecov.io/gh/xtrm0/rods)
+- **Test Coverage**: `cargo make coverage` generates `target/lcov.info`. Every commit coverage information is reported to [Codecov](https://codecov.io/gh/obliviouslabs/rostl)
 
 ## Testing
 
@@ -147,4 +147,4 @@ Licensed under MIT or Apache-2.0, at your option.
 
 ---
 
-**rods** aims to be the go-to library for building secure, high-performance, and side-channel-resistant applications in Rust. We invite you to use, extend, and contribute to the project!
+**rostl** aims to be the go-to library for building secure, high-performance, and side-channel-resistant applications in Rust. We invite you to use, extend, and contribute to the project!

@@ -6,12 +6,12 @@ use criterion::{
 };
 use rand::seq::SliceRandom;
 #[allow(deprecated)]
-use rods_sort::batcher::batcher_sort;
+use rostl_sort::batcher::batcher_sort;
 #[allow(deprecated)]
-use rods_sort::bose_nelson::bose_nelson_sort;
+use rostl_sort::bose_nelson::bose_nelson_sort;
 
-use rods_sort::bitonic::bitonic_sort;
-use rods_sort::shuffle::shuffle;
+use rostl_sort::bitonic::bitonic_sort;
+use rostl_sort::shuffle::shuffle;
 use std::hint::black_box;
 
 pub fn benchmark_sort<T: Measurement + 'static>(c: &mut Criterion<T>) {

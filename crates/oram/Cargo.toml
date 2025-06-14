@@ -1,5 +1,5 @@
 [package]
-name = "rods-oram"
+name = "rostl-oram"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-rods-primitives.workspace = true
+rostl-primitives.workspace = true
 bytemuck.workspace = true
 static_assertions.workspace = true
 rand.workspace = true

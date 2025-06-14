@@ -1,5 +1,5 @@
 //! Batcher Odd Even Merge Sorter
-use rods_primitives::{
+use rostl_primitives::{
   indexable::Indexable,
   traits::{Cmov, CswapIndex},
 };

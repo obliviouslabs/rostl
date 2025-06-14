@@ -4,7 +4,7 @@ use criterion::{
   Criterion, PlotConfiguration,
 };
 
-use rods_oram::{
+use rostl_oram::{
   circuit_oram::CircuitORAM, linear_oram::LinearORAM, recursive_oram::RecursivePositionMap,
 };
 

@@ -4,7 +4,7 @@ use std::borrow::Borrow;
 
 use crate::prelude::K;
 use bytemuck::Pod;
-use rods_primitives::traits::Cmov;
+use rostl_primitives::traits::Cmov;
 
 /// A simple indexable ORAM that does a linear scan for each access
 #[derive(Debug)]

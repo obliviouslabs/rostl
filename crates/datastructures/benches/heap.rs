@@ -5,7 +5,7 @@ use criterion::{
 };
 
 use rand::Rng;
-use rods_datastructures::heap::Heap;
+use rostl_datastructures::heap::Heap;
 
 pub fn benchmark_heap_initialization<T: Measurement + 'static>(c: &mut Criterion<T>) {
   let mut group = c.benchmark_group(format!(

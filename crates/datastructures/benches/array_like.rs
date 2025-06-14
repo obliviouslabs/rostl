@@ -5,14 +5,14 @@ use criterion::{
 };
 
 use rand::seq::SliceRandom;
-use rods_datastructures::{
+use rostl_datastructures::{
   array::{DynamicArray, FixedArray, LongArray, ShortArray},
   map::UnsortedMap,
   queue::ShortQueue,
   vector::EagerVector,
 };
 
-use rods_primitives::utils::min;
+use rostl_primitives::utils::min;
 use seq_macro::seq;
 
 pub fn benchmark_array_initialization<T: Measurement + 'static>(c: &mut Criterion<T>) {

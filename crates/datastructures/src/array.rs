@@ -6,13 +6,13 @@ use std::mem::ManuallyDrop;
 
 use bytemuck::Pod;
 use rand::{rngs::ThreadRng, Rng};
-use rods_oram::{
+use rostl_oram::{
   circuit_oram::CircuitORAM,
   linear_oram::{oblivious_read_index, oblivious_write_index},
   prelude::PositionType,
   recursive_oram::RecursivePositionMap,
 };
-use rods_primitives::{indexable::Length, traits::Cmov};
+use rostl_primitives::{indexable::Length, traits::Cmov};
 
 /// A fixed sized array defined at compile time.
 /// The size of the array is public.

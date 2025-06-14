@@ -3,11 +3,11 @@
 
 use bytemuck::{Pod, Zeroable};
 use rand::{rngs::ThreadRng, Rng};
-use rods_oram::{
+use rostl_oram::{
   circuit_oram::CircuitORAM,
   prelude::{PositionType, DUMMY_POS},
 };
-use rods_primitives::{
+use rostl_primitives::{
   cmov_body, cxchg_body, impl_cmov_for_generic_pod, indexable::Length, traits::Cmov,
   traits::_Cmovbase,
 };

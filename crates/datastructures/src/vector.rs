@@ -5,7 +5,7 @@ use std::fmt::Debug;
 
 use crate::array::DynamicArray;
 use bytemuck::Pod;
-use rods_primitives::{indexable::Length, traits::Cmov};
+use rostl_primitives::{indexable::Length, traits::Cmov};
 
 /// Implements a variable length vector.
 /// Leaks the length rounded to the next power of two.

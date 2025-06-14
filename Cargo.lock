@@ -490,7 +490,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
-name = "rods-datastructures"
+name = "rostl-datastructures"
 version = "1.0.0"
 dependencies = [
  "ahash",
@@ -498,26 +498,26 @@ dependencies = [
  "criterion",
  "kanal",
  "rand",
- "rods-oram",
- "rods-primitives",
- "rods-sort",
+ "rostl-oram",
+ "rostl-primitives",
+ "rostl-sort",
  "seq-macro",
  "static_assertions",
 ]
 
 [[package]]
-name = "rods-oram"
+name = "rostl-oram"
 version = "1.0.0"
 dependencies = [
  "bytemuck",
  "criterion",
  "rand",
- "rods-primitives",
+ "rostl-primitives",
  "static_assertions",
 ]
 
 [[package]]
-name = "rods-primitives"
+name = "rostl-primitives"
 version = "1.0.0"
 dependencies = [
  "bytemuck",
@@ -526,17 +526,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "rods-sort"
+name = "rostl-sort"
 version = "1.0.0"
 dependencies = [
  "bytemuck",
  "criterion",
  "rand",
- "rods-primitives",
+ "rostl-primitives",
 ]
 
 [[package]]
-name = "rods-storage"
+name = "rostl-storage"
 version = "1.0.0"
 dependencies = [
  "bytemuck",

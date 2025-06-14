@@ -1,5 +1,5 @@
 //! Bose-Nelson sorting network.
-use rods_primitives::{
+use rostl_primitives::{
   indexable::Indexable,
   traits::{Cmov, CswapIndex},
 };
