@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0-alpha] - 2025-06-14
+## v0.1.0-alpha2 (2025-06-14)
 
 ### Other
 
@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 28 commits contributed to the release.
+ - 30 commits contributed to the release.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 4 unique issues were worked on: [#23](https://github.com/obliviouslabs/rostl/issues/23), [#58](https://github.com/obliviouslabs/rostl/issues/58), [#66](https://github.com/obliviouslabs/rostl/issues/66), [#68](https://github.com/obliviouslabs/rostl/issues/68)
 
@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **[#68](https://github.com/obliviouslabs/rostl/issues/68)**
     - Rename package names to rostl ([`332c664`](https://github.com/obliviouslabs/rostl/commit/332c664ab509038cc181a39fa616d02f8df2bf36))
  * **Uncategorized**
+    - Update crates.io readme badges ([`3fea8ff`](https://github.com/obliviouslabs/rostl/commit/3fea8ff3a6f22e50e8d89ba4bedbf3da19a1323d))
+    - Update version ([`a8d8aad`](https://github.com/obliviouslabs/rostl/commit/a8d8aad49b7fa41233a4fc6c7ce5b230c58b64e9))
     - Fix typos ([`a49f307`](https://github.com/obliviouslabs/rostl/commit/a49f307b17abdcb34703af193ed644ad68d09996))
     - Cleanup readme generation and changelog versions ([`6627010`](https://github.com/obliviouslabs/rostl/commit/66270107a067960190afb9cf46a3e9963b0f3ae2))
     - Prepare release 0.1.0: update CHANGELOG files ([`cc5bd22`](https://github.com/obliviouslabs/rostl/commit/cc5bd22765bd22de2eb284c70e649370c1242135))
