@@ -13,6 +13,7 @@ VERSION=$(grep -E '^version\s*=' Cargo.toml | sed 's/^version\s*=\s*"\(.*\)"/\1/
 cp .gitignore .gitignore.bak
 sed -i '/README\.crate\.md/d' .gitignore
 head -n 8 "$TOP_README" > /tmp/top_readme_head.txt
+sed -i '/unit\.yml/d' /tmp/top_readme_head.txt
 
 for crate in "$CRATES_DIR"/*; do
   if [[ -d "$crate" && -f "$crate/$CRATE_README" && -f "$crate/Cargo.toml" ]]; then
@@ -22,8 +23,7 @@ for crate in "$CRATES_DIR"/*; do
     
     echo "[![Crates.io](https://img.shields.io/crates/v/$name.svg)](https://crates.io/crates/$name)
 [![Docs](https://docs.rs/$name/badge.svg)](https://docs.rs/$name)
-[![CI](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml/badge.svg)](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml)
-[![codecov](https://codecov.io/gh/obliviouslabs/rostl/graph/badge.svg?token=L26XUTDO79)](https://codecov.io/gh/obliviouslabs/rostl)" >> "$crate/$CRATE_README_TARGET"
+[![codecov](https://codecov.io/gh/obliviouslabs/rostl/graph/badge.svg?token=P4O03Z6M5X)](https://codecov.io/gh/obliviouslabs/rostl)" >> "$crate/$CRATE_README_TARGET"
     
     tail -n +2 "$crate/$CRATE_README" >> "$crate/$CRATE_README_TARGET"
     echo "" >> "$crate/$CRATE_README_TARGET"

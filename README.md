@@ -3,7 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/rostl-datastructures.svg)](https://crates.io/crates/rostl-datastructures)
 [![Docs](https://docs.rs/rostl-datastructures/badge.svg)](https://docs.rs/rostl-datastructures)
 [![CI](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml/badge.svg)](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml)
-[![codecov](https://codecov.io/gh/obliviouslabs/rostl/graph/badge.svg?token=L26XUTDO79)](https://codecov.io/gh/obliviouslabs/rostl)
+[![codecov](https://codecov.io/gh/obliviouslabs/rostl/graph/badge.svg?token=P4O03Z6M5X)](https://codecov.io/gh/obliviouslabs/rostl)
 
 **rostl** (Rust Oblivious Standard Library) is a Rust library providing a suite of high-performance, data- and instruction-trace oblivious data structures and algorithms, designed for use in Trusted Execution Environments (TEEs) such as Intel TDX. All memory accesses and instructions executed are independent of the data being processed, providing strong security guarantees against side-channel attacks.
 
@@ -101,7 +101,7 @@ assert_eq!(new_min.value.value, 100);
 
 ## Documentation
 
-- **API Docs**: [docs.rs/TODO](https://docs.rs/TODO)
+- **API Docs**: Available per crate in docs.rs, iex: [docs.rs/rostl-datastructures](https://docs.rs/rostl-datastructures)
 - **Generated Documentation**: Run `cargo doc --workspace --lib --all-features --no-deps` and open the output in your browser.
 
 ## Benchmarks & Performance

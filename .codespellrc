@@ -1,3 +1,3 @@
 [codespell]
-skip = .git,target,./crates/primitives/src/asm.rs,Cargo.toml,Cargo.lock
+skip = .git,target,./crates/primitives/src/asm.rs,Cargo.toml,Cargo.lock,./crates/primitives/CHANGELOG.md,./crates/sort/CHANGELOG.md,./crates/storage/CHANGELOG.md
 ignore-words-list = crate,ser,inout
