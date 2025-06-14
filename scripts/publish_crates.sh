@@ -43,24 +43,17 @@ cargo make precommit
 cargo outdated
 echo "Publishing crates with version $VERSION..."
 
-# Update the changelogs
-cargo changelog --write $CRATES
-
-echo "Please review the generated changelogs and README files before proceeding. Make sure you bump the version in the changelogs and README files and add the date of the release."
-read -p "Press Enter to continue or Ctrl+C to cancel..."
-
-git add ./crates/*/CHANGELOG.md
-git commit -m "Prepare release $VERSION: update CHANGELOG files"
-git tag "v$VERSION"
-git push origin main --tags
-
-cargo make precommit
-cargo doc --workspace --lib --examples --all-features --locked --no-deps
 cargo smart-release $CRATES 
 read -p "Press Enter to continue or Ctrl+C to cancel..."
 
-cargo workspace publish --dry-run
-echo "Ok, now run cargo workspace publish as many times as necessary to update all crates. (There is no tool that supports publishing dependencies in order, so just publishing multiple times until all crates are at the latest version is the way to go.)"
+cargo make precommit
+cargo doc --workspace --lib --examples --all-features --locked --no-deps
+cargo smart-release --execute --no-publish $CRATES 
+git tag "v$VERSION"
 
+echo "Final check before publishing: "
 read -p "Press Enter to continue or Ctrl+C to cancel..."
 
+for _ in `seq 1 5`; do
+    cargo workspace publish
+done
