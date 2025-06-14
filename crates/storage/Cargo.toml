@@ -1,11 +1,11 @@
 [package]
 name = "rostl-storage"
-edition = "2021"
+readme = "README.md"
 version.workspace = true
+edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-exclude.workspace = true
 
 [dependencies]
 bytemuck.workspace = true

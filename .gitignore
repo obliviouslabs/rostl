@@ -6,3 +6,4 @@ target/
 .DS_Store
 .vscode
 lcov.info
+README.crate.md
