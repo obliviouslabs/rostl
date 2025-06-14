@@ -1,5 +1,6 @@
 [package]
 name = "rostl-datastructures"
+description = "Oblivious data structures for secure and efficient computation."
 readme = "README.md"
 version.workspace = true
 edition.workspace = true
@@ -7,6 +8,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 exclude.workspace = true
+homepage.workspace = true
 
 [dependencies]
 rostl-oram.workspace = true

@@ -4,6 +4,7 @@ edition = "2021"
 rust-version = "1.81"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/obliviouslabs/rostl"
+homepage = "https://www.obliviouslabs.com/"
 exclude = [".github/"]
 
 [workspace.metadata]
