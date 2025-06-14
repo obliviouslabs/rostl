@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Fix benchmarks for aarch64 ([`fcbff8f`](https://github.com/obliviouslabs/rostl/commit/fcbff8f77f69ca8e3d69950862a2b27a4396a5b3))
     - Run cargo make precommit ([`8c9eb51`](https://github.com/obliviouslabs/rostl/commit/8c9eb51c66cc7c528631618a38d0a4f6e44615cd))
     - More aarch64 support ([`2a27ef7`](https://github.com/obliviouslabs/rostl/commit/2a27ef7a719d01c20e76e321482bee6a2c8862d4))
-    - Comment unecessary benchmark ([`a0aa3ef`](https://github.com/obliviouslabs/rostl/commit/a0aa3efdecae3fd0fe9c1496800a3996006abe7a))
+    - Comment unnecessary benchmark ([`a0aa3ef`](https://github.com/obliviouslabs/rostl/commit/a0aa3efdecae3fd0fe9c1496800a3996006abe7a))
     - Investigate runner related benchmark issue ([`e7e7a40`](https://github.com/obliviouslabs/rostl/commit/e7e7a40992a52e67e5f80ec39d22749ce74cb720))
     - Better benchmarking constraints ([`3ab8bc0`](https://github.com/obliviouslabs/rostl/commit/3ab8bc096e9efccd2b84d210f46cb2abfcf125bd))
     - Adds benchmark constraints ([`3af9217`](https://github.com/obliviouslabs/rostl/commit/3af92171a7b0368674655af519d37fd5fadbb283))

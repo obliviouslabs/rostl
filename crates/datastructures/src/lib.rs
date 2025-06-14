@@ -1,4 +1,4 @@
-//! This crates immplements oblivious datastructures
+//! This crates implements oblivious datastructures
 
 pub mod array;
 
