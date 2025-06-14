@@ -9,6 +9,9 @@ cargo install cargo-show-asm
 cargo install cargo-udeps
 cargo install cargo-deny
 cargo install cargo-llvm-cov
+cargo install cargo-smart-release
+cargo install tomlq
+cargo install cargo-outdated
 
 echo "cargo make precommit" > .git/hooks/pre-push
 chmod +x .git/hooks/pre-push

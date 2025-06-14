@@ -1,7 +1,7 @@
 [package]
 name = "rostl-sort"
 description = "Oblivious sorting algorithms."
-readme = "README.md"
+readme = "README.crate.md"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

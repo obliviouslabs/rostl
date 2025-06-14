@@ -143,7 +143,7 @@ overflow-checks = true
 
 [workspace.dependencies]
 # rostl-rodb = { path = "crates/rodb" }
-rostl-datastructures = { path = "crates/datastructures" }
+rostl-datastructures = { path = "crates/datastructures"}
 rostl-oram = { path = "crates/oram" }
 rostl-primitives = { path = "crates/primitives" }
 rostl-sort = { path = "crates/sort" }
