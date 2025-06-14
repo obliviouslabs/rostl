@@ -1,6 +1,6 @@
 //! Bitonic Sorter
-use rods_primitives::indexable::Indexable;
-use rods_primitives::traits::{Cmov, CswapIndex};
+use rostl_primitives::indexable::Indexable;
+use rostl_primitives::traits::{Cmov, CswapIndex};
 
 use crate::utils::get_strictly_bigger_power_of_two;
 

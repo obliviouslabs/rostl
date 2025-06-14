@@ -1,8 +1,8 @@
 //! Implements oblivious compaction algorithms.
 //!
 
-use rods_primitives::traits::{Cmov, CswapIndex};
-// use rods_primitives::indexable::{Indexable, Length};
+use rostl_primitives::traits::{Cmov, CswapIndex};
+// use rostl_primitives::indexable::{Indexable, Length};
 
 /// Stably compacts an array `arr` of length n in place using nlogn oblivious compaction.
 /// Uses `https://arxiv.org/pdf/1103.5102`

@@ -5,9 +5,9 @@ use bytemuck::{Pod, Zeroable};
 use core::mem::size_of;
 use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
-use rods_primitives::traits::Cmov;
-use rods_primitives::utils::{max, min};
-use rods_primitives::{cmov_body, cxchg_body, impl_cmov_for_pod, traits::_Cmovbase};
+use rostl_primitives::traits::Cmov;
+use rostl_primitives::utils::{max, min};
+use rostl_primitives::{cmov_body, cxchg_body, impl_cmov_for_pod, traits::_Cmovbase};
 
 use static_assertions::const_assert;
 

@@ -2,12 +2,12 @@
 
 use ahash::RandomState;
 use bytemuck::{Pod, Zeroable};
-use rods_primitives::{
+use rostl_primitives::{
   cmov_body, cxchg_body, impl_cmov_for_generic_pod,
   ooption::OOption,
   traits::{Cmov, _Cmovbase},
 };
-use rods_sort::{bitonic::bitonic_sort, compaction::compact};
+use rostl_sort::{bitonic::bitonic_sort, compaction::compact};
 
 use crate::map::{OHash, UnsortedMap};
 use kanal::{bounded, Receiver, Sender};

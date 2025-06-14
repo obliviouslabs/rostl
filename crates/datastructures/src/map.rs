@@ -3,7 +3,7 @@
 use ahash::RandomState;
 use bytemuck::{Pod, Zeroable};
 use rand::{rngs::ThreadRng, Rng};
-use rods_primitives::{
+use rostl_primitives::{
   cmov_body, cxchg_body, impl_cmov_for_generic_pod,
   traits::{Cmov, _Cmovbase},
 };

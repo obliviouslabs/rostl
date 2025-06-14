@@ -1,13 +1,13 @@
 //! Implements [path oblivious heap](https://eprint.iacr.org/2019/274).
 use bytemuck::{Pod, Zeroable};
 use rand::{rngs::ThreadRng, Rng};
-use rods_oram::{
+use rostl_oram::{
   circuit_oram::{remove_element, write_block_to_empty_slot, Block, CircuitORAM, S, Z},
   heap_tree::HeapTree,
   prelude::{PositionType, K},
 };
-use rods_primitives::traits::{Cmov, _Cmovbase};
-use rods_primitives::{cmov_body, cxchg_body, impl_cmov_for_generic_pod};
+use rostl_primitives::traits::{Cmov, _Cmovbase};
+use rostl_primitives::{cmov_body, cxchg_body, impl_cmov_for_generic_pod};
 
 #[derive(Clone, Copy, Debug, Zeroable)]
 #[repr(C)]

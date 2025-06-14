@@ -1,8 +1,8 @@
 //! Basic shuffling algorithm (Tag + sort based).
 use crate::bitonic::bitonic_sort;
 use rand::Rng;
-use rods_primitives::indexable::Indexable;
-use rods_primitives::traits::Cmov;
+use rostl_primitives::indexable::Indexable;
+use rostl_primitives::traits::Cmov;
 use std::cmp::Ordering;
 
 /// Does a random shuffle of `arr` by adding a random tag to each element and sorting based on that tag.

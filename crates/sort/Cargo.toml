@@ -1,5 +1,5 @@
 [package]
-name = "rods-sort"
+name = "rostl-sort"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,7 +11,7 @@ workspace = true
 
 [dependencies]
 bytemuck.workspace = true
-rods-primitives.workspace = true
+rostl-primitives.workspace = true
 rand.workspace = true
 
 [dev-dependencies]

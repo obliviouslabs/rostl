@@ -3,7 +3,7 @@ version = "1.0.0"
 edition = "2021"
 rust-version = "1.81"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/xtrm0/rods"
+repository = "https://github.com/obliviouslabs/rostl"
 exclude = [".github/"]
 
 [workspace.metadata]
@@ -16,7 +16,6 @@ members = [
   "crates/primitives",
   "crates/sort",
   "crates/storage",
-  # "crates/rodb",
 ]
 # default-members = ["crates/rodb"]
 resolver = "2"
@@ -142,12 +141,12 @@ codegen-units = 1
 overflow-checks = true
 
 [workspace.dependencies]
-# rods-rodb = { path = "crates/rodb" }
-rods-datastructures = { path = "crates/datastructures" }
-rods-oram = { path = "crates/oram" }
-rods-primitives = { path = "crates/primitives" }
-rods-sort = { path = "crates/sort" }
-rods-storage = { path = "crates/storage" }
+# rostl-rodb = { path = "crates/rodb" }
+rostl-datastructures = { path = "crates/datastructures" }
+rostl-oram = { path = "crates/oram" }
+rostl-primitives = { path = "crates/primitives" }
+rostl-sort = { path = "crates/sort" }
+rostl-storage = { path = "crates/storage" }
 
 
 ahash = { version = "0.8.11" }

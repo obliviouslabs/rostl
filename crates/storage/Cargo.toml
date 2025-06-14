@@ -1,5 +1,5 @@
 [package]
-name = "rods-storage"
+name = "rostl-storage"
 edition = "2021"
 version.workspace = true
 rust-version.workspace = true

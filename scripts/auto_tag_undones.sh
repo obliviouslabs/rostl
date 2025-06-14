@@ -12,7 +12,7 @@ grep -RInE 'UNDONE\s*\(\s*\)\s*:?' crates --exclude=.git/ --exclude=target/ | wh
     [ "$start" -lt 1 ] && start=1
     end=$(( lineno + 3 ))
 
-    body=$(printf "https://github.com/xtrm0/rods/blob/%s/%s#L%s-L%s\n Task: %s" "$git_commit" "$file" "$start" "$end" "$task")
+    body=$(printf "https://github.com/obliviouslabs/rostl/blob/%s/%s#L%s-L%s\n Task: %s" "$git_commit" "$file" "$start" "$end" "$task")
     # Create the GitHub issue (which outputs a URL ending with the issue number).
     issue_output=$(gh issue create \
                    --title "UNDONE(): $task" \

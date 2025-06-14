@@ -7,7 +7,7 @@ use crate::traits::{Cmov, _Cmovbase};
 /// The shared body for cmov.
 /// Any file that uses the macro should include be in a module that includes the bytemuck crate and should also include:
 /// ```ignore
-/// use rods_primitives::{impl_cmov_for_pod, cmov_body, cxchg_body, traits::_Cmovbase};
+/// use rostl_primitives::{impl_cmov_for_pod, cmov_body, cxchg_body, traits::_Cmovbase};
 /// ```
 ///
 #[macro_export]
