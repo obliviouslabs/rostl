@@ -107,9 +107,9 @@ assert_eq!(new_min.value.value, 100);
 
 ## Benchmarks & Performance
 
-- **Automated Benchmarks**: Benchmarks are run on every commit via GitHub Actions. See `.github/workflows/bench.yml`.
+- **Automated Benchmarks**: Basic sanity benchmarks are run on every commit via GitHub Actions. See `.github/workflows/bench.yml`.
 - **Performance Regression Checks**: Benchmarks are compared against rules in `scripts/benchmark_rules.txt` to catch regressions.
-- **Comparisons**: For cross-project benchmarks, see the companion benchmarking repository (TODO: add link).
+- **Comparisons**: For extensive cross-project benchmarks, see the companion benchmarking repository [obliviouslabs/benchmarks](https://github.com/obliviouslabs/benchmarks) .
 
 ## Code Quality
 
