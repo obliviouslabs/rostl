@@ -5,13 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.1.0
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 28 commits contributed to the release.
+ - 29 commits contributed to the release.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 5 unique issues were worked on: [#23](https://github.com/obliviouslabs/rostl/issues/23), [#28](https://github.com/obliviouslabs/rostl/issues/28), [#58](https://github.com/obliviouslabs/rostl/issues/58), [#63](https://github.com/obliviouslabs/rostl/issues/63), [#68](https://github.com/obliviouslabs/rostl/issues/68)
 
@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **[#68](https://github.com/obliviouslabs/rostl/issues/68)**
     - Rename package names to rostl ([`332c664`](https://github.com/obliviouslabs/rostl/commit/332c664ab509038cc181a39fa616d02f8df2bf36))
  * **Uncategorized**
+    - Prepare release 0.1.0: update CHANGELOG files ([`cc5bd22`](https://github.com/obliviouslabs/rostl/commit/cc5bd22765bd22de2eb284c70e649370c1242135))
     - Adds release script ([`9dd936d`](https://github.com/obliviouslabs/rostl/commit/9dd936dcaf40ef9a502c5d22775a9f2c9e6342c0))
     - Adds homepage ([`4847107`](https://github.com/obliviouslabs/rostl/commit/4847107adece9f60486a7a05323f7675104aedbb))
     - Adds crate READMEs ([`29ee8c8`](https://github.com/obliviouslabs/rostl/commit/29ee8c8c05ea2447283f4cd62fc3179eb242380f))

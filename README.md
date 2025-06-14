@@ -1,7 +1,7 @@
 # rostl: Rust Oblivious Standard Library
 
-[![Crates.io](https://img.shields.io/crates/v/TODO.svg)](https://crates.io/crates/TODO)
-[![Docs](https://docs.rs/TODO/badge.svg)](https://docs.rs/TODO)
+[![Crates.io](https://img.shields.io/crates/v/rostl-datastructures.svg)](https://crates.io/crates/rostl-datastructures)
+[![Docs](https://docs.rs/rostl-datastructures/badge.svg)](https://docs.rs/rostl-datastructures)
 [![CI](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml/badge.svg)](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml)
 [![codecov](https://codecov.io/gh/obliviouslabs/rostl/graph/badge.svg?token=L26XUTDO79)](https://codecov.io/gh/obliviouslabs/rostl)
 

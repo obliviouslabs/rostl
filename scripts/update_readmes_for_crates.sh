@@ -6,6 +6,7 @@ TOP_README="README.md"
 CRATES_DIR="crates"
 CRATE_README="README.md"
 CRATE_README_TARGET="README.crate.md"
+VERSION=$(grep -E '^version\s*=' Cargo.toml | sed 's/^version\s*=\s*"\(.*\)"/\1/')
 
 # Get the first 8 lines of the top-level README
 
@@ -15,11 +16,19 @@ head -n 8 "$TOP_README" > /tmp/top_readme_head.txt
 
 for crate in "$CRATES_DIR"/*; do
   if [[ -d "$crate" && -f "$crate/$CRATE_README" && -f "$crate/Cargo.toml" ]]; then
-    # Combine for README.crate.md
-    cat /tmp/top_readme_head.txt > "$crate/$CRATE_README_TARGET"
+    name=$(tomlq -r '.package.name' "$crate/Cargo.toml")
 
-    # Append the local README.md to the local README.crate.md
-    cat "$crate/$CRATE_README" >> "$crate/$CRATE_README_TARGET"
+    head -n 1 "$crate/$CRATE_README" > "$crate/$CRATE_README_TARGET"
+    
+    echo "[![Crates.io](https://img.shields.io/crates/v/$name.svg)](https://crates.io/crates/$name)
+[![Docs](https://docs.rs/$name/badge.svg)](https://docs.rs/$name)
+[![CI](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml/badge.svg)](https://github.com/obliviouslabs/rostl/actions/workflows/unit.yml)
+[![codecov](https://codecov.io/gh/obliviouslabs/rostl/graph/badge.svg?token=L26XUTDO79)](https://codecov.io/gh/obliviouslabs/rostl)" >> "$crate/$CRATE_README_TARGET"
+    
+    tail -n +2 "$crate/$CRATE_README" >> "$crate/$CRATE_README_TARGET"
+    echo "" >> "$crate/$CRATE_README_TARGET"
+    
+    cat /tmp/top_readme_head.txt >> "$crate/$CRATE_README_TARGET"
 
     git add "$crate/$CRATE_README_TARGET"
   fi
