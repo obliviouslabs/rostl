@@ -47,3 +47,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Implements Stack ([`381f23c`](https://github.com/obliviouslabs/rostl/commit/381f23c076361710baeed66e56469b1d18d511af))
     - Optimize cmov and recursive oram ([`3100659`](https://github.com/obliviouslabs/rostl/commit/3100659bdfac273877f9cecc14602fe2e94f9f1e))
 </details>
+

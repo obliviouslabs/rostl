@@ -62,3 +62,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Added documentations ([`5d3cddc`](https://github.com/obliviouslabs/rostl/commit/5d3cddc6439b7ed5054ef26efdcf6e327e4a0f45))
     - New oram crate created (empty crate) ([`0ad274d`](https://github.com/obliviouslabs/rostl/commit/0ad274d1eec879df802e6c3100aac0f91cd58fb0))
 </details>
+
