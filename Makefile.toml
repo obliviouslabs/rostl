@@ -28,6 +28,7 @@ cargo fmt --all -- --check
 cargo hack check --feature-powerset
 codespell --count 0 --skip '*.json'
 ~/.cargo/bin/zepter run check
+sh ./scripts/update_readmes_for_crates.sh
 git status
 '''
 
