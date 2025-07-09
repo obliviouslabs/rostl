@@ -10,7 +10,7 @@ use rostl_primitives::{
 
 use seq_macro::seq;
 
-use crate::{array::DynamicArray, queue::ShortQueue};
+use crate::{array::{DynamicArray, MultiWayArray}, queue::ShortQueue};
 
 // Size of the insertion queue for deamortized insertions that failed.
 const INSERTION_QUEUE_MAX_SIZE: usize = 20;
@@ -153,7 +153,7 @@ where
   /// capacity
   capacity: usize,
   /// The two tables
-  table: [DynamicArray<Bucket<K, V>>; 2],
+  table: MultiWayArray<Bucket<K, V>, 2>,
   /// The hasher used to hash keys
   hash_builders: [RandomState; 2],
   /// The insertion queue
@@ -173,7 +173,7 @@ where
     Self {
       size: 0,
       capacity,
-      table: [DynamicArray::new(capacity), DynamicArray::new(capacity)],
+      table: MultiWayArray::new(capacity),
       hash_builders: [RandomState::new(), RandomState::new()],
       insertion_queue: ShortQueue::new(),
       rng: rand::rng(),
@@ -200,8 +200,7 @@ where
     // seq! does manual loop unrolling in rust. We need it to be able to use the constant INDEX in the hash_key function.
     seq!(INDEX in 0..2 {
       let hash = self.hash_key::<INDEX>(&key);
-      let table = &mut self.table[INDEX];
-      table.read(hash, &mut tmp);
+      self.table.read(INDEX, hash, &mut tmp);
       let found_local = tmp.read_if_exists(key, ret);
       found.cmov(&true, found_local);
     });
@@ -229,8 +228,7 @@ where
       const INDEX: usize = 1 - INDEX_REV;
 
       let hash = self.hash_key::<INDEX>(&element.key);
-      let table = &mut self.table[INDEX];
-      table.update(hash, |bucket| {
+      self.table.update(INDEX, hash, |bucket| {
         let choice = !done;
         let inserted = bucket.insert_if_available(choice, *element);
         done.cmov(&true, inserted);
@@ -277,8 +275,7 @@ where
     // seq! does manual loop unrolling in rust. We need it to be able to use the constant INDEX in the hash_key function.
     seq!(INDEX in 0..2 {
       let hash = self.hash_key::<INDEX>(&key);
-      let table = &mut self.table[INDEX];
-      table.update(hash, |bucket| {
+      self.table.update(INDEX, hash, |bucket| {
         let choice = !updated;
         let updated_local = bucket.update_if_exists(choice, InlineElement { key, value });
         updated.cmov(&true, updated_local);

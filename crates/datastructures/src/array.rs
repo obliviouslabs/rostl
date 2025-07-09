@@ -2,7 +2,7 @@
 //! The array is oblivious to the access pattern.
 //!
 
-use std::mem::ManuallyDrop;
+use std::{array::from_fn, mem::ManuallyDrop};
 
 use bytemuck::Pod;
 use rand::{rngs::ThreadRng, Rng};
@@ -13,6 +13,7 @@ use rostl_oram::{
   recursive_oram::RecursivePositionMap,
 };
 use rostl_primitives::{indexable::Length, traits::Cmov};
+use static_assertions::const_assert;
 
 /// A fixed sized array defined at compile time.
 /// The size of the array is public.
@@ -323,6 +324,75 @@ impl<T: Cmov + Pod> Length for DynamicArray<T> {
   #[inline(always)]
   fn len(&self) -> usize {
     self.pos_map.n
+  }
+}
+
+/// A set of `W`` subarrays that can be used to store a fixed number of total elements defined at `new` time. It is leaked which subarray is being accessed.
+///
+#[derive(Debug)]
+pub struct MultiWayArray<T, const W: usize>
+where
+  T: Cmov + Pod,
+{
+  /// The actual data storage oram
+  data: CircuitORAM<T>,
+  /// The position maps for each subarray
+  pos_map: [RecursivePositionMap; W],
+  /// The local rng for the oram
+  rng: ThreadRng,
+}
+
+impl<T, const W: usize> MultiWayArray<T, W>
+where
+  T: Cmov + Pod + Default + std::fmt::Debug,
+{
+  const _ASSERT_PWR2: () = {
+      assert!(W.is_power_of_two(), "W must be a power of two due to all the ilog2's here");
+  };
+
+  /// Creates a new `LongArray` with the given size `n`.
+  pub fn new(n: usize) -> Self {
+    Self { data: CircuitORAM::new(n), pos_map: from_fn(|_| RecursivePositionMap::new(n)), rng: rand::rng() }
+  }
+
+  fn get_real_index(&self, subarray: usize, index: usize) -> usize {
+    debug_assert!(subarray < W, "Subarray index out of bounds");
+    debug_assert!(index < self.len(), "Index out of bounds");
+    (index << W.ilog2()) + subarray
+  }
+
+  /// Reads from the index
+  pub fn read(&mut self, subarray: usize, index: usize, out: &mut T) {
+    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+    let old_pos = self.pos_map[subarray].access_position(index, new_pos);
+    let real_index = self.get_real_index(subarray, index);
+    self.data.read(old_pos, new_pos, real_index, out);
+  }
+
+  /// Writes to the index
+  pub fn write(&mut self, subarray: usize, index: usize, value: T) {
+    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+    let old_pos = self.pos_map[subarray].access_position(index, new_pos);
+    let real_index = self.get_real_index(subarray, index);
+    self.data.write_or_insert(old_pos, new_pos, real_index, value);
+  }
+
+  /// Updates the value at the index using the update function.
+  pub fn update<R, F>(&mut self, subarray: usize, index: usize, update_func: F) -> (bool, R)
+  where
+    F: FnOnce(&mut T) -> R,
+  {
+    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+    let old_pos = self.pos_map[subarray].access_position(index, new_pos);
+    let real_index = self.get_real_index(subarray, index);
+    self.data.update(old_pos, new_pos, real_index, update_func)
+  }
+}
+
+impl<T: Cmov + Pod, const W: usize> Length for MultiWayArray<T, W> {
+  #[inline(always)]
+  fn len(&self) -> usize {
+    self.data.max_n
   }
 }
 
