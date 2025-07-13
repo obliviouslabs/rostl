@@ -358,10 +358,10 @@ where
   fn get_real_index(&self, subarray: usize, index: usize) -> usize {
     debug_assert!(subarray < W, "Subarray index out of bounds");
     debug_assert!(index < self.len(), "Index out of bounds");
-    (index << W.ilog2()) + subarray
+    (index << W.ilog2()) | subarray
   }
 
-  /// Reads from the index
+  /// Reads from the subarray and index
   pub fn read(&mut self, subarray: usize, index: usize, out: &mut T) {
     let new_pos = self.rng.random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map[subarray].access_position(index, new_pos);
@@ -369,7 +369,7 @@ where
     self.data.read(old_pos, new_pos, real_index, out);
   }
 
-  /// Writes to the index
+  /// Writes to the subarray and index
   pub fn write(&mut self, subarray: usize, index: usize, value: T) {
     let new_pos = self.rng.random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map[subarray].access_position(index, new_pos);
@@ -377,7 +377,7 @@ where
     self.data.write_or_insert(old_pos, new_pos, real_index, value);
   }
 
-  /// Updates the value at the index using the update function.
+  /// Updates the value at the subarray and index using the update function.
   pub fn update<R, F>(&mut self, subarray: usize, index: usize, update_func: F) -> (bool, R)
   where
     F: FnOnce(&mut T) -> R,
@@ -392,7 +392,7 @@ where
 impl<T: Cmov + Pod, const W: usize> Length for MultiWayArray<T, W> {
   #[inline(always)]
   fn len(&self) -> usize {
-    self.data.max_n
+    self.pos_map[0].n
   }
 }
 
@@ -429,6 +429,39 @@ mod tests {
         arr.read(i, &mut value);
         let v = i as $valtp;
         assert_eq!(value, v);
+      }
+      assert_eq!(arr.len(), $size);
+    }};
+  }
+
+   macro_rules! m_test_multiway_array_exaustive {
+    ($arraytp:ident, $valtp:ty, $size:expr, $ways:expr) => {{
+      println!("Testing {} with size {}", stringify!($arraytp), $size);
+      let mut arr = $arraytp::<$valtp, $ways>::new($size);
+      assert_eq!(arr.len(), $size);
+      for w in 0..$ways {  
+        for i in 0..$size {
+          let mut value = Default::default();
+          arr.read(w, i, &mut value);
+          assert_eq!(value, Default::default());
+        }
+      }
+      assert_eq!(arr.len(), $size);
+
+      for w in 0..$ways {  
+        for i in 0..($size / $ways) {
+          let value = (i+w) as $valtp;
+          arr.write(w, i, value);
+        }
+      }
+      assert_eq!(arr.len(), $size);
+      for w in 0..$ways {  
+        for i in 0..($size / $ways) {
+          let mut value = Default::default();
+          arr.read(w, i, &mut value);
+          let v = (i+w) as $valtp;
+          assert_eq!(value, v);
+        }
       }
       assert_eq!(arr.len(), $size);
     }};
@@ -512,6 +545,39 @@ mod tests {
     m_test_fixed_array_exaustive!(FixedArray, u64, 15);
     m_test_fixed_array_exaustive!(FixedArray, u8, 33);
     m_test_fixed_array_exaustive!(FixedArray, u64, 200);
+    
+    m_test_fixed_array_exaustive!(FixedArray, u64, 200);
+  }
+
+  #[test]
+  fn test_multiway_array() {
+    // m_test_multiway_array_exaustive!(MultiWayArray, u32, 1, 1);
+    m_test_multiway_array_exaustive!(MultiWayArray, u32, 2, 1);
+    m_test_multiway_array_exaustive!(MultiWayArray, u32, 3, 1);
+    m_test_multiway_array_exaustive!(MultiWayArray, u64, 15, 1);
+    m_test_multiway_array_exaustive!(MultiWayArray, u8, 33, 1);
+    m_test_multiway_array_exaustive!(MultiWayArray, u64, 200, 1);
+
+    // m_test_multiway_array_exaustive!(MultiWayArray, u32, 1, 2);
+    m_test_multiway_array_exaustive!(MultiWayArray, u32, 2, 2);
+    m_test_multiway_array_exaustive!(MultiWayArray, u32, 3, 2);
+    m_test_multiway_array_exaustive!(MultiWayArray, u64, 15, 2);
+    m_test_multiway_array_exaustive!(MultiWayArray, u8, 33, 2);
+    m_test_multiway_array_exaustive!(MultiWayArray, u64, 200, 2);
+
+    // m_test_multiway_array_exaustive!(MultiWayArray, u32, 1, 3);
+    m_test_multiway_array_exaustive!(MultiWayArray, u32, 2, 3);
+    m_test_multiway_array_exaustive!(MultiWayArray, u32, 3, 3);
+    m_test_multiway_array_exaustive!(MultiWayArray, u64, 15, 3);
+    m_test_multiway_array_exaustive!(MultiWayArray, u8, 33, 3);
+    m_test_multiway_array_exaustive!(MultiWayArray, u64, 200, 3);
+
+    // m_test_multiway_array_exaustive!(MultiWayArray, u32, 1, 4);
+    m_test_multiway_array_exaustive!(MultiWayArray, u32, 2, 4);
+    m_test_multiway_array_exaustive!(MultiWayArray, u32, 3, 4);
+    m_test_multiway_array_exaustive!(MultiWayArray, u64, 15, 4);
+    m_test_multiway_array_exaustive!(MultiWayArray, u8, 33, 4);
+    m_test_multiway_array_exaustive!(MultiWayArray, u64, 200, 4);
   }
 
   #[test]
