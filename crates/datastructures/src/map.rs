@@ -13,11 +13,11 @@ use seq_macro::seq;
 use crate::{array::{DynamicArray, MultiWayArray}, queue::ShortQueue};
 
 // Size of the insertion queue for deamortized insertions that failed.
-const INSERTION_QUEUE_MAX_SIZE: usize = 20;
+const INSERTION_QUEUE_MAX_SIZE: usize = 10;
 // Number of deamortized insertions to perform per insertion.
 const DEAMORTIZED_INSERTIONS: usize = 2;
 // Number of elements in each map bucket.
-const BUCKET_SIZE: usize = 2;
+const BUCKET_SIZE: usize = 4;
 
 use std::hash::Hash;
 
@@ -27,7 +27,7 @@ pub trait OHash: Cmov + Pod + Hash + PartialEq {}
 impl<K> OHash for K where K: Cmov + Pod + Hash + PartialEq {}
 
 /// An element in the map.
-#[repr(align(16))]
+#[repr(align(8))]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
 pub struct InlineElement<K, V>
 where
@@ -150,8 +150,10 @@ where
 {
   /// Number of elements in the map
   size: usize,
-  /// capacity
+  /// Maximum number of elements for maximum load (max_size / load_factor)
   capacity: usize,
+  /// Maximum number of entries in each table (buckets / load_factor)
+  table_size: usize,
   /// The two tables
   table: MultiWayArray<Bucket<K, V>, 2>,
   /// The hasher used to hash keys
@@ -170,10 +172,13 @@ where
   /// Creates a new `UnsortedMap` with the given capacity `n`.
   pub fn new(capacity: usize) -> Self {
     debug_assert!(capacity > 0);
+    // For load factor of 0.8: cap / (0.8 * BUCKET_SIZE) = cap * 5 / (4 * BUCKET_SIZE)
+    let table_size = (capacity * 5).div_ceil(4 * BUCKET_SIZE).max(2);
     Self {
       size: 0,
       capacity,
-      table: MultiWayArray::new(capacity),
+      table_size,
+      table: MultiWayArray::new(table_size),
       hash_builders: [RandomState::new(), RandomState::new()],
       insertion_queue: ShortQueue::new(),
       rng: rand::rng(),
@@ -182,7 +187,7 @@ where
 
   #[inline(always)]
   fn hash_key<const TABLE: usize>(&self, key: &K) -> usize {
-    (self.hash_builders[TABLE].hash_one(key) % self.capacity as u64) as usize
+    (self.hash_builders[TABLE].hash_one(key) % self.table_size as u64) as usize
   }
 
   /// Tries to get a value from the map.
