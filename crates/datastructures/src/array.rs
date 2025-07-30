@@ -346,12 +346,9 @@ impl<T, const W: usize> MultiWayArray<T, W>
 where
   T: Cmov + Pod + Default + std::fmt::Debug,
 {
-  const _ASSERT_PWR2: () = {
-      assert!(W.is_power_of_two(), "W must be a power of two due to all the ilog2's here");
-  };
-
   /// Creates a new `LongArray` with the given size `n`.
   pub fn new(n: usize) -> Self {
+    assert!(W.is_power_of_two(), "W must be a power of two due to all the ilog2's here");
     Self { data: CircuitORAM::new(n), pos_map: from_fn(|_| RecursivePositionMap::new(n)), rng: rand::rng() }
   }
 
@@ -564,13 +561,6 @@ mod tests {
     m_test_multiway_array_exaustive!(MultiWayArray, u64, 15, 2);
     m_test_multiway_array_exaustive!(MultiWayArray, u8, 33, 2);
     m_test_multiway_array_exaustive!(MultiWayArray, u64, 200, 2);
-
-    // m_test_multiway_array_exaustive!(MultiWayArray, u32, 1, 3);
-    m_test_multiway_array_exaustive!(MultiWayArray, u32, 2, 3);
-    m_test_multiway_array_exaustive!(MultiWayArray, u32, 3, 3);
-    m_test_multiway_array_exaustive!(MultiWayArray, u64, 15, 3);
-    m_test_multiway_array_exaustive!(MultiWayArray, u8, 33, 3);
-    m_test_multiway_array_exaustive!(MultiWayArray, u64, 200, 3);
 
     // m_test_multiway_array_exaustive!(MultiWayArray, u32, 1, 4);
     m_test_multiway_array_exaustive!(MultiWayArray, u32, 2, 4);
