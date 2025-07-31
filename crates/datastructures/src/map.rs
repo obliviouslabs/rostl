@@ -324,5 +324,44 @@ mod tests {
     assert_eq!(value, 3);
   }
 
+  #[test]
+  fn test_full_map() {
+    const SZ: usize = 1024;
+    let mut map: UnsortedMap<u32, u32> = UnsortedMap::new(SZ);
+    assert_eq!(map.size, 0);
+    for i in 0..SZ as u32 {
+      map.insert(i, i * 2);
+      let mut value = 0;
+      assert!(map.get(i, &mut value));
+      assert_eq!(value, i * 2);
+      assert_eq!(map.size, (i + 1) as usize);
+      map.write(i, i * 3);
+      assert!(map.get(i, &mut value));
+      assert_eq!(value, i * 3);
+      assert_eq!(map.size, (i + 1) as usize);
+    }
+  }
+
+  fn test_map_subtypes<K: OHash + Default + std::fmt::Debug, V: Cmov + Pod + Default + std::fmt::Debug>() {
+    const SZ: usize = 1024;
+    let mut map: UnsortedMap<K, V> = UnsortedMap::new(SZ);
+    assert_eq!(map.size, 0);
+    let mut value = V::default();
+    assert!(!map.get(K::default(), &mut value));
+    map.insert(K::default(), V::default());
+    assert_eq!(map.size, 1);
+    assert!(map.get(K::default(), &mut value));
+  }
+
+  #[test]
+  fn test_map_multiple_types() {
+    test_map_subtypes::<u32, u32>();
+    test_map_subtypes::<u64, u64>();
+    test_map_subtypes::<u128, u128>();
+    test_map_subtypes::<i32, i32>();
+    test_map_subtypes::<i64, i64>();
+    test_map_subtypes::<i128, i128>();
+  }
+
   // UNDONE(git-34): Add further tests for the map.
 }

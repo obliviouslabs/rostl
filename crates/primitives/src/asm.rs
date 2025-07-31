@@ -315,6 +315,7 @@ impl_cmov_for_pod!(u64);
 impl_cmov_for_pod!(u32);
 impl_cmov_for_pod!(u16);
 impl_cmov_for_pod!(u8);
+impl_cmov_for_pod!(i128);
 impl_cmov_for_pod!(i64);
 impl_cmov_for_pod!(i32);
 impl_cmov_for_pod!(i16);
