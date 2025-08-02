@@ -40,8 +40,8 @@ where
 unsafe impl<K: OHash, V: Cmov + Pod> Pod for InlineElement<K, V> {}
 impl_cmov_for_generic_pod!(InlineElement<K,V>; where K: OHash, V: Cmov + Pod);
 
-#[derive(Debug, Default, Clone, Copy, Zeroable)]
 /// A struct that represents an element in a bucket.
+#[derive(Debug, Default, Clone, Copy, Zeroable)]
 pub struct BucketElement<K, V>
 where
   K: OHash,
