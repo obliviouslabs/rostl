@@ -91,7 +91,7 @@ where
     let data = &self.data;
     println!("Stash: {:?}", data.stash);
     for i in 0..data.h {
-      print!("Level {}: ", i);
+      print!("Level {i}: ");
       for j in 0..(1 << i) {
         print!("{} ", j << (data.h - 1 - i));
         print!("data.h:{} ", data.h);
