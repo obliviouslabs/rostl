@@ -40,7 +40,6 @@ where
 unsafe impl<K: OHash, V: Cmov + Pod> Pod for InlineElement<K, V> {}
 impl_cmov_for_generic_pod!(InlineElement<K,V>; where K: OHash, V: Cmov + Pod);
 
-// #[repr(C)]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
 /// A struct that represents an element in a bucket.
 pub struct BucketElement<K, V>
@@ -71,7 +70,6 @@ where
 /// * The elements in the bucket that have `is_valid == true` are non empty.
 /// * The elements in the bucket that have `is_valid == false` are empty.
 /// * No two valid elements have the same key.
-// #[repr(align(64))]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
 struct Bucket<K, V>
 where
