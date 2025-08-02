@@ -177,7 +177,7 @@ macro_rules! cxchg_body {
     }
 
 
-    // UNDONE(): This seems to be broken in rust 1.89:
+    // UNDONE(git-70): This seems to be broken in rust 1.89:
     // #[cfg(target_feature = "sse2")]
     // {
     //   // Process in chunks of 16 bytes (u128)
