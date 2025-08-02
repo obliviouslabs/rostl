@@ -522,7 +522,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     // println!("{:?}", found);
 
     write_block_to_empty_slot(&mut self.stash[..S], &Block::<V> { pos: new_pos, key, value: val }); // Succeeds due to Inv1.
-    // println!("{:?}", self.stash);
+                                                                                                    // println!("{:?}", self.stash);
 
     self.evict_once_fast(pos);
     self.write_back_path(pos);

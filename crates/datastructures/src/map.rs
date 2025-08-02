@@ -10,7 +10,7 @@ use rostl_primitives::{
 
 use seq_macro::seq;
 
-use crate::{array::{DynamicArray, MultiWayArray}, queue::ShortQueue};
+use crate::{array::MultiWayArray, queue::ShortQueue};
 
 // Size of the insertion queue for deamortized insertions that failed.
 const INSERTION_QUEUE_MAX_SIZE: usize = 10;
@@ -151,9 +151,9 @@ where
 {
   /// Number of elements in the map
   size: usize,
-  /// Maximum number of elements for maximum load (max_size / load_factor)
-  capacity: usize,
-  /// Maximum number of entries in each table (buckets / load_factor)
+  /// Maximum number of elements for perfect load `(max_size / load_factor)`
+  _capacity: usize,
+  /// Maximum number of entries in each table `(buckets / load_factor)`
   table_size: usize,
   /// The two tables
   table: MultiWayArray<Bucket<K, V>, 2>,
@@ -177,7 +177,7 @@ where
     let table_size = (capacity * 5).div_ceil(4 * BUCKET_SIZE).max(2);
     Self {
       size: 0,
-      capacity,
+      _capacity: capacity,
       table_size,
       table: MultiWayArray::new(table_size),
       hash_builders: [RandomState::new(), RandomState::new()],
@@ -342,7 +342,10 @@ mod tests {
     }
   }
 
-  fn test_map_subtypes<K: OHash + Default + std::fmt::Debug, V: Cmov + Pod + Default + std::fmt::Debug>() {
+  fn test_map_subtypes<
+    K: OHash + Default + std::fmt::Debug,
+    V: Cmov + Pod + Default + std::fmt::Debug,
+  >() {
     const SZ: usize = 1024;
     let mut map: UnsortedMap<K, V> = UnsortedMap::new(SZ);
     assert_eq!(map.size, 0);

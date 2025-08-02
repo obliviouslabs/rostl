@@ -13,7 +13,6 @@ use rostl_oram::{
   recursive_oram::RecursivePositionMap,
 };
 use rostl_primitives::{indexable::Length, traits::Cmov};
-use static_assertions::const_assert;
 
 /// A fixed sized array defined at compile time.
 /// The size of the array is public.
@@ -349,7 +348,11 @@ where
   /// Creates a new `MultiWayArray` with the given size `n`.
   pub fn new(n: usize) -> Self {
     assert!(W.is_power_of_two(), "W must be a power of two due to all the ilog2's here");
-    Self { data: CircuitORAM::new(n), pos_map: from_fn(|_| RecursivePositionMap::new(n)), rng: rand::rng() }
+    Self {
+      data: CircuitORAM::new(n),
+      pos_map: from_fn(|_| RecursivePositionMap::new(n)),
+      rng: rand::rng(),
+    }
   }
 
   fn get_real_index(&self, subarray: usize, index: usize) -> usize {
@@ -402,6 +405,7 @@ impl<T: Cmov + Pod, const W: usize> Length for MultiWayArray<T, W> {
 // UNDONE(git-31): Implement read and write that have an enable flag (maybe_read, maybe_write).
 
 #[cfg(test)]
+#[allow(clippy::reversed_empty_ranges)]
 mod tests {
   use super::*;
 
@@ -431,12 +435,12 @@ mod tests {
     }};
   }
 
-   macro_rules! m_test_multiway_array_exhaustive {
+  macro_rules! m_test_multiway_array_exhaustive {
     ($arraytp:ident, $valtp:ty, $size:expr, $ways:expr) => {{
       println!("Testing {} with size {}", stringify!($arraytp), $size);
       let mut arr = $arraytp::<$valtp, $ways>::new($size);
       assert_eq!(arr.len(), $size);
-      for w in 0..$ways {  
+      for w in 0..$ways {
         for i in 0..$size {
           let mut value = Default::default();
           arr.read(w, i, &mut value);
@@ -445,18 +449,18 @@ mod tests {
       }
       assert_eq!(arr.len(), $size);
 
-      for w in 0..$ways {  
+      for w in 0..$ways {
         for i in 0..($size / $ways) {
-          let value = (i+w) as $valtp;
+          let value = (i + w) as $valtp;
           arr.write(w, i, value);
         }
       }
       assert_eq!(arr.len(), $size);
-      for w in 0..$ways {  
+      for w in 0..$ways {
         for i in 0..($size / $ways) {
           let mut value = Default::default();
           arr.read(w, i, &mut value);
-          let v = (i+w) as $valtp;
+          let v = (i + w) as $valtp;
           assert_eq!(value, v);
         }
       }
