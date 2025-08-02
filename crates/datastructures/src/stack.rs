@@ -130,7 +130,7 @@ mod tests {
     stack.maybe_pop(false, &mut out);
     assert_eq!(stack.len(), 0);
     assert_eq!(out, 123);
-     }
+  }
 
   // UNDONE(git-61): Benchmark Stack.
 }
