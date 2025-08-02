@@ -5,7 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.1.0-alpha3 (2025-08-02)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 2 commits contributed to the release.
+ - 49 days passed between releases.
+ - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 1 unique issue was worked on: [#69](https://github.com/obliviouslabs/rostl/issues/69)
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **[#69](https://github.com/obliviouslabs/rostl/issues/69)**
+    - Improve map memory ([`c2f8c86`](https://github.com/obliviouslabs/rostl/commit/c2f8c8627cfc1ed029337fa74c72487023b61331))
+ * **Uncategorized**
+    - Update version for release ([`a086035`](https://github.com/obliviouslabs/rostl/commit/a0860358f2762c92988d44fcaff5bccd6057ab9c))
+</details>
+
 ## v0.1.0-alpha2 (2025-06-14)
+
+<csr-id-66270107a067960190afb9cf46a3e9963b0f3ae2/>
 
 ### Other
 
@@ -15,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 30 commits contributed to the release.
+ - 31 commits contributed to the release.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 4 unique issues were worked on: [#23](https://github.com/obliviouslabs/rostl/issues/23), [#58](https://github.com/obliviouslabs/rostl/issues/58), [#66](https://github.com/obliviouslabs/rostl/issues/66), [#68](https://github.com/obliviouslabs/rostl/issues/68)
 
@@ -34,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **[#68](https://github.com/obliviouslabs/rostl/issues/68)**
     - Rename package names to rostl ([`332c664`](https://github.com/obliviouslabs/rostl/commit/332c664ab509038cc181a39fa616d02f8df2bf36))
  * **Uncategorized**
+    - Bump rostl-primitives v0.1.0-alpha2, rostl-oram v0.1.0-alpha2, rostl-sort v0.1.0-alpha2, rostl-datastructures v0.1.0-alpha2, rostl-storage v0.1.0-alpha2 ([`feaeb2d`](https://github.com/obliviouslabs/rostl/commit/feaeb2d2d3bbe5cd68932e65d187e9e3dc144b96))
     - Update crates.io readme badges ([`3fea8ff`](https://github.com/obliviouslabs/rostl/commit/3fea8ff3a6f22e50e8d89ba4bedbf3da19a1323d))
     - Update version ([`a8d8aad`](https://github.com/obliviouslabs/rostl/commit/a8d8aad49b7fa41233a4fc6c7ce5b230c58b64e9))
     - Fix typos ([`a49f307`](https://github.com/obliviouslabs/rostl/commit/a49f307b17abdcb34703af193ed644ad68d09996))

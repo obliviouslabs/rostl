@@ -2,7 +2,7 @@
 name = "rostl-datastructures"
 description = "Oblivious data structures for secure and efficient computation."
 readme = "README.crate.md"
-version.workspace = true
+version = "0.1.0-alpha3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true

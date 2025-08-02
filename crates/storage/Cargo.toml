@@ -2,7 +2,7 @@
 name = "rostl-storage"
 description = "Storage utilities for the rostl project."
 readme = "README.crate.md"
-version.workspace = true
+version = "0.1.0-alpha3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
