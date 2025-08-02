@@ -26,7 +26,7 @@ const EVICTIONS_PER_OP: usize = 2; // Evictions per operations
 /// # Note
 /// * It is wrong to assume anything about the block being empty or not based on the key, please use pos.
 ///
-// #[repr(align(16))]
+#[repr(align(8))]
 #[repr(C)]
 #[derive(Clone, Copy, Zeroable)]
 pub struct Block<V>

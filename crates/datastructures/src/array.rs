@@ -327,7 +327,7 @@ impl<T: Cmov + Pod> Length for DynamicArray<T> {
   }
 }
 
-/// A set of `W`` subarrays that can be used to store a fixed number of total elements defined at `new` time. It is leaked which subarray is being accessed.
+/// A set of `W` subarrays that can be used to store a fixed number of total elements defined at `new` time. It is leaked which subarray is being accessed.
 ///
 #[derive(Debug)]
 pub struct MultiWayArray<T, const W: usize>
@@ -346,7 +346,7 @@ impl<T, const W: usize> MultiWayArray<T, W>
 where
   T: Cmov + Pod + Default + std::fmt::Debug,
 {
-  /// Creates a new `LongArray` with the given size `n`.
+  /// Creates a new `MultiWayArray` with the given size `n`.
   pub fn new(n: usize) -> Self {
     assert!(W.is_power_of_two(), "W must be a power of two due to all the ilog2's here");
     Self { data: CircuitORAM::new(n), pos_map: from_fn(|_| RecursivePositionMap::new(n)), rng: rand::rng() }
@@ -405,7 +405,7 @@ impl<T: Cmov + Pod, const W: usize> Length for MultiWayArray<T, W> {
 mod tests {
   use super::*;
 
-  macro_rules! m_test_fixed_array_exaustive {
+  macro_rules! m_test_fixed_array_exhaustive {
     ($arraytp:ident, $valtp:ty, $size:expr) => {{
       println!("Testing {} with size {}", stringify!($arraytp), $size);
       let mut arr = $arraytp::<$valtp, $size>::new();
@@ -431,7 +431,7 @@ mod tests {
     }};
   }
 
-   macro_rules! m_test_multiway_array_exaustive {
+   macro_rules! m_test_multiway_array_exhaustive {
     ($arraytp:ident, $valtp:ty, $size:expr, $ways:expr) => {{
       println!("Testing {} with size {}", stringify!($arraytp), $size);
       let mut arr = $arraytp::<$valtp, $ways>::new($size);
@@ -464,7 +464,7 @@ mod tests {
     }};
   }
 
-  macro_rules! m_test_dynamic_array_exaustive {
+  macro_rules! m_test_dynamic_array_exhaustive {
     ($arraytp:ident, $valtp:ty, $size:expr) => {{
       println!("Testing {} with size {}", stringify!($arraytp), $size);
       let mut arr = $arraytp::<$valtp>::new($size);
@@ -523,60 +523,58 @@ mod tests {
 
   #[test]
   fn test_fixed_arrays() {
-    m_test_fixed_array_exaustive!(ShortArray, u32, 1);
-    m_test_fixed_array_exaustive!(ShortArray, u32, 2);
-    m_test_fixed_array_exaustive!(ShortArray, u32, 3);
-    m_test_fixed_array_exaustive!(ShortArray, u64, 15);
-    m_test_fixed_array_exaustive!(ShortArray, u8, 33);
-    m_test_fixed_array_exaustive!(ShortArray, u64, 200);
+    m_test_fixed_array_exhaustive!(ShortArray, u32, 1);
+    m_test_fixed_array_exhaustive!(ShortArray, u32, 2);
+    m_test_fixed_array_exhaustive!(ShortArray, u32, 3);
+    m_test_fixed_array_exhaustive!(ShortArray, u64, 15);
+    m_test_fixed_array_exhaustive!(ShortArray, u8, 33);
+    m_test_fixed_array_exhaustive!(ShortArray, u64, 200);
 
-    // m_test_fixed_array_exaustive!(LongArray, u32, 1);
-    m_test_fixed_array_exaustive!(LongArray, u32, 2);
-    m_test_fixed_array_exaustive!(LongArray, u32, 3);
-    m_test_fixed_array_exaustive!(LongArray, u64, 15);
-    m_test_fixed_array_exaustive!(LongArray, u8, 33);
+    // m_test_fixed_array_exhaustive!(LongArray, u32, 1);
+    m_test_fixed_array_exhaustive!(LongArray, u32, 2);
+    m_test_fixed_array_exhaustive!(LongArray, u32, 3);
+    m_test_fixed_array_exhaustive!(LongArray, u64, 15);
+    m_test_fixed_array_exhaustive!(LongArray, u8, 33);
 
-    m_test_fixed_array_exaustive!(FixedArray, u32, 1);
-    m_test_fixed_array_exaustive!(FixedArray, u32, 2);
-    m_test_fixed_array_exaustive!(FixedArray, u32, 3);
-    m_test_fixed_array_exaustive!(FixedArray, u64, 15);
-    m_test_fixed_array_exaustive!(FixedArray, u8, 33);
-    m_test_fixed_array_exaustive!(FixedArray, u64, 200);
-    
-    m_test_fixed_array_exaustive!(FixedArray, u64, 200);
+    m_test_fixed_array_exhaustive!(FixedArray, u32, 1);
+    m_test_fixed_array_exhaustive!(FixedArray, u32, 2);
+    m_test_fixed_array_exhaustive!(FixedArray, u32, 3);
+    m_test_fixed_array_exhaustive!(FixedArray, u64, 15);
+    m_test_fixed_array_exhaustive!(FixedArray, u8, 33);
+    m_test_fixed_array_exhaustive!(FixedArray, u64, 200);
   }
 
   #[test]
   fn test_multiway_array() {
-    // m_test_multiway_array_exaustive!(MultiWayArray, u32, 1, 1);
-    m_test_multiway_array_exaustive!(MultiWayArray, u32, 2, 1);
-    m_test_multiway_array_exaustive!(MultiWayArray, u32, 3, 1);
-    m_test_multiway_array_exaustive!(MultiWayArray, u64, 15, 1);
-    m_test_multiway_array_exaustive!(MultiWayArray, u8, 33, 1);
-    m_test_multiway_array_exaustive!(MultiWayArray, u64, 200, 1);
+    // m_test_multiway_array_exhaustive!(MultiWayArray, u32, 1, 1);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u32, 2, 1);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u32, 3, 1);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u64, 15, 1);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u8, 33, 1);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u64, 200, 1);
 
-    // m_test_multiway_array_exaustive!(MultiWayArray, u32, 1, 2);
-    m_test_multiway_array_exaustive!(MultiWayArray, u32, 2, 2);
-    m_test_multiway_array_exaustive!(MultiWayArray, u32, 3, 2);
-    m_test_multiway_array_exaustive!(MultiWayArray, u64, 15, 2);
-    m_test_multiway_array_exaustive!(MultiWayArray, u8, 33, 2);
-    m_test_multiway_array_exaustive!(MultiWayArray, u64, 200, 2);
+    // m_test_multiway_array_exhaustive!(MultiWayArray, u32, 1, 2);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u32, 2, 2);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u32, 3, 2);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u64, 15, 2);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u8, 33, 2);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u64, 200, 2);
 
-    // m_test_multiway_array_exaustive!(MultiWayArray, u32, 1, 4);
-    m_test_multiway_array_exaustive!(MultiWayArray, u32, 2, 4);
-    m_test_multiway_array_exaustive!(MultiWayArray, u32, 3, 4);
-    m_test_multiway_array_exaustive!(MultiWayArray, u64, 15, 4);
-    m_test_multiway_array_exaustive!(MultiWayArray, u8, 33, 4);
-    m_test_multiway_array_exaustive!(MultiWayArray, u64, 200, 4);
+    // m_test_multiway_array_exhaustive!(MultiWayArray, u32, 1, 4);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u32, 2, 4);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u32, 3, 4);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u64, 15, 4);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u8, 33, 4);
+    m_test_multiway_array_exhaustive!(MultiWayArray, u64, 200, 4);
   }
 
   #[test]
   fn test_dynamic_array() {
-    // m_test_dynamic_array_exaustive!(DynamicArray, u32, 1);
-    m_test_dynamic_array_exaustive!(DynamicArray, u32, 2);
-    m_test_dynamic_array_exaustive!(DynamicArray, u32, 3);
-    m_test_dynamic_array_exaustive!(DynamicArray, u64, 15);
-    m_test_dynamic_array_exaustive!(DynamicArray, u8, 33);
-    m_test_dynamic_array_exaustive!(DynamicArray, u64, 200);
+    // m_test_dynamic_array_exhaustive!(DynamicArray, u32, 1);
+    m_test_dynamic_array_exhaustive!(DynamicArray, u32, 2);
+    m_test_dynamic_array_exhaustive!(DynamicArray, u32, 3);
+    m_test_dynamic_array_exhaustive!(DynamicArray, u64, 15);
+    m_test_dynamic_array_exhaustive!(DynamicArray, u8, 33);
+    m_test_dynamic_array_exhaustive!(DynamicArray, u64, 200);
   }
 }
