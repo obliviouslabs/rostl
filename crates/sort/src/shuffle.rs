@@ -86,9 +86,9 @@ mod tests {
     for sz in [100, 1000, 10000] {
       let mut arr: Vec<u32> = (0..sz as u32).collect();
       let mut mark = 0;
-      println!("arr: {:?}", arr);
+      println!("arr: {arr:?}");
       shuffle(&mut arr);
-      println!("arr: {:?}", arr);
+      println!("arr: {arr:?}");
       assert_eq!(arr.len(), sz);
       arr.sort();
       for (i, v) in arr.iter().enumerate() {
