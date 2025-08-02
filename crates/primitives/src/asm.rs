@@ -176,19 +176,21 @@ macro_rules! cxchg_body {
       }
     }
 
-    #[cfg(target_feature = "sse2")]
-    {
-      // Process in chunks of 16 bytes (u128)
-      while i + 16 <= self_bytes.len() {
-        let self_chunk = &mut self_bytes[i..i + 8];
-        let other_chunk = &mut other_bytes[i..i + 8];
-        let self_u128 = unsafe { &mut *(self_chunk.as_mut_ptr() as *mut u128) };
-        let other_u128 = unsafe { &mut *(other_chunk.as_mut_ptr() as *mut u128) };
 
-        self_u128.cxchg_base(other_u128, $choice);
-        i += 16;
-      }
-    }
+    // UNDONE(git-70): This seems to be broken in rust 1.89:
+    // #[cfg(target_feature = "sse2")]
+    // {
+    //   // Process in chunks of 16 bytes (u128)
+    //   while i + 16 <= self_bytes.len() {
+    //     let self_chunk = &mut self_bytes[i..i + 16];
+    //     let other_chunk = &mut other_bytes[i..i + 16];
+    //     let self_u128 = unsafe { &mut *(self_chunk.as_mut_ptr() as *mut u128) };
+    //     let other_u128 = unsafe { &mut *(other_chunk.as_mut_ptr() as *mut u128) };
+
+    //     self_u128.cxchg_base(other_u128, $choice);
+    //     i += 16;
+    //   }
+    // }
 
 
     // Process in chunks of 8 bytes (u64)
@@ -315,6 +317,7 @@ impl_cmov_for_pod!(u64);
 impl_cmov_for_pod!(u32);
 impl_cmov_for_pod!(u16);
 impl_cmov_for_pod!(u8);
+impl_cmov_for_pod!(i128);
 impl_cmov_for_pod!(i64);
 impl_cmov_for_pod!(i32);
 impl_cmov_for_pod!(i16);

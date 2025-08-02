@@ -196,7 +196,7 @@ impl RecursivePositionMap {
     println!("Linear ORAM:");
     self.linear_oram.print_for_debug();
     for i in 0..self.h {
-      println!("Level {} ORAM:", i);
+      println!("Level {i} ORAM:");
       self.recursive_orams[i].print_for_debug();
     }
   }

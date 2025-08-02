@@ -10,14 +10,14 @@ use rostl_primitives::{
 
 use seq_macro::seq;
 
-use crate::{array::DynamicArray, queue::ShortQueue};
+use crate::{array::MultiWayArray, queue::ShortQueue};
 
 // Size of the insertion queue for deamortized insertions that failed.
-const INSERTION_QUEUE_MAX_SIZE: usize = 20;
+const INSERTION_QUEUE_MAX_SIZE: usize = 10;
 // Number of deamortized insertions to perform per insertion.
 const DEAMORTIZED_INSERTIONS: usize = 2;
 // Number of elements in each map bucket.
-const BUCKET_SIZE: usize = 2;
+const BUCKET_SIZE: usize = 4;
 
 use std::hash::Hash;
 
@@ -27,7 +27,7 @@ pub trait OHash: Cmov + Pod + Hash + PartialEq {}
 impl<K> OHash for K where K: Cmov + Pod + Hash + PartialEq {}
 
 /// An element in the map.
-#[repr(align(16))]
+#[repr(align(8))]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
 pub struct InlineElement<K, V>
 where
@@ -40,8 +40,8 @@ where
 unsafe impl<K: OHash, V: Cmov + Pod> Pod for InlineElement<K, V> {}
 impl_cmov_for_generic_pod!(InlineElement<K,V>; where K: OHash, V: Cmov + Pod);
 
-#[derive(Debug, Default, Clone, Copy, Zeroable)]
 /// A struct that represents an element in a bucket.
+#[derive(Debug, Default, Clone, Copy, Zeroable)]
 pub struct BucketElement<K, V>
 where
   K: OHash,
@@ -70,7 +70,6 @@ where
 /// * The elements in the bucket that have `is_valid == true` are non empty.
 /// * The elements in the bucket that have `is_valid == false` are empty.
 /// * No two valid elements have the same key.
-#[repr(align(64))]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
 struct Bucket<K, V>
 where
@@ -150,10 +149,12 @@ where
 {
   /// Number of elements in the map
   size: usize,
-  /// capacity
-  capacity: usize,
+  /// Maximum number of elements for perfect load `(max_size / load_factor)`
+  _capacity: usize,
+  /// Maximum number of entries in each table `(buckets / load_factor)`
+  table_size: usize,
   /// The two tables
-  table: [DynamicArray<Bucket<K, V>>; 2],
+  table: MultiWayArray<Bucket<K, V>, 2>,
   /// The hasher used to hash keys
   hash_builders: [RandomState; 2],
   /// The insertion queue
@@ -170,10 +171,13 @@ where
   /// Creates a new `UnsortedMap` with the given capacity `n`.
   pub fn new(capacity: usize) -> Self {
     debug_assert!(capacity > 0);
+    // For load factor of 0.8: cap / (0.8 * BUCKET_SIZE) = cap * 5 / (4 * BUCKET_SIZE)
+    let table_size = (capacity * 5).div_ceil(4 * BUCKET_SIZE).max(2);
     Self {
       size: 0,
-      capacity,
-      table: [DynamicArray::new(capacity), DynamicArray::new(capacity)],
+      _capacity: capacity,
+      table_size,
+      table: MultiWayArray::new(table_size),
       hash_builders: [RandomState::new(), RandomState::new()],
       insertion_queue: ShortQueue::new(),
       rng: rand::rng(),
@@ -182,7 +186,7 @@ where
 
   #[inline(always)]
   fn hash_key<const TABLE: usize>(&self, key: &K) -> usize {
-    (self.hash_builders[TABLE].hash_one(key) % self.capacity as u64) as usize
+    (self.hash_builders[TABLE].hash_one(key) % self.table_size as u64) as usize
   }
 
   /// Tries to get a value from the map.
@@ -200,8 +204,7 @@ where
     // seq! does manual loop unrolling in rust. We need it to be able to use the constant INDEX in the hash_key function.
     seq!(INDEX in 0..2 {
       let hash = self.hash_key::<INDEX>(&key);
-      let table = &mut self.table[INDEX];
-      table.read(hash, &mut tmp);
+      self.table.read(INDEX, hash, &mut tmp);
       let found_local = tmp.read_if_exists(key, ret);
       found.cmov(&true, found_local);
     });
@@ -229,8 +232,7 @@ where
       const INDEX: usize = 1 - INDEX_REV;
 
       let hash = self.hash_key::<INDEX>(&element.key);
-      let table = &mut self.table[INDEX];
-      table.update(hash, |bucket| {
+      self.table.update(INDEX, hash, |bucket| {
         let choice = !done;
         let inserted = bucket.insert_if_available(choice, *element);
         done.cmov(&true, inserted);
@@ -277,8 +279,7 @@ where
     // seq! does manual loop unrolling in rust. We need it to be able to use the constant INDEX in the hash_key function.
     seq!(INDEX in 0..2 {
       let hash = self.hash_key::<INDEX>(&key);
-      let table = &mut self.table[INDEX];
-      table.update(hash, |bucket| {
+      self.table.update(INDEX, hash, |bucket| {
         let choice = !updated;
         let updated_local = bucket.update_if_exists(choice, InlineElement { key, value });
         updated.cmov(&true, updated_local);
@@ -319,6 +320,48 @@ mod tests {
     map.write(1, 3);
     assert!(map.get(1, &mut value));
     assert_eq!(value, 3);
+  }
+
+  #[test]
+  fn test_full_map() {
+    const SZ: usize = 1024;
+    let mut map: UnsortedMap<u32, u32> = UnsortedMap::new(SZ);
+    assert_eq!(map.size, 0);
+    for i in 0..SZ as u32 {
+      map.insert(i, i * 2);
+      let mut value = 0;
+      assert!(map.get(i, &mut value));
+      assert_eq!(value, i * 2);
+      assert_eq!(map.size, (i + 1) as usize);
+      map.write(i, i * 3);
+      assert!(map.get(i, &mut value));
+      assert_eq!(value, i * 3);
+      assert_eq!(map.size, (i + 1) as usize);
+    }
+  }
+
+  fn test_map_subtypes<
+    K: OHash + Default + std::fmt::Debug,
+    V: Cmov + Pod + Default + std::fmt::Debug,
+  >() {
+    const SZ: usize = 1024;
+    let mut map: UnsortedMap<K, V> = UnsortedMap::new(SZ);
+    assert_eq!(map.size, 0);
+    let mut value = V::default();
+    assert!(!map.get(K::default(), &mut value));
+    map.insert(K::default(), V::default());
+    assert_eq!(map.size, 1);
+    assert!(map.get(K::default(), &mut value));
+  }
+
+  #[test]
+  fn test_map_multiple_types() {
+    test_map_subtypes::<u32, u32>();
+    test_map_subtypes::<u64, u64>();
+    test_map_subtypes::<u128, u128>();
+    test_map_subtypes::<i32, i32>();
+    test_map_subtypes::<i64, i64>();
+    test_map_subtypes::<i128, i128>();
   }
 
   // UNDONE(git-34): Add further tests for the map.

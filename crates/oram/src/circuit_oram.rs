@@ -26,7 +26,7 @@ const EVICTIONS_PER_OP: usize = 2; // Evictions per operations
 /// # Note
 /// * It is wrong to assume anything about the block being empty or not based on the key, please use pos.
 ///
-// #[repr(align(16))]
+#[repr(align(8))]
 #[repr(C)]
 #[derive(Clone, Copy, Zeroable)]
 pub struct Block<V>
@@ -574,7 +574,7 @@ impl<V: Cmov + Pod + Default + Clone + std::fmt::Debug> CircuitORAM<V> {
     println!("self.h: {}", self.h);
     println!("Stash: {:?}", self.stash);
     for i in 0..self.h {
-      print!("Level {}: ", i);
+      print!("Level {i}: ");
       for j in 0..(1 << i) {
         let w_j = reverse_bits(j, i);
         print!(

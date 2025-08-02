@@ -88,7 +88,7 @@ where
 
     out.cmov(&imse.value, real);
     self.top.cmov(&imse.next, real);
-    self.size.cmov(&(self.size - 1), real);
+    self.size.cmov(&self.size.wrapping_sub(1), real);
   }
 }
 
@@ -123,13 +123,13 @@ mod tests {
     stack.maybe_pop(true, &mut out);
     assert_eq!(stack.len(), 1);
     assert_eq!(out, 222);
-    out = 123;
-    stack.maybe_pop(false, &mut out);
-    assert_eq!(stack.len(), 1);
-    assert_eq!(out, 123);
     stack.maybe_pop(true, &mut out);
     assert_eq!(stack.len(), 0);
     assert_eq!(out, 100);
+    out = 123;
+    stack.maybe_pop(false, &mut out);
+    assert_eq!(stack.len(), 0);
+    assert_eq!(out, 123);
   }
 
   // UNDONE(git-61): Benchmark Stack.
