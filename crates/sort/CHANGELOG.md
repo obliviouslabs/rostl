@@ -5,13 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.1.0-alpha4 (2025-08-30)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 1 commit contributed to the release.
+ - 27 days passed between releases.
+ - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Improve batch interface ([`1e6bc06`](https://github.com/obliviouslabs/rostl/commit/1e6bc0691cd603abb57ab8d194205035355f4bea))
+</details>
+
 ## v0.1.0-alpha3 (2025-08-02)
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 2 commits contributed to the release.
+ - 3 commits contributed to the release.
  - 49 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 1 unique issue was worked on: [#69](https://github.com/obliviouslabs/rostl/issues/69)
@@ -25,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **[#69](https://github.com/obliviouslabs/rostl/issues/69)**
     - Improve map memory ([`c2f8c86`](https://github.com/obliviouslabs/rostl/commit/c2f8c8627cfc1ed029337fa74c72487023b61331))
  * **Uncategorized**
+    - Adjusting changelogs prior to release of rostl-primitives v0.1.0-alpha3, rostl-oram v0.1.0-alpha3, rostl-sort v0.1.0-alpha3, rostl-datastructures v0.1.0-alpha3, rostl-storage v0.1.0-alpha3 ([`2ac5097`](https://github.com/obliviouslabs/rostl/commit/2ac5097356c28dad895962bafe1ebff65a8707a4))
     - Update version for release ([`a086035`](https://github.com/obliviouslabs/rostl/commit/a0860358f2762c92988d44fcaff5bccd6057ab9c))
 </details>
 
