@@ -1,8 +1,10 @@
 #![allow(missing_docs)]
 use criterion::{
-  black_box, criterion_group, criterion_main, measurement::Measurement, AxisScale, BenchmarkId,
-  Criterion, PlotConfiguration,
+  criterion_group, criterion_main, measurement::Measurement, AxisScale, BenchmarkId, Criterion,
+  PlotConfiguration,
 };
+
+use std::hint::black_box;
 
 use rand::Rng;
 use rostl_datastructures::heap::Heap;

@@ -1,8 +1,10 @@
 #![allow(missing_docs)]
 use criterion::{
-  black_box, criterion_group, criterion_main, measurement::Measurement, AxisScale, BenchmarkId,
-  Criterion, PlotConfiguration,
+  criterion_group, criterion_main, measurement::Measurement, AxisScale, BenchmarkId, Criterion,
+  PlotConfiguration,
 };
+
+use std::hint::black_box;
 
 use rostl_oram::{
   circuit_oram::CircuitORAM, linear_oram::LinearORAM, recursive_oram::RecursivePositionMap,

@@ -153,13 +153,13 @@ rostl-storage = { path = "crates/storage", version = "0.1.0-alpha4" }
 
 
 ahash = { version = "0.8.11" }
-bytemuck = { version = "1.22.0", features = ["derive"] }
+bytemuck = { version = "1.23.2", features = ["derive"] }
 kanal = { version = "0.1.1" }
-rand = "0.9.0"
+rand = "0.9.2"
 static_assertions = "1.1.0"
 seq-macro = "0.3.6"
 
 # [workspace.dev-dependencies]
-criterion = "0.5.1"
-criterion-cycles-per-byte = "0.6.1"
+criterion = "0.7.0"
+criterion-cycles-per-byte = "0.7.0"
 
