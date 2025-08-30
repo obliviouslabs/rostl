@@ -28,6 +28,7 @@ impl<K> OHash for K where K: Cmov + Pod + Hash + PartialEq {}
 
 /// An element in the map.
 #[repr(align(8))]
+#[repr(C)]
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
 pub struct InlineElement<K, V>
 where
@@ -40,30 +41,6 @@ where
 unsafe impl<K: OHash, V: Cmov + Pod> Pod for InlineElement<K, V> {}
 impl_cmov_for_generic_pod!(InlineElement<K,V>; where K: OHash, V: Cmov + Pod);
 
-/// A struct that represents an element in a bucket.
-#[derive(Debug, Default, Clone, Copy, Zeroable)]
-pub struct BucketElement<K, V>
-where
-  K: OHash,
-  V: Cmov + Pod,
-{
-  is_valid: bool,
-  element: InlineElement<K, V>,
-}
-unsafe impl<K: OHash, V: Cmov + Pod> Pod for BucketElement<K, V> {}
-impl_cmov_for_generic_pod!(BucketElement<K,V>; where K: OHash, V: Cmov + Pod);
-
-impl<K, V> BucketElement<K, V>
-where
-  K: OHash,
-  V: Cmov + Pod,
-{
-  #[inline(always)]
-  const fn is_empty(&self) -> bool {
-    !self.is_valid
-  }
-}
-
 /// A bucket in the map.
 /// The bucket has `BUCKET_SIZE` elements.
 /// # Invariants
@@ -71,12 +48,14 @@ where
 /// * The elements in the bucket that have `is_valid == false` are empty.
 /// * No two valid elements have the same key.
 #[derive(Debug, Default, Clone, Copy, Zeroable)]
+#[repr(C)]
 struct Bucket<K, V>
 where
   K: OHash,
   V: Cmov + Pod,
 {
-  elements: [BucketElement<K, V>; BUCKET_SIZE],
+  is_valid: [bool; BUCKET_SIZE],
+  elements: [InlineElement<K, V>; BUCKET_SIZE],
 }
 unsafe impl<K: OHash, V: Cmov + Pod> Pod for Bucket<K, V> {}
 impl_cmov_for_generic_pod!(Bucket<K,V>; where K: OHash, V: Cmov + Pod);
@@ -86,6 +65,10 @@ where
   K: OHash,
   V: Cmov + Pod,
 {
+  const fn is_empty(&self, i: usize) -> bool {
+    !self.is_valid[i]
+  }
+
   /// Replaces the value of a Key, if:
   ///  1) `real`
   ///  2) the bucket has a valid element with the same key as `element`
@@ -95,9 +78,8 @@ where
   fn update_if_exists(&mut self, real: bool, element: InlineElement<K, V>) -> bool {
     let mut updated = false;
     for i in 0..BUCKET_SIZE {
-      let element_i = &mut self.elements[i];
-      let choice = real & !element_i.is_empty() & (element_i.element.key == element.key);
-      element_i.element.value.cmov(&element.value, choice);
+      let choice = real & !self.is_empty(i) & (self.elements[i].key == element.key);
+      self.elements[i].value.cmov(&element.value, choice);
       updated.cmov(&true, choice);
     }
     updated
@@ -106,9 +88,8 @@ where
   fn read_if_exists(&self, key: K, ret: &mut V) -> bool {
     let mut found = false;
     for i in 0..BUCKET_SIZE {
-      let element_i = &self.elements[i];
-      let choice = !element_i.is_empty() & (element_i.element.key == key);
-      ret.cmov(&element_i.element.value, choice);
+      let choice = !self.is_empty(i) & (self.elements[i].key == key);
+      ret.cmov(&self.elements[i].value, choice);
       found.cmov(&true, choice);
     }
     found
@@ -123,10 +104,9 @@ where
   fn insert_if_available(&mut self, real: bool, element: InlineElement<K, V>) -> bool {
     let mut inserted = !real;
     for i in 0..BUCKET_SIZE {
-      let element_i = &mut self.elements[i];
-      let choice = !inserted & element_i.is_empty();
-      element_i.is_valid.cmov(&true, choice);
-      element_i.element.cmov(&element, choice);
+      let choice = !inserted & self.is_empty(i);
+      self.is_valid[i].cmov(&true, choice);
+      self.elements[i].cmov(&element, choice);
       inserted.cmov(&true, choice);
     }
     inserted
@@ -237,7 +217,7 @@ where
         let inserted = bucket.insert_if_available(choice, *element);
         done.cmov(&true, inserted);
         let randidx = self.rng.random_range(0..BUCKET_SIZE);
-        bucket.elements[randidx].element.cxchg(element, !done);
+        bucket.elements[randidx].cxchg(element, !done);
       });
     }});
     done

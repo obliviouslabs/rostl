@@ -219,17 +219,19 @@ where
   /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
   /// # Preconditions
   /// * No repeated keys in the input array.
-  pub fn get_batch_distinct<const N: usize>(&mut self, keys: &[K; N]) -> [OOption<V>; N] {
+  pub fn get_batch_distinct(&mut self, keys: &[K]) -> Vec<OOption<V>> {
+    let n: usize = keys.len();
+
     // 1. Create P arrays of size N.
     // let mut per_p: [[BatchBlock<K, V>; N]; P] =
     //   [unsafe { std::mem::MaybeUninit::<[BatchBlock<K, V>; N]>::uninit().assume_init() }; P];
-    let mut per_p: [Box<[BatchBlock<K, V>; N]>; P] =
-      std::array::from_fn(|_| Box::new([BatchBlock::default(); N]));
+    let mut per_p: [Box<Vec<BatchBlock<K, V>>>; P] =
+      std::array::from_fn(|_| Box::new(vec![BatchBlock::default(); n]));
 
     const INVALID_ID: usize = usize::MAX;
 
     // 2. Map each key at index i to a partition: to p[h(keys[i])][i],
-    // UNDONE(git-65): this is O(P*N), we could do N log^2 N
+    // UNDONE(git-65): this is O(P*n), we could do n log^2 n
     for (i, k) in keys.iter().enumerate() {
       let target_p = self.get_partition(k);
       for (p, partition) in per_p.iter_mut().enumerate() {
@@ -241,7 +243,7 @@ where
 
     // 3. Apply oblivious compaction to each partition.
     for partition in &mut per_p {
-      let cnt = compact(&mut **partition, |x: &BatchBlock<K, V>| x.index == INVALID_ID);
+      let cnt = compact(partition, |x: &BatchBlock<K, V>| x.index == INVALID_ID);
       // UNDONE(git-64): deal with overflow.
       assert!(cnt <= B);
     }
@@ -277,9 +279,10 @@ where
     // 6. Oblivious sort according to the index (we actually have P sorted arrays already, so we just need to merge them).
     bitonic_sort(&mut merged);
 
-    // 7. Return the first N values from the results array.
-    let mut ret: [OOption<V>; N] = [(); N].map(|_| OOption::default());
-    for i in 0..N {
+    // 7. Return the first n values from the results array.
+    let mut ret: Vec<OOption<V>> = vec![OOption::default(); n];
+
+    for i in 0..n {
       ret[i] = merged[i].v;
     }
 
@@ -292,11 +295,14 @@ where
   /// * No repeated keys in the input array.
   /// * All of the inserted keys are not already present in the map.
   /// * There is enough space in the map to insert all N keys.
-  pub fn insert_batch_distinct<const N: usize>(&mut self, keys: &[K; N], values: &[V; N]) {
-    assert!(self.size + N <= self.capacity, "Map is full, cannot insert more elements.");
+  pub fn insert_batch_distinct(&mut self, keys: &[K], values: &[V]) {
+    let n = keys.len();
+    assert!(n == values.len(), "Invalid input: keys and values must have the same length");
+    assert!(self.size + n <= self.capacity, "Map is full, cannot insert more elements.");
+
     // 1. Create P arrays of size N.
-    let mut per_p: [Box<[BatchBlock<K, V>; B]>; P] =
-      std::array::from_fn(|_| Box::new([BatchBlock::default(); B]));
+    let mut per_p: [Box<Vec<BatchBlock<K, V>>>; P] =
+      std::array::from_fn(|_| Box::new(vec![BatchBlock::default(); B]));
 
     const INVALID_ID: usize = usize::MAX;
 
@@ -314,7 +320,7 @@ where
 
     // 3. Apply oblivious compaction to each partition.
     for partition in &mut per_p {
-      let cnt = compact(&mut **partition, |x| x.index == INVALID_ID);
+      let cnt = compact(partition, |x| x.index == INVALID_ID);
       // UNDONE(git-64): deal with overflow.
       assert!(cnt <= B);
     }
@@ -323,7 +329,11 @@ where
 
     // 4. Insert the first B values from each partition in the corresponding partition.
     for (p, partition) in per_p.iter_mut().enumerate() {
-      let blocks = std::mem::replace(partition, Box::new([BatchBlock::default(); B]));
+      let blocks = {
+        let mut new_blocks = [BatchBlock::default(); B];
+        new_blocks.copy_from_slice(&partition[..B]);
+        Box::new(new_blocks)
+      };
       self.workers[p].tx.send(Cmd::Insert { blocks, ret_tx: done_tx.clone() }).unwrap();
     }
 
@@ -338,7 +348,7 @@ where
     }
 
     // 6. Update the size of the map.
-    self.size += N;
+    self.size += n;
   }
 }
 
@@ -369,9 +379,9 @@ mod tests {
     let keys: [u64; N] = [1, 2, 3, 4];
     let values: [u64; N] = [10, 20, 30, 40];
 
-    map.insert_batch_distinct::<N>(&keys, &values);
+    map.insert_batch_distinct(&keys, &values);
 
-    let results = map.get_batch_distinct::<N>(&keys);
+    let results = map.get_batch_distinct(&keys);
     for i in 0..N {
       assert!(results[i].is_some(), "key {} missing", keys[i]);
       assert_eq!(results[i].unwrap(), values[i]);
@@ -383,7 +393,7 @@ mod tests {
     let mut map: ShardedMap<u64, u64, B> = ShardedMap::new(16);
 
     let absent: [u64; N] = [100, 200, 300, 400];
-    let results = map.get_batch_distinct::<N>(&absent);
+    let results = map.get_batch_distinct(&absent);
 
     for r in &results {
       assert!(!r.is_some());
@@ -397,7 +407,7 @@ mod tests {
     let keys: [u64; N] = [11, 22, 33, 44];
     let values: [u64; N] = [111, 222, 333, 444];
 
-    map.insert_batch_distinct::<N>(&keys, &values);
+    map.insert_batch_distinct(&keys, &values);
     assert_eq!(map.size, N);
   }
 }
