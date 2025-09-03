@@ -6,6 +6,7 @@ use bytemuck::{Pod, Zeroable};
 /// An alternative option implementation that is easier to use in constant-time algorithms.
 /// This type is designed to be used in scenarios where you need to conditionally move
 /// between two values without leaking information about which value is present.
+#[repr(C)]
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Zeroable)]
 pub struct OOption<T>
 where
@@ -16,6 +17,7 @@ where
   /// A boolean flag indicating whether the option contains a value.
   pub is_some: bool,
 }
+unsafe impl<T> Pod for OOption<T> where T: Cmov + Pod + Zeroable {}
 
 impl<T> OOption<T>
 where
