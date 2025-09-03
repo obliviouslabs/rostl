@@ -325,10 +325,9 @@ impl_cmov_for_pod!(i8);
 
 impl Cmov for bool {
   #[inline]
+  #[allow(clippy::needless_bitwise_bool)]
   fn cmov(&mut self, other: &Self, choice: bool) {
-    if choice {
-      *self = *other;
-    }
+    *self = (*self & !choice) | (*other & choice);
   }
 
   #[inline]
@@ -336,6 +335,26 @@ impl Cmov for bool {
     let c = *self;
     self.cmov(other, choice);
     other.cmov(&c, choice);
+  }
+}
+
+impl<T> Cmov for &mut [T]
+where
+  T: Cmov,
+{
+  fn cmov(&mut self, other: &Self, choice: bool) {
+    assert!(self.len() == other.len(), "Slices must have the same length for cmov.");
+
+    for (a, b) in self.iter_mut().zip(other.iter()) {
+      a.cmov(b, choice);
+    }
+  }
+  fn cxchg(&mut self, other: &mut Self, choice: bool) {
+    assert!(self.len() == other.len(), "Slices must have the same length for cxchg.");
+
+    for (a, b) in self.iter_mut().zip(other.iter_mut()) {
+      a.cxchg(b, choice);
+    }
   }
 }
 
@@ -365,6 +384,11 @@ mod tests {
       let b = 0x12u8;
       a.cmov(&b, *choice);
       assert_eq!(a, if *choice { b } else { 0 });
+
+      let mut a = [0u8; 10];
+      let mut b = [1u8; 10];
+      a.as_mut_slice().cmov(&b.as_mut_slice(), *choice);
+      assert_eq!(a, if *choice { b } else { [0u8; 10] });
     }
   }
 }
