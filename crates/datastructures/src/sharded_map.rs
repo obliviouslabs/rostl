@@ -214,7 +214,12 @@ where
   /// # Preconditions
   /// * N >= P log P
   pub const fn compute_safe_batch_size(&self, n: usize) -> usize {
-    n.div_ceil(P) + (n * (P.ilog2() as usize + 1)).div_ceil(P).isqrt() + 20 // Safety margin for small N
+    let a = n.div_ceil(P) + (n * (P.ilog2() as usize + 1)).div_ceil(P).isqrt() + 20; // Safety margin for small N
+    if a < n {
+      a
+    } else {
+      n
+    }
   }
 
   /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
