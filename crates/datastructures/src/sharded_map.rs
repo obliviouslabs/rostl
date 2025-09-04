@@ -210,6 +210,15 @@ where
     (self.random_state.hash_one(key) % P as u64) as usize
   }
 
+  /// Computes a safe batch size B for a given number of distinct queries N.
+  /// # Preconditions
+  /// * N >= P log P
+  pub fn compute_safe_batch_size(&self, n: usize) -> usize {
+    n.div_ceil(P) + 
+    (n * (P.ilog2() as usize +1)).div_ceil(P).isqrt() +
+    20 // Safety margin for small N
+  }
+
   /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
   /// # Preconditions
   /// * No repeated keys in the input array.
@@ -394,5 +403,33 @@ mod tests {
 
     map.insert_batch_distinct(&keys, &values, N);
     assert_eq!(map.size, N);
+  }
+
+  #[test]
+  fn compute_safe_batch_size_works() {
+    let map: ShardedMap<u64, u64> = ShardedMap::new(16);
+
+    // N >= P log P
+    assert!(P == 15);
+
+    let n = 100;
+    let b = map.compute_safe_batch_size(n);
+    assert!(b >= n.div_ceil(P));
+    assert_eq!(b, 32);
+
+    let n = 1000;
+    let b = map.compute_safe_batch_size(n);
+    assert!(b >= n.div_ceil(P));
+    assert_eq!(b, 103);
+
+    let n = 4096;
+    let b = map.compute_safe_batch_size(n);
+    assert!(b >= n.div_ceil(P));
+    assert_eq!(b, 327);
+
+    let n = 8192;
+    let b = map.compute_safe_batch_size(n);
+    assert!(b >= n.div_ceil(P));
+    assert_eq!(b, 613);
   }
 }
