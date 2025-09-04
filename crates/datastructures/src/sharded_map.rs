@@ -434,5 +434,14 @@ mod tests {
     let b = map.compute_safe_batch_size(n);
     assert!(b >= n.div_ceil(P));
     assert_eq!(b, 613);
+
+    for i in 1..100 {
+      for j in 1..100 {
+        let n = i * j * P;
+        let b = map.compute_safe_batch_size(n);
+        assert!(b >= n.div_ceil(P));
+        assert!(b <= n);
+      }
+    }
   }
 }
