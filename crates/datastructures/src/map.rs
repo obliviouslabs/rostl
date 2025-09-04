@@ -247,6 +247,20 @@ where
     self.size.cmov(&(self.size + 1), true);
   }
 
+  /// Conditionally inserts an element into the map obliviously. If the insertion doesn't finish, the removed element is inserted into the insertion queue.
+  /// # Preconditions
+  /// * If `real` is true, the key is not in the map already.
+  /// # Parameters
+  /// * `real` - if true, the insertion is performed, if false, the
+  ///   insertion is a dummy insertion that doesn't modify the logical map.
+  pub fn insert_cond(&mut self, key: K, value: V, real: bool) {
+    // UNDONE(git-32): Recover in case the insertion queue is full.
+    assert!(self.insertion_queue.size < INSERTION_QUEUE_MAX_SIZE);
+    self.insertion_queue.maybe_push(real, InlineElement { key, value });
+    self.deamortize_insertion_queue();
+    self.size.cmov(&(self.size + 1), real);
+  }
+
   /// Updates a value that is already in the map.
   /// # Preconditions
   /// * The key is in the map.
@@ -318,6 +332,31 @@ mod tests {
       assert_eq!(value, i * 3);
       assert_eq!(map.size, (i + 1) as usize);
     }
+  }
+
+  #[test]
+  fn test_insert_cond() {
+    // Test that conditional insert works when real is true and doesn't when real is false
+    let mut map: UnsortedMap<u32, u32> = UnsortedMap::new(8);
+    assert_eq!(map.size, 0);
+
+    // Dummy insertion (real = false) should not increase logical size nor make the key visible
+    map.insert_cond(10, 100, false);
+    assert_eq!(map.size, 0);
+    let mut value = 0;
+    assert!(!map.get(10, &mut value));
+
+    // Real insertion should store the value and increase size
+    map.insert_cond(10, 200, true);
+    assert_eq!(map.size, 1);
+    assert!(map.get(10, &mut value));
+    assert_eq!(value, 200);
+
+    // Another dummy insert with different value should not change stored value
+    map.insert_cond(10, 300, false);
+    assert_eq!(map.size, 1);
+    assert!(map.get(10, &mut value));
+    assert_eq!(value, 200);
   }
 
   fn test_map_subtypes<

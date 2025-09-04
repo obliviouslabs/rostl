@@ -108,7 +108,7 @@ where
             Cmd::Insert { blocks, ret_tx } => {
               // println!("worker {pid} received insert command with {} blocks", blocks.len());
               for blk in blocks.iter() {
-                map.insert(blk.k, blk.v.unwrap());
+                map.insert_cond(blk.k, blk.v.value, blk.v.is_some);
               }
               let _ = ret_tx.send(Reply::Unit(()));
             }
