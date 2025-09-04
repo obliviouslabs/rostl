@@ -20,19 +20,19 @@ use std::{
 const P: usize = 15;
 
 /// The replies from the worker thread to the main thread.
-enum Reply<K, V, const B: usize>
+enum Reply<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord,
   V: Cmov + Pod + Default + std::fmt::Debug,
   BatchBlock<K, V>: Ord + Send,
 {
-  Blocks { pid: usize, blocks: Box<[BatchBlock<K, V>; B]> },
+  Blocks { pid: usize, blocks: Vec<BatchBlock<K, V>> },
   Unit(()),
 }
 
 /// The command sent to the worker thread to perform a batch operation.
 ///
-enum Cmd<K, V, const B: usize>
+enum Cmd<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord,
   V: Cmov + Pod + Default + std::fmt::Debug,
@@ -40,13 +40,13 @@ where
 {
   /// Get a batch of blocks from the map.
   Get {
-    blocks: Box<[BatchBlock<K, V>; B]>,
-    ret_tx: Sender<Reply<K, V, B>>,
+    blocks: Vec<BatchBlock<K, V>>,
+    ret_tx: Sender<Reply<K, V>>,
   },
   /// Insert a batch of blocks into the map.
   Insert {
-    blocks: Box<[BatchBlock<K, V>; B]>,
-    ret_tx: Sender<Reply<K, V, B>>,
+    blocks: Vec<BatchBlock<K, V>>,
+    ret_tx: Sender<Reply<K, V>>,
   },
   // Shutdown the worker thread.
   Shutdown,
@@ -55,17 +55,17 @@ where
 /// A worker is the thread that manages a partition of the map.
 /// Worker threads are kept hot while while there are new queries to process.
 #[derive(Debug)]
-struct Worker<K, V, const B: usize>
+struct Worker<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord,
   V: Cmov + Pod + Default + std::fmt::Debug,
   BatchBlock<K, V>: Ord + Send,
 {
-  tx: Sender<Cmd<K, V, B>>,
+  tx: Sender<Cmd<K, V>>,
   join_handle: Option<thread::JoinHandle<()>>,
 }
 
-impl<K, V, const B: usize> Worker<K, V, B>
+impl<K, V> Worker<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Send,
   V: Cmov + Pod + Default + std::fmt::Debug + Send,
@@ -75,7 +75,7 @@ where
   ///
   fn new(n: usize, pid: usize, startup_barrier: Arc<Barrier>) -> Self {
     // Note: this bound is a bit arbitrary, 2 is enough for the map as it is implemented now.
-    let (tx, rx): (Sender<Cmd<_, _, B>>, Receiver<_>) = bounded(10);
+    let (tx, rx): (Sender<Cmd<_, _>>, Receiver<_>) = bounded(10);
 
     let handler = thread::Builder::new()
       .name(format!("partition-{pid}"))
@@ -98,25 +98,19 @@ where
 
           match cmd {
             Cmd::Get { mut blocks, ret_tx } => {
-              // println!("worker {pid} received get command with {} blocks", blocks.len());
-              for blk in blocks.iter_mut() {
+              for blk in &mut blocks {
                 blk.v = OOption::new(Default::default(), true);
                 blk.v.is_some = map.get(blk.k, &mut blk.v.value);
               }
               let _ = ret_tx.send(Reply::Blocks { pid, blocks }); // move blocks back
             }
             Cmd::Insert { blocks, ret_tx } => {
-              // println!("worker {pid} received insert command with {} blocks", blocks.len());
-              for blk in blocks.iter() {
+              for blk in &blocks {
                 map.insert_cond(blk.k, blk.v.value, blk.v.is_some);
               }
               let _ = ret_tx.send(Reply::Unit(()));
             }
-            Cmd::Shutdown => {
-              // We don't need to do anything here, the worker will exit.
-              // println!("worker {pid} received shutdown command, exiting");
-              break;
-            }
+            Cmd::Shutdown => break,
           }
         }
       })
@@ -126,7 +120,7 @@ where
   }
 }
 
-impl<K, V, const B: usize> Drop for Worker<K, V, B>
+impl<K, V> Drop for Worker<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord,
   V: Cmov + Pod + Default + std::fmt::Debug,
@@ -156,7 +150,7 @@ where
 /// * `P`: The number of partitions in the map.
 /// * `B`: The maximum number of non-distinct keys in any partition in a batch.
 #[derive(Debug)]
-pub struct ShardedMap<K, V, const B: usize>
+pub struct ShardedMap<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Send + Ord,
   V: Cmov + Pod + Default + std::fmt::Debug + Send,
@@ -167,7 +161,7 @@ where
   /// capacity
   capacity: usize,
   /// The partitions of the map.
-  workers: [Worker<K, V, B>; P],
+  workers: [Worker<K, V>; P],
   /// The random state used for hashing.
   random_state: RandomState,
 }
@@ -192,7 +186,7 @@ where
 }
 impl_cmov_for_generic_pod!(BatchBlock<K, V>; where K: OHash + Pod + Default + std::fmt::Debug + Ord, V: Cmov + Pod + Default + std::fmt::Debug);
 
-impl<K, V, const B: usize> ShardedMap<K, V, B>
+impl<K, V> ShardedMap<K, V>
 where
   K: OHash + Default + std::fmt::Debug + Send + Ord,
   V: Cmov + Pod + Default + std::fmt::Debug + Send,
@@ -219,8 +213,9 @@ where
   /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
   /// # Preconditions
   /// * No repeated keys in the input array.
-  pub fn get_batch_distinct(&mut self, keys: &[K]) -> Vec<OOption<V>> {
+  pub fn get_batch_distinct(&mut self, keys: &[K], b: usize) -> Vec<OOption<V>> {
     let n: usize = keys.len();
+    assert!(b <= n, "batch size b must be <= number of keys");
 
     // 1. Create P arrays of size N.
     // let mut per_p: [[BatchBlock<K, V>; N]; P] =
@@ -245,34 +240,28 @@ where
     for partition in &mut per_p {
       let cnt = compact(partition, |x: &BatchBlock<K, V>| x.index == INVALID_ID);
       // UNDONE(git-64): deal with overflow.
-      assert!(cnt <= B);
+      assert!(cnt <= b);
     }
 
-    let (done_tx, done_rx) = bounded::<Reply<K, V, B>>(P);
+    let (done_tx, done_rx) = bounded::<Reply<K, V>>(P);
 
     // 4. Read the first B values from each partition in the corresponding partition.
     for (p, partition) in per_p.iter_mut().enumerate() {
-      let blocks = {
-        let mut new_blocks = [BatchBlock::default(); B];
-        new_blocks.copy_from_slice(&partition[..B]);
-        Box::new(new_blocks)
-      };
+      let blocks: Vec<BatchBlock<K, V>> = partition[..b].to_vec();
       self.workers[p].tx.send(Cmd::Get { blocks, ret_tx: done_tx.clone() }).unwrap();
     }
 
     // 5. Collect the first B values from each partition into the results array.
-    let mut merged: Vec<BatchBlock<K, V>> = vec![BatchBlock::default(); P * B];
+    let mut merged: Vec<BatchBlock<K, V>> = vec![BatchBlock::default(); P * b];
 
     for _ in 0..P {
       match done_rx.recv().unwrap() {
         Reply::Blocks { pid, blocks } => {
-          for b in 0..B {
-            merged[pid * B + b] = blocks[b];
+          for i in 0..b {
+            merged[pid * b + i] = blocks[i];
           }
         }
-        _ => {
-          panic!("unexpected reply from worker thread (probably early termination?)");
-        }
+        _ => panic!("unexpected reply from worker thread (probably early termination?)"),
       }
     }
 
@@ -295,14 +284,15 @@ where
   /// * No repeated keys in the input array.
   /// * All of the inserted keys are not already present in the map.
   /// * There is enough space in the map to insert all N keys.
-  pub fn insert_batch_distinct(&mut self, keys: &[K], values: &[V]) {
+  pub fn insert_batch_distinct(&mut self, keys: &[K], values: &[V], b: usize) {
     let n = keys.len();
     assert!(n == values.len(), "Invalid input: keys and values must have the same length");
     assert!(self.size + n <= self.capacity, "Map is full, cannot insert more elements.");
+    assert!(b <= n, "batch size b must be <= number of keys");
 
     // 1. Create P arrays of size N.
     let mut per_p: [Box<Vec<BatchBlock<K, V>>>; P] =
-      std::array::from_fn(|_| Box::new(vec![BatchBlock::default(); B]));
+      std::array::from_fn(|_| Box::new(vec![BatchBlock::default(); n]));
 
     const INVALID_ID: usize = usize::MAX;
 
@@ -322,18 +312,14 @@ where
     for partition in &mut per_p {
       let cnt = compact(partition, |x| x.index == INVALID_ID);
       // UNDONE(git-64): deal with overflow.
-      assert!(cnt <= B);
+      assert!(cnt <= b);
     }
 
-    let (done_tx, done_rx) = bounded::<Reply<K, V, B>>(P);
+    let (done_tx, done_rx) = bounded::<Reply<K, V>>(P);
 
-    // 4. Insert the first B values from each partition in the corresponding partition.
+    // 4. Insert the first b values from each partition in the corresponding partition.
     for (p, partition) in per_p.iter_mut().enumerate() {
-      let blocks = {
-        let mut new_blocks = [BatchBlock::default(); B];
-        new_blocks.copy_from_slice(&partition[..B]);
-        Box::new(new_blocks)
-      };
+      let blocks: Vec<BatchBlock<K, V>> = partition[..b].to_vec();
       self.workers[p].tx.send(Cmd::Insert { blocks, ret_tx: done_tx.clone() }).unwrap();
     }
 
@@ -356,15 +342,14 @@ where
 mod tests {
   use super::*;
 
-  // For all the tests below we keep B == N so that
+  // For all the tests below we keep b == N so that
   // the per‑partition overflow assert! in the map never fires.
   const N: usize = 4;
-  const B: usize = N;
 
   #[test]
   fn new_map_rounds_capacity_and_starts_empty() {
     let requested = 100;
-    let map: ShardedMap<u64, u64, B> = ShardedMap::new(requested);
+    let map: ShardedMap<u64, u64> = ShardedMap::new(requested);
 
     // Inside the same module we can see private fields.
     let per_part = requested.div_ceil(P);
@@ -374,14 +359,14 @@ mod tests {
 
   #[test]
   fn insert_batch_then_get_batch_returns_expected_values() {
-    let mut map: ShardedMap<u64, u64, B> = ShardedMap::new(32);
+    let mut map: ShardedMap<u64, u64> = ShardedMap::new(32);
 
     let keys: [u64; N] = [1, 2, 3, 4];
     let values: [u64; N] = [10, 20, 30, 40];
 
-    map.insert_batch_distinct(&keys, &values);
+    map.insert_batch_distinct(&keys, &values, N);
 
-    let results = map.get_batch_distinct(&keys);
+    let results = map.get_batch_distinct(&keys, N);
     for i in 0..N {
       assert!(results[i].is_some(), "key {} missing", keys[i]);
       assert_eq!(results[i].unwrap(), values[i]);
@@ -390,10 +375,10 @@ mod tests {
 
   #[test]
   fn querying_absent_keys_returns_none() {
-    let mut map: ShardedMap<u64, u64, B> = ShardedMap::new(16);
+    let mut map: ShardedMap<u64, u64> = ShardedMap::new(16);
 
     let absent: [u64; N] = [100, 200, 300, 400];
-    let results = map.get_batch_distinct(&absent);
+    let results = map.get_batch_distinct(&absent, N);
 
     for r in &results {
       assert!(!r.is_some());
@@ -402,12 +387,12 @@ mod tests {
 
   #[test]
   fn size_updates_after_insert() {
-    let mut map: ShardedMap<u64, u64, B> = ShardedMap::new(16);
+    let mut map: ShardedMap<u64, u64> = ShardedMap::new(16);
 
     let keys: [u64; N] = [11, 22, 33, 44];
     let values: [u64; N] = [111, 222, 333, 444];
 
-    map.insert_batch_distinct(&keys, &values);
+    map.insert_batch_distinct(&keys, &values, N);
     assert_eq!(map.size, N);
   }
 }
