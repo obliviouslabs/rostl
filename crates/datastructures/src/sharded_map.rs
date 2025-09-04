@@ -213,10 +213,8 @@ where
   /// Computes a safe batch size B for a given number of distinct queries N.
   /// # Preconditions
   /// * N >= P log P
-  pub fn compute_safe_batch_size(&self, n: usize) -> usize {
-    n.div_ceil(P) + 
-    (n * (P.ilog2() as usize +1)).div_ceil(P).isqrt() +
-    20 // Safety margin for small N
+  pub const fn compute_safe_batch_size(&self, n: usize) -> usize {
+    n.div_ceil(P) + (n * (P.ilog2() as usize + 1)).div_ceil(P).isqrt() + 20 // Safety margin for small N
   }
 
   /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
@@ -410,7 +408,7 @@ mod tests {
     let map: ShardedMap<u64, u64> = ShardedMap::new(16);
 
     // N >= P log P
-    assert!(P == 15);
+    assert_eq!(P, 15);
 
     let n = 100;
     let b = map.compute_safe_batch_size(n);
