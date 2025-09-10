@@ -225,6 +225,7 @@ where
   /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
   /// # Preconditions
   /// * No repeated keys in the input array.
+  /// * There are at most `b` queries to each partition.
   pub fn get_batch_distinct(&mut self, keys: &[K], b: usize) -> Vec<OOption<V>> {
     let n: usize = keys.len();
     assert!(b <= n, "batch size b must be <= number of keys");
@@ -290,12 +291,83 @@ where
     ret
   }
 
+  /// Leaky version of `get_batch_distinct`, which will return values for repeated keys and leak the size of the largest partition.
+  /// # Safety
+  /// * This function will leak the size of the largest partition, which with repeated queries can be used to infer the mapping of keys to partitions.
+  #[deprecated(
+    note = "This function is unsafe because it can potentially leak information about keys to partition mapping. Use get_batch_distinct instead."
+  )]
+  pub unsafe fn get_batch_leaky(&mut self, keys: &[K]) -> Vec<OOption<V>> {
+    let n: usize = keys.len();
+    let mut b = 0;
+
+    // 1. Create P arrays of size N.
+    // let mut per_p: [[BatchBlock<K, V>; N]; P] =
+    //   [unsafe { std::mem::MaybeUninit::<[BatchBlock<K, V>; N]>::uninit().assume_init() }; P];
+    let mut per_p: [Box<Vec<BatchBlock<K, V>>>; P] =
+      std::array::from_fn(|_| Box::new(vec![BatchBlock::default(); n]));
+
+    const INVALID_ID: usize = usize::MAX;
+
+    // 2. Map each key at index i to a partition: to p[h(keys[i])][i],
+    // UNDONE(git-65): this is O(P*n), we could do n log^2 n
+    for (i, k) in keys.iter().enumerate() {
+      let target_p = self.get_partition(k);
+      for (p, partition) in per_p.iter_mut().enumerate() {
+        partition[i].k = *k;
+        partition[i].index = i;
+        partition[i].index.cmov(&INVALID_ID, target_p != p);
+      }
+    }
+
+    // 3. Apply oblivious compaction to each partition.
+    for partition in &mut per_p {
+      let cnt = compact(partition, |x: &BatchBlock<K, V>| x.index == INVALID_ID);
+      b = b.max(cnt);
+    }
+
+    let (done_tx, done_rx) = bounded::<Reply<K, V>>(P);
+
+    // 4. Read the first B values from each partition in the corresponding partition.
+    for (p, partition) in per_p.iter_mut().enumerate() {
+      let blocks: Vec<BatchBlock<K, V>> = partition[..b].to_vec();
+      self.workers[p].tx.send(Cmd::Get { blocks, ret_tx: done_tx.clone() }).unwrap();
+    }
+
+    // 5. Collect the first B values from each partition into the results array.
+    let mut merged: Vec<BatchBlock<K, V>> = vec![BatchBlock::default(); P * b];
+
+    for _ in 0..P {
+      match done_rx.recv().unwrap() {
+        Reply::Blocks { pid, blocks } => {
+          for i in 0..b {
+            merged[pid * b + i] = blocks[i];
+          }
+        }
+        _ => panic!("unexpected reply from worker thread (probably early termination?)"),
+      }
+    }
+
+    // 6. Oblivious sort according to the index (we actually have P sorted arrays already, so we just need to merge them).
+    bitonic_sort(&mut merged);
+
+    // 7. Return the first n values from the results array.
+    let mut ret: Vec<OOption<V>> = vec![OOption::default(); n];
+
+    for i in 0..n {
+      ret[i] = merged[i].v;
+    }
+
+    ret
+  }
+
   /// Inserts a batch of N distinct key-value pairs into the map, distributing them across partitions.
   ///
   /// # Preconditions
   /// * No repeated keys in the input array.
   /// * All of the inserted keys are not already present in the map.
-  /// * There is enough space in the map to insert all N keys.
+  /// * There is enough space in the map to insert all `N` keys.
+  /// * There are at most `b` queries to each partition.
   pub fn insert_batch_distinct(&mut self, keys: &[K], values: &[V], b: usize) {
     let n = keys.len();
     assert!(n == values.len(), "Invalid input: keys and values must have the same length");
@@ -323,6 +395,7 @@ where
     // 3. Apply oblivious compaction to each partition.
     for partition in &mut per_p {
       let cnt = compact(partition, |x| x.index == INVALID_ID);
+
       // UNDONE(git-64): deal with overflow.
       assert!(cnt <= b);
     }
@@ -383,6 +456,15 @@ mod tests {
       assert!(results[i].is_some(), "key {} missing", keys[i]);
       assert_eq!(results[i].unwrap(), values[i]);
     }
+
+    #[allow(deprecated)]
+    {
+      let results = unsafe { map.get_batch_leaky(&keys) };
+      for i in 0..N {
+        assert!(results[i].is_some(), "key {} missing", keys[i]);
+        assert_eq!(results[i].unwrap(), values[i]);
+      }
+    }
   }
 
   #[test]
@@ -394,6 +476,14 @@ mod tests {
 
     for r in &results {
       assert!(!r.is_some());
+    }
+
+    #[allow(deprecated)]
+    {
+      let results = unsafe { map.get_batch_leaky(&absent) };
+      for r in &results {
+        assert!(!r.is_some());
+      }
     }
   }
 
