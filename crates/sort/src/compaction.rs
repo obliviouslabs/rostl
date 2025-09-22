@@ -63,7 +63,7 @@ where
 /// * `payload.len() == arr.len() + 1`
 /// * payload is a prefix sum of valid elements in arr.
 /// * `0 <= z < arr.len()`
-fn compact_payload_offset<T>(arr: &mut [T], payload: &mut [usize], z: usize)
+fn compact_payload_offset<T>(arr: &mut [T], payload: &[usize], z: usize)
 where
   T: Cmov + Copy,
 {
@@ -78,8 +78,8 @@ where
   }
   let zleft = z % half_n;
   let zright = (z + m) % half_n;
-  compact_payload_offset(&mut arr[..half_n], &mut payload[..half_n + 1], zleft);
-  compact_payload_offset(&mut arr[half_n..], &mut payload[half_n..], zright);
+  compact_payload_offset(&mut arr[..half_n], &payload[..half_n + 1], zleft);
+  compact_payload_offset(&mut arr[half_n..], &payload[half_n..], zright);
 
   let s_a = zleft + m >= half_n;
   let s_b = z >= half_n;
@@ -106,7 +106,7 @@ where
 /// # Oblivious
 /// * Fully data-independent memory access pattern.
 /// * Leaks: `arr.len()` - the full length of the original array
-pub fn compact_payload<T>(arr: &mut [T], payload: &mut [usize])
+pub fn compact_payload<T>(arr: &mut [T], payload: &[usize])
 where
   T: Cmov + Copy,
 {
@@ -125,8 +125,8 @@ where
   }
 
   let m = payload[n2] - payload[0];
-  compact_payload(arr[..n2].as_mut(), payload[..n2 + 1].as_mut());
-  compact_payload_offset(arr[n2..].as_mut(), payload[n2..].as_mut(), (n1 - n2 + m) % n1);
+  compact_payload(arr[..n2].as_mut(), &payload[..n2 + 1]);
+  compact_payload_offset(arr[n2..].as_mut(), &payload[n2..], (n1 - n2 + m) % n1);
 
   for i in 0..n2 {
     let left = i;
@@ -161,9 +161,76 @@ where
     adder.cmov(&0, is_dummy(&arr[i]));
     sarr[i + 1] = sarr[i] + adder;
   }
-  compact_payload(arr, &mut sarr);
+  compact_payload(arr, &sarr);
   sarr[size]
 }
+
+fn distribute_payload_offset<T>(arr: &mut [T], payload: &[usize], z: usize)
+where
+  T: Cmov + Copy,
+{
+  assume!(unsafe: arr.len()+1 == payload.len());
+  let n = arr.len();
+  let half_n = n / 2;
+  let m = payload[half_n] - payload[0];
+  if n == 2 {
+    let should_swap = ((!m) & (payload[2] - payload[1])) != z;
+    arr.cswap(0, 1, should_swap);
+    return;
+  }
+  let zleft = z % half_n;
+  let zright = (z + m) % half_n;
+  let s_a = zleft + m >= half_n;
+  let s_b = z >= half_n;
+  let s = s_a ^ s_b;
+
+  for i in 0..half_n {
+    let left = i;
+    let right = i + half_n;
+    let cond = s ^ (i >= zright);
+    assume!(unsafe: left < arr.len());
+    assume!(unsafe: right < arr.len());
+    arr.cswap(left, right, cond);
+  }
+  distribute_payload_offset(&mut arr[..half_n], &payload[..half_n + 1], zleft);
+  distribute_payload_offset(&mut arr[half_n..], &payload[half_n..], zright);
+}
+
+/// Distributes the elements of arr according to the prefix sum payload (reverse of compaction for the same payload).
+/// The payload array `payload` is the prefix sum of valid elements.
+/// Uses `https://eprint.iacr.org/2022/1333.pdf`
+pub fn distribute_payload<T>(arr: &mut [T], payload: &[usize])
+where
+  T: Cmov + Copy,
+{
+  assume!(unsafe: arr.len() + 1 == payload.len());
+  let n = arr.len();
+  if n <= 1 {
+    return;
+  }
+
+  let n1 = get_smaller_or_equal_power_of_two(n);
+  let n2 = n - n1;
+
+  if n2 == 0 {
+    distribute_payload_offset(arr, payload, 0);
+    return;
+  }
+
+  let m = payload[n2] - payload[0];
+
+  for i in 0..n2 {
+    let left = i;
+    let right = i + n1;
+    assume!(unsafe: left < arr.len());
+    assume!(unsafe: right < arr.len());
+    arr.cswap(left, right, i >= m);
+  }
+
+  distribute_payload(arr[..n2].as_mut(), &payload[..n2 + 1]);
+  distribute_payload_offset(arr[n2..].as_mut(), &payload[n2..], (n1 - n2 + m) % n1);
+}
+
 #[cfg(test)]
 #[allow(deprecated)]
 mod tests {
@@ -238,6 +305,40 @@ mod tests {
       for itm in arr2.iter().skip(new_len) {
         assert!(itm % 2 == 0);
       }
+    }
+  }
+
+  #[test]
+  fn test_distribute() {
+    let mut arr = [1, 3, 5, 0, 2, 4];
+    let payload = [0, 1, 2, 3, 3, 4, 5];
+    distribute_payload(&mut arr, &payload);
+    assert_eq!(&arr, &[1, 3, 5, 4, 0, 2]);
+
+    let mut arr = [1, 2, 3, 4, 5];
+    let payload = [0, 1, 1, 2, 2, 3];
+    compact_payload(&mut arr, &payload);
+    assert_eq!(&arr[..3], &[1, 3, 5]);
+    distribute_payload(&mut arr, &payload);
+    assert_eq!(&arr, &[1, 2, 3, 4, 5]);
+  }
+
+  #[test]
+  fn test_distribute_after_compact_rands() {
+    let mut rng = rand::rng();
+    for _i in 0..100 {
+      let size = rng.random_range(0..2050);
+      let arr: Vec<i32> = (0..size).map(|_| rng.random_range(0..100)).collect();
+      let mut arr1 = arr.clone();
+      let mut payload = vec![0; size + 1];
+      for i in 0..size {
+        let mut adder = 1usize;
+        adder.cmov(&0, arr[i] % 2 == 0);
+        payload[i + 1] = payload[i] + adder;
+      }
+      compact_payload(&mut arr1, &payload);
+      distribute_payload(&mut arr1, &payload);
+      assert_eq!(&arr1, &arr);
     }
   }
 }
