@@ -8,6 +8,26 @@ use rostl_primitives::{
 };
 // use rostl_primitives::indexable::{Indexable, Length};
 
+/// Computes the prefix sum of valid elements in arr.
+/// # Behavior
+/// * returns `ret` - the prefix sum array of length `arr.len() + 1`
+/// # Oblivious
+/// * Fully data-independent memory access pattern.
+/// * Leaks: `arr.len()` - the full length of the original array
+pub fn compute_prefix_sum<T, F>(arr: &[T], is_dummy: F) -> Vec<usize>
+where
+  F: Fn(&T) -> bool,
+{
+  let size = arr.len();
+  let mut sarr = vec![0; size + 1];
+  for i in 0..size {
+    let mut adder = 1usize;
+    adder.cmov(&0, is_dummy(&arr[i]));
+    sarr[i + 1] = sarr[i] + adder;
+  }
+  sarr
+}
+
 /// Stably compacts an array `arr` of length n in place using nlogn oblivious compaction.
 /// Uses `https://arxiv.org/pdf/1103.5102`
 /// # Behavior
@@ -154,15 +174,9 @@ where
   F: Fn(&T) -> bool,
   T: Cmov + Copy,
 {
-  let size = arr.len();
-  let mut sarr = vec![0; size + 1];
-  for i in 0..size {
-    let mut adder = 1usize;
-    adder.cmov(&0, is_dummy(&arr[i]));
-    sarr[i + 1] = sarr[i] + adder;
-  }
-  compact_payload(arr, &sarr);
-  sarr[size]
+  let payload = compute_prefix_sum(arr, is_dummy);
+  compact_payload(arr, &payload);
+  payload[payload.len() - 1]
 }
 
 fn distribute_payload_offset<T>(arr: &mut [T], payload: &[usize], z: usize)
