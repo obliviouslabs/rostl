@@ -36,6 +36,12 @@ pub const fn get_strictly_bigger_power_of_two(mut n: usize) -> usize {
   n.saturating_add(1)
 }
 
+/// Returns the smallest power of two that is <= the given size.
+#[inline]
+pub const fn get_smaller_or_equal_power_of_two(n: usize) -> usize {
+  get_strictly_bigger_power_of_two(n) >> 1
+}
+
 /// Returns the smallest power of two that is strictly greater than the given size,
 #[deprecated(note = "use get_strictly_bigger_power_of_two instead")]
 #[inline]
@@ -71,5 +77,20 @@ mod tests {
     assert_eq!(get_strictly_bigger_power_of_two(9), 16);
     assert_eq!(get_strictly_bigger_power_of_two(15), 16);
     assert_eq!(get_strictly_bigger_power_of_two(16), 32);
+  }
+
+  #[test]
+  fn test_smaller_equal_np2() {
+    assert_eq!(get_smaller_or_equal_power_of_two(1), 1);
+    assert_eq!(get_smaller_or_equal_power_of_two(2), 2);
+    assert_eq!(get_smaller_or_equal_power_of_two(3), 2);
+    assert_eq!(get_smaller_or_equal_power_of_two(4), 4);
+    assert_eq!(get_smaller_or_equal_power_of_two(5), 4);
+    assert_eq!(get_smaller_or_equal_power_of_two(6), 4);
+    assert_eq!(get_smaller_or_equal_power_of_two(7), 4);
+    assert_eq!(get_smaller_or_equal_power_of_two(8), 8);
+    assert_eq!(get_smaller_or_equal_power_of_two(9), 8);
+    assert_eq!(get_smaller_or_equal_power_of_two(15), 8);
+    assert_eq!(get_smaller_or_equal_power_of_two(16), 16);
   }
 }

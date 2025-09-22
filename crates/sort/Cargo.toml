@@ -26,3 +26,7 @@ criterion.workspace = true
 [[bench]]
 name="osort"
 harness=false
+
+[[bench]]
+name="ocompact"
+harness=false
