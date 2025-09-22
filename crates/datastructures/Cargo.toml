@@ -20,7 +20,6 @@ bytemuck.workspace = true
 kanal.workspace = true
 static_assertions.workspace = true
 rand.workspace = true
-# rayon.workspace = true
 seq-macro.workspace = true
 
 [dev-dependencies]
