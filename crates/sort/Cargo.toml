@@ -14,9 +14,12 @@ homepage.workspace = true
 workspace = true
 
 [dependencies]
+assume.workspace = true
 bytemuck.workspace = true
 rostl-primitives.workspace = true
 rand.workspace = true
+rayon.workspace = true
+static_assertions.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true

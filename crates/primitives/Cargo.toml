@@ -14,7 +14,9 @@ homepage.workspace = true
 workspace = true
 
 [dependencies]
+assume.workspace = true
 bytemuck.workspace = true
+static_assertions.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
@@ -24,4 +26,8 @@ criterion-cycles-per-byte.workspace = true
 
 [[bench]]
 name="cmov"
+harness=false
+
+[[bench]]
+name="utils"
 harness=false

@@ -1,5 +1,6 @@
 //! Traits for conditional move and swap operations.
 use crate::indexable::Indexable;
+use assume::assume;
 
 #[allow(missing_docs)]
 pub trait _Cmovbase {
@@ -39,6 +40,10 @@ pub fn cswap<T: Cmov + Copy>(first: &mut T, second: &mut T, choice: bool) {
 pub trait CswapIndex<T> {
   /// Conditionally swap the elements at `i` and `j` based on `choice`.
   /// @Oblivious
+  /// # Requirements
+  /// * `i < self.len()`
+  /// * `j < self.len()`
+  /// * `i != j || choice == false`
   fn cswap(&mut self, i: usize, j: usize, choice: bool);
 }
 
@@ -48,6 +53,10 @@ where
   T: Cmov + Copy,
 {
   fn cswap(&mut self, i: usize, j: usize, choice: bool) {
+    assert!(i != j);
+    assume!(unsafe: i < self.len());
+    assume!(unsafe: j < self.len());
+    assume!(unsafe: i != j);
     let mut left = self[i];
     let mut right = self[j];
     cswap(&mut left, &mut right, choice);
