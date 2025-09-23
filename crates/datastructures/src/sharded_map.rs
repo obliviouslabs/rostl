@@ -38,6 +38,7 @@ where
   V: Cmov + Pod + Default + std::fmt::Debug,
 {
   Blocks { pid: usize, values: Vec<OOption<V>> },
+  Unit(()),
 }
 
 /// The command sent to the worker thread to perform a batch operation.
@@ -45,7 +46,7 @@ where
 enum Cmd<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord,
-  V: Cmov + Pod + Default + std::fmt::Debug,
+  V: Cmov + Pod + Default + std::fmt::Debug + Eq,
   BatchBlock<K, V>: Ord + Send,
 {
   /// Get a batch of blocks from the map.
@@ -62,6 +63,10 @@ where
     blocks: Vec<K>,
     ret_tx: Sender<Replyv2<V>>,
   },
+  Insertv2 {
+    blocks: Vec<KeyWithPartValue<K, V>>,
+    ret_tx: Sender<Replyv2<V>>,
+  },
   // Shutdown the worker thread.
   Shutdown,
 }
@@ -72,7 +77,7 @@ where
 struct Worker<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord,
-  V: Cmov + Pod + Default + std::fmt::Debug,
+  V: Cmov + Pod + Default + std::fmt::Debug + Eq,
   BatchBlock<K, V>: Ord + Send,
 {
   tx: Sender<Cmd<K, V>>,
@@ -82,7 +87,7 @@ where
 impl<K, V> Worker<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Send,
-  V: Cmov + Pod + Default + std::fmt::Debug + Send,
+  V: Cmov + Pod + Default + std::fmt::Debug + Send + Eq,
   BatchBlock<K, V>: Ord + Send,
 {
   /// Creates a new worker partition `pid`, with max size `n`.
@@ -131,6 +136,13 @@ where
               }
               let _ = ret_tx.send(Replyv2::Blocks { pid, values }); // move blocks back
             }
+            Cmd::Insertv2 { blocks, ret_tx } => {
+              for blk in &blocks {
+                let real = blk.partition == pid;
+                map.insert_cond(blk.key, blk.value, real);
+              }
+              let _ = ret_tx.send(Replyv2::Unit(()));
+            }
             Cmd::Shutdown => break,
           }
         }
@@ -144,7 +156,7 @@ where
 impl<K, V> Drop for Worker<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord,
-  V: Cmov + Pod + Default + std::fmt::Debug,
+  V: Cmov + Pod + Default + std::fmt::Debug + Eq,
   BatchBlock<K, V>: Ord + Send,
 {
   fn drop(&mut self) {
@@ -174,7 +186,7 @@ where
 pub struct ShardedMap<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Send + Ord,
-  V: Cmov + Pod + Default + std::fmt::Debug + Send,
+  V: Cmov + Pod + Default + std::fmt::Debug + Send + Eq,
   BatchBlock<K, V>: Ord + Send,
 {
   /// Number of elements in the map
@@ -238,8 +250,9 @@ impl<K> PartialOrd for KeyWithPart<K>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
 {
+  #[allow(clippy::non_canonical_partial_ord_impl)]
   fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-    Some(self.cmp(other))
+    Some(self.cmp_ct(other))
   }
 }
 
@@ -252,10 +265,66 @@ where
   }
 }
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy, Zeroable, PartialEq, Eq)]
+struct KeyWithPartValue<K, V>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
+  V: Cmov + Pod + Default + std::fmt::Debug + Eq,
+{
+  partition: usize,
+  key: K,
+  value: V,
+}
+unsafe impl<K, V> Pod for KeyWithPartValue<K, V>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
+  V: Cmov + Pod + Default + std::fmt::Debug + Eq,
+{
+}
+impl_cmov_for_generic_pod!(KeyWithPartValue<K, V>; where K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized, V: Cmov + Pod + Default + std::fmt::Debug +Eq);
+
+impl<K, V> KeyWithPartValue<K, V>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
+  V: Cmov + Pod + Default + std::fmt::Debug + Eq,
+{
+  fn cmp_ct(&self, other: &Self) -> std::cmp::Ordering {
+    let part = self.partition.cmp(&other.partition) as i8;
+    let key = self.key.cmp(&other.key) as i8;
+
+    let mut res = part;
+    res.cmov(&key, part == 0);
+
+    res.cmp(&0)
+  }
+}
+
+impl<K, V> PartialOrd for KeyWithPartValue<K, V>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
+  V: Cmov + Pod + Default + std::fmt::Debug + Eq,
+{
+  #[allow(clippy::non_canonical_partial_ord_impl)]
+  fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    Some(self.cmp_ct(other))
+  }
+}
+
+impl<K, V> Ord for KeyWithPartValue<K, V>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
+  V: Cmov + Pod + Default + std::fmt::Debug + Eq,
+{
+  fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    self.cmp_ct(other)
+  }
+}
+
 impl<K, V> ShardedMap<K, V>
 where
   K: OHash + Default + std::fmt::Debug + Send + Ord + Pod + Sized,
-  V: Cmov + Pod + Default + std::fmt::Debug + Send,
+  V: Cmov + Pod + Default + std::fmt::Debug + Send + Eq,
   BatchBlock<K, V>: Ord + Send,
 {
   /// Creates a new `ShardedMap` with the given number of partitions.
@@ -443,7 +512,8 @@ where
           for i in 0..b {
             res[pid * b + i] = values[i];
           }
-        } // _ => panic!("unexpected reply from worker thread (probably early termination?)"),
+        }
+        _ => panic!("unexpected reply from worker thread (probably early termination?)"),
       }
     }
 
@@ -592,6 +662,99 @@ where
     // 6. Update the size of the map.
     self.size += n;
   }
+
+  /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
+  /// # Preconditions
+  /// * There are at most `b` queries to each partition (statistically likely).
+  /// # Behavior
+  /// * If a key appears multiple times in the input array, only the value corresponding to its first occurrence is used.
+  pub fn insert_batch(&mut self, keys: &[K], values: &[V], b: usize) {
+    let n: usize = keys.len();
+    assert!(n > 0, "get_batch requires at least one key");
+    assert!(b <= n, "batch size b must be <= number of keys");
+    let np = n * P;
+    assert!(b >= n.div_ceil(P), "batch size b must be >= n/P to avoid overflow");
+
+    // 1. Sort the keys by partition.
+    let mut keyinfo =
+      vec![KeyWithPartValue { partition: P, key: K::default(), value: V::default() }; np];
+    for i in 0..n {
+      keyinfo[i].key = keys[i];
+      keyinfo[i].value = values[i];
+      keyinfo[i].partition = self.get_partition(&keys[i]);
+    }
+
+    let mut index_map_1 = (0..n).collect::<Vec<usize>>();
+    bitonic_payload_sort::<KeyWithPartValue<K, V>, [KeyWithPartValue<K, V>], usize>(
+      &mut keyinfo[..n],
+      &mut index_map_1,
+    );
+
+    // 2. Compute unique keys for each partition and remove duplicates to the end.
+    let mut par_load = [0; P];
+    let mut prefix_sum_1 = vec![0; n + 1];
+
+    prefix_sum_1[1] = 1;
+    for (j, load) in par_load.iter_mut().enumerate() {
+      let cond = keyinfo[0].partition == j;
+      load.cmov(&1, cond);
+    }
+    for i in 1..n {
+      let new_key = keyinfo[i].key != keyinfo[i - 1].key;
+      prefix_sum_1[i + 1] = prefix_sum_1[i];
+
+      let alt = prefix_sum_1[i] + 1;
+      prefix_sum_1[i + 1].cmov(&alt, new_key);
+      keyinfo[i].partition.cmov(&P, !new_key); // Mark duplicate keys as belonging to an invalid partition
+
+      for (j, load) in par_load.iter_mut().enumerate() {
+        let cond = keyinfo[i].partition == j;
+        let alt = *load + 1;
+        load.cmov(&alt, cond & new_key);
+      }
+    }
+    // for i in n..(np + 1) {
+    //   prefix_sum_1[i] = prefix_sum_1[n];
+    // }
+
+    for (j, load) in par_load.iter().enumerate() {
+      assert!(*load <= b, "Too many distinct keys in partition {j}: {}, increase b", *load);
+    }
+
+    compact_payload(&mut keyinfo[..n], &prefix_sum_1);
+
+    // 3. Create a distribution of the unique keys to partitions.
+    let mut par_load_ps = [0; P + 1];
+    for j in 0..P {
+      par_load_ps[j + 1] = par_load_ps[j] + par_load[j];
+    }
+    self.size += par_load_ps[P];
+
+    let mut prefix_sum_2 = vec![0; np + 1];
+    for j in 0..P {
+      for i in 0..b {
+        let mut rank_in_part = i + 1;
+        rank_in_part.cmov(&par_load[j], rank_in_part > par_load[j]);
+        prefix_sum_2[j * b + i + 1] = par_load_ps[j] + rank_in_part;
+      }
+    }
+    distribute_payload(&mut keyinfo, &prefix_sum_2);
+
+    let (done_tx, done_rx) = bounded::<Replyv2<V>>(P);
+
+    // 4. Read the first B values from each partition in the corresponding partition.
+    for j in 0..P {
+      let blocks: Vec<KeyWithPartValue<K, V>> = keyinfo[j * b..(j + 1) * b].to_vec();
+      self.workers[j].tx.send(Cmd::Insertv2 { blocks, ret_tx: done_tx.clone() }).unwrap();
+    }
+
+    for _ in 0..P {
+      match done_rx.recv().unwrap() {
+        Replyv2::Unit(()) => {}
+        _ => panic!("unexpected reply from worker thread (probably early termination?)"),
+      }
+    }
+  }
 }
 
 #[cfg(test)]
@@ -679,6 +842,10 @@ mod tests {
     let values: [u64; N] = [111, 222, 333, 444];
 
     map.insert_batch_distinct(&keys, &values, N);
+    assert_eq!(map.size, N);
+
+    let mut map: ShardedMap<u64, u64> = ShardedMap::new(16);
+    map.insert_batch(&keys, &values, N);
     assert_eq!(map.size, N);
   }
 
