@@ -7,7 +7,10 @@ use rostl_primitives::{
   ooption::OOption,
   traits::{Cmov, _Cmovbase},
 };
-use rostl_sort::{bitonic::bitonic_sort, compaction::compact};
+use rostl_sort::{
+  bitonic::{bitonic_payload_sort, bitonic_sort},
+  compaction::{compact, compact_payload, distribute_payload},
+};
 
 use crate::map::{OHash, UnsortedMap};
 use kanal::{bounded, Receiver, Sender};
@@ -30,6 +33,13 @@ where
   Unit(()),
 }
 
+enum Replyv2<V>
+where
+  V: Cmov + Pod + Default + std::fmt::Debug,
+{
+  Blocks { pid: usize, values: Vec<OOption<V>> },
+}
+
 /// The command sent to the worker thread to perform a batch operation.
 ///
 enum Cmd<K, V>
@@ -47,6 +57,10 @@ where
   Insert {
     blocks: Vec<BatchBlock<K, V>>,
     ret_tx: Sender<Reply<K, V>>,
+  },
+  Getv2 {
+    blocks: Vec<K>,
+    ret_tx: Sender<Replyv2<V>>,
   },
   // Shutdown the worker thread.
   Shutdown,
@@ -109,6 +123,13 @@ where
                 map.insert_cond(blk.k, blk.v.value, blk.v.is_some);
               }
               let _ = ret_tx.send(Reply::Unit(()));
+            }
+            Cmd::Getv2 { blocks, ret_tx } => {
+              let mut values = vec![OOption::<V>::default(); blocks.len()];
+              for (i, k) in blocks.iter().enumerate() {
+                values[i].is_some = map.get(*k, &mut values[i].value);
+              }
+              let _ = ret_tx.send(Replyv2::Blocks { pid, values }); // move blocks back
             }
             Cmd::Shutdown => break,
           }
@@ -186,9 +207,54 @@ where
 }
 impl_cmov_for_generic_pod!(BatchBlock<K, V>; where K: OHash + Pod + Default + std::fmt::Debug + Ord, V: Cmov + Pod + Default + std::fmt::Debug);
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy, Zeroable, PartialEq, Eq)]
+struct KeyWithPart<K>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
+{
+  partition: usize,
+  key: K,
+}
+unsafe impl<K> Pod for KeyWithPart<K> where K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized {}
+impl_cmov_for_generic_pod!(KeyWithPart<K>; where K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized);
+
+impl<K> KeyWithPart<K>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
+{
+  fn cmp_ct(&self, other: &Self) -> std::cmp::Ordering {
+    let part = self.partition.cmp(&other.partition) as i8;
+    let key = self.key.cmp(&other.key) as i8;
+
+    let mut res = part;
+    res.cmov(&key, part == 0);
+
+    res.cmp(&0)
+  }
+}
+
+impl<K> PartialOrd for KeyWithPart<K>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
+{
+  fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    Some(self.cmp(other))
+  }
+}
+
+impl<K> Ord for KeyWithPart<K>
+where
+  K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
+{
+  fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    self.cmp_ct(other)
+  }
+}
+
 impl<K, V> ShardedMap<K, V>
 where
-  K: OHash + Default + std::fmt::Debug + Send + Ord,
+  K: OHash + Default + std::fmt::Debug + Send + Ord + Pod + Sized,
   V: Cmov + Pod + Default + std::fmt::Debug + Send,
   BatchBlock<K, V>: Ord + Send,
 {
@@ -289,6 +355,111 @@ where
     }
 
     ret
+  }
+
+  /// Reads N values from the map, leaking only `N` and `B`, but not any information about the keys (doesn't leak the number of keys to each partition).
+  /// # Preconditions
+  /// * There are at most `b` queries to each partition (statistically likely).
+  pub fn get_batch(&mut self, keys: &[K], b: usize) -> Vec<OOption<V>> {
+    let n: usize = keys.len();
+    assert!(n > 0, "get_batch requires at least one key");
+    assert!(b <= n, "batch size b must be <= number of keys");
+    let np = n * P;
+    assert!(b >= n.div_ceil(P), "batch size b must be >= n/P to avoid overflow");
+
+    // 1. Sort the keys by partition.
+    let mut keyinfo = vec![KeyWithPart { partition: P, key: K::default() }; np];
+    for i in 0..n {
+      keyinfo[i].key = keys[i];
+      keyinfo[i].partition = self.get_partition(&keys[i]);
+    }
+
+    let mut index_map_1 = (0..n).collect::<Vec<usize>>();
+    bitonic_payload_sort::<KeyWithPart<K>, [KeyWithPart<K>], usize>(
+      &mut keyinfo[..n],
+      &mut index_map_1,
+    );
+
+    // 2. Compute unique keys for each partition and remove duplicates to the end.
+    let mut par_load = [0; P];
+    let mut prefix_sum_1 = vec![0; n + 1];
+
+    prefix_sum_1[1] = 1;
+    for (j, load) in par_load.iter_mut().enumerate() {
+      let cond = keyinfo[0].partition == j;
+      load.cmov(&1, cond);
+    }
+    for i in 1..n {
+      let new_key = keyinfo[i].key != keyinfo[i - 1].key;
+      prefix_sum_1[i + 1] = prefix_sum_1[i];
+
+      let alt = prefix_sum_1[i] + 1;
+      prefix_sum_1[i + 1].cmov(&alt, new_key);
+
+      for (j, load) in par_load.iter_mut().enumerate() {
+        let cond = keyinfo[i].partition == j;
+        let alt = *load + 1;
+        load.cmov(&alt, cond & new_key);
+      }
+    }
+    // for i in n..(np + 1) {
+    //   prefix_sum_1[i] = prefix_sum_1[n];
+    // }
+
+    for (j, load) in par_load.iter().enumerate() {
+      assert!(*load <= b, "Too many distinct keys in partition {j}: {}, increase b", *load);
+    }
+
+    compact_payload(&mut keyinfo[..n], &prefix_sum_1);
+
+    // 3. Create a distribution of the unique keys to partitions.
+    let mut par_load_ps = [0; P + 1];
+    for j in 0..P {
+      par_load_ps[j + 1] = par_load_ps[j] + par_load[j];
+    }
+    let mut prefix_sum_2 = vec![0; np + 1];
+    for j in 0..P {
+      for i in 0..b {
+        let mut rank_in_part = i + 1;
+        rank_in_part.cmov(&par_load[j], rank_in_part > par_load[j]);
+        prefix_sum_2[j * b + i + 1] = par_load_ps[j] + rank_in_part;
+      }
+    }
+    distribute_payload(&mut keyinfo, &prefix_sum_2);
+
+    let (done_tx, done_rx) = bounded::<Replyv2<V>>(P);
+
+    // 4. Read the first B values from each partition in the corresponding partition.
+    for j in 0..P {
+      let blocks: Vec<K> = keyinfo[j * b..(j + 1) * b].iter().map(|x| x.key).collect();
+      self.workers[j].tx.send(Cmd::Getv2 { blocks, ret_tx: done_tx.clone() }).unwrap();
+    }
+
+    let mut res = vec![OOption::<V>::default(); np];
+
+    for _ in 0..P {
+      match done_rx.recv().unwrap() {
+        Replyv2::Blocks { pid, values } => {
+          for i in 0..b {
+            res[pid * b + i] = values[i];
+          }
+        } // _ => panic!("unexpected reply from worker thread (probably early termination?)"),
+      }
+    }
+
+    // 5. Undo compaction and distribution of the results.
+    compact_payload(&mut res, &prefix_sum_2);
+    distribute_payload(&mut res[..n], &prefix_sum_1);
+
+    for i in 1..n {
+      let cond = prefix_sum_1[i] == prefix_sum_1[i - 1];
+      let copy = res[i - 1];
+      res[i].cmov(&copy, cond);
+    }
+
+    res.truncate(n);
+    bitonic_payload_sort(&mut index_map_1[..n], &mut res);
+    res
   }
 
   /// Leaky version of `get_batch_distinct`, which will return values for repeated keys and leak the size of the largest partition.
@@ -465,6 +636,12 @@ mod tests {
         assert_eq!(results[i].unwrap(), values[i]);
       }
     }
+
+    let results = map.get_batch(&keys, N);
+    for i in 0..N {
+      assert!(results[i].is_some(), "key {} missing", keys[i]);
+      assert_eq!(results[i].unwrap(), values[i]);
+    }
   }
 
   #[test]
@@ -484,6 +661,13 @@ mod tests {
       for r in &results {
         assert!(!r.is_some());
       }
+    }
+
+    let absent: [u64; N] = [100, 200, 300, 400];
+    let results = map.get_batch(&absent, N);
+
+    for r in &results {
+      assert!(!r.is_some());
     }
   }
 

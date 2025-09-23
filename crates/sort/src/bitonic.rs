@@ -219,7 +219,7 @@ fn bitonic_payload_merge<T, C, P, const UP: bool>(
 ) where
   T: Ord + Cmov + Copy,
   P: Cmov + Copy,
-  C: Indexable<T>,
+  C: Indexable<T> + ?Sized,
 {
   bitonic_payload_expressions!(arr, payload);
   __bitonic_merge_body!(arr, start, size, swap_function, merge_pow2_call, merge_call);
@@ -234,7 +234,7 @@ fn bitonic_payload_merge_pow2<T, C, P, const UP: bool>(
 ) where
   T: Ord + Cmov + Copy,
   P: Cmov + Copy,
-  C: Indexable<T>,
+  C: Indexable<T> + ?Sized,
 {
   bitonic_payload_expressions!(arr, payload);
   __bitonic_merge_pow2_body!(arr, start, size, swap_function);
@@ -248,7 +248,7 @@ fn bitonic_payload_sort_inner<T, C, P, const UP: bool, const DOWN: bool>(
 ) where
   T: Ord + Cmov + Copy,
   P: Cmov + Copy,
-  C: Indexable<T>,
+  C: Indexable<T> + ?Sized,
 {
   bitonic_payload_expressions!(arr, payload);
   __bitonic_sort_inner_body!(arr, start, size, sort_inner_call, merge_call);
@@ -272,7 +272,7 @@ pub fn bitonic_payload_sort<T, C, P>(arr: &mut C, payload: &mut [P])
 where
   T: Ord + Cmov + Copy,
   P: Cmov + Copy,
-  C: Indexable<T>,
+  C: Indexable<T> + ?Sized,
 {
   if arr.len() <= 1 {
     return;
