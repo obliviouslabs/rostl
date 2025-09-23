@@ -129,7 +129,6 @@ where
     startup_barrier: Arc<Barrier>,
     reply_channel: Sender<Replyv2<V>>,
   ) -> Self {
-    // Note: this bound is a bit arbitrary, 2 is enough for the map as it is implemented now.
     let (tx, rx): (Sender<Cmd<_, _>>, Receiver<_>) = unbounded();
 
     let handler = thread::Builder::new()
