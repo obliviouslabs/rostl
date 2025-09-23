@@ -13,13 +13,16 @@ use rostl_sort::{
 };
 
 use crate::map::{OHash, UnsortedMap};
-use kanal::{bounded, Receiver, Sender};
+use kanal::{bounded, unbounded, Receiver, Sender};
+// use crossbeam::channel::{bounded, unbounded, Receiver, Sender};
 use std::{
+  io,
   sync::{Arc, Barrier},
   thread,
 };
+// use tracing::info;
 
-// Number of partitions in the map.
+/// Number of partitions in the map.
 const P: usize = 15;
 
 /// The replies from the worker thread to the main thread.
@@ -37,7 +40,7 @@ enum Replyv2<V>
 where
   V: Cmov + Pod + Default + std::fmt::Debug,
 {
-  Blocks { pid: usize, values: Vec<OOption<V>> },
+  Blocks { pid: usize, offset: usize, values: Vec<OOption<V>> },
   Unit(()),
 }
 
@@ -60,12 +63,11 @@ where
     ret_tx: Sender<Reply<K, V>>,
   },
   Getv2 {
+    offset: usize,
     blocks: Vec<K>,
-    ret_tx: Sender<Replyv2<V>>,
   },
   Insertv2 {
     blocks: Vec<KeyWithPartValue<K, V>>,
-    ret_tx: Sender<Replyv2<V>>,
   },
   // Shutdown the worker thread.
   Shutdown,
@@ -84,6 +86,35 @@ where
   join_handle: Option<thread::JoinHandle<()>>,
 }
 
+#[allow(unused)]
+fn pin_current_thread_to(cpu: usize) -> io::Result<()> {
+  unsafe {
+    let mut set: libc::cpu_set_t = std::mem::zeroed();
+    libc::CPU_ZERO(&mut set);
+    libc::CPU_SET(cpu, &mut set);
+    let ret = libc::pthread_setaffinity_np(
+      libc::pthread_self(),
+      std::mem::size_of::<libc::cpu_set_t>(),
+      &raw const set,
+    );
+    if ret != 0 {
+      return Err(io::Error::from_raw_os_error(ret));
+    }
+  }
+  Ok(())
+}
+
+fn set_current_thread_rt(priority: i32) -> io::Result<()> {
+  unsafe {
+    // Check range with sched_get_priority_min/max(SCHED_FIFO)
+    let ret = libc::setpriority(libc::PRIO_PROCESS, 0, priority);
+    if ret != 0 {
+      eprintln!("setpriority failed: {}", std::io::Error::last_os_error());
+    }
+  }
+  Ok(())
+}
+
 impl<K, V> Worker<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Send,
@@ -92,13 +123,22 @@ where
 {
   /// Creates a new worker partition `pid`, with max size `n`.
   ///
-  fn new(n: usize, pid: usize, startup_barrier: Arc<Barrier>) -> Self {
+  fn new(
+    n: usize,
+    pid: usize,
+    startup_barrier: Arc<Barrier>,
+    reply_channel: Sender<Replyv2<V>>,
+  ) -> Self {
     // Note: this bound is a bit arbitrary, 2 is enough for the map as it is implemented now.
-    let (tx, rx): (Sender<Cmd<_, _>>, Receiver<_>) = bounded(10);
+    let (tx, rx): (Sender<Cmd<_, _>>, Receiver<_>) = unbounded();
 
     let handler = thread::Builder::new()
       .name(format!("partition-{pid}"))
       .spawn(move || {
+        // pin thread to CPU
+        // pin_current_thread_to(pid).expect("failed to pin thread to CPU");
+        set_current_thread_rt(0).expect("failed to set thread to real-time priority");
+
         // block until all workers are running
         startup_barrier.wait();
 
@@ -129,19 +169,20 @@ where
               }
               let _ = ret_tx.send(Reply::Unit(()));
             }
-            Cmd::Getv2 { blocks, ret_tx } => {
+            Cmd::Getv2 { offset, blocks } => {
               let mut values = vec![OOption::<V>::default(); blocks.len()];
               for (i, k) in blocks.iter().enumerate() {
                 values[i].is_some = map.get(*k, &mut values[i].value);
               }
-              let _ = ret_tx.send(Replyv2::Blocks { pid, values }); // move blocks back
+              let _ = reply_channel.send(Replyv2::Blocks { pid, offset, values });
+              // move blocks back
             }
-            Cmd::Insertv2 { blocks, ret_tx } => {
+            Cmd::Insertv2 { blocks } => {
               for blk in &blocks {
                 let real = blk.partition == pid;
                 map.insert_cond(blk.key, blk.value, real);
               }
-              let _ = ret_tx.send(Replyv2::Unit(()));
+              let _ = reply_channel.send(Replyv2::Unit(()));
             }
             Cmd::Shutdown => break,
           }
@@ -197,6 +238,8 @@ where
   workers: [Worker<K, V>; P],
   /// The random state used for hashing.
   random_state: RandomState,
+  /// Channel for quickly receiving replies from worker threads.
+  response_channel: Receiver<Replyv2<V>>,
 }
 
 /// A block in a batch, that contains the key, the value and the index of the block in the original full batch.
@@ -332,12 +375,21 @@ where
     let per_part = capacity.div_ceil(P);
     let startup = Arc::new(Barrier::new(P + 1));
 
-    let workers = std::array::from_fn(|i| Worker::new(per_part, i, startup.clone()));
+    let (reply_tx, response_channel) = unbounded::<Replyv2<V>>();
+
+    let workers =
+      std::array::from_fn(|i| Worker::new(per_part, i, startup.clone(), reply_tx.clone()));
 
     // wait until all workers have reached their barrier
     startup.wait();
 
-    Self { size: 0, capacity: per_part * P, workers, random_state: RandomState::new() }
+    Self {
+      size: 0,
+      capacity: per_part * P,
+      workers,
+      random_state: RandomState::new(),
+      response_channel,
+    }
   }
 
   #[inline(always)]
@@ -430,11 +482,14 @@ where
   /// # Preconditions
   /// * There are at most `b` queries to each partition (statistically likely).
   pub fn get_batch(&mut self, keys: &[K], b: usize) -> Vec<OOption<V>> {
+    // info!("get_batch called with n = {}, b = {}", keys.len(), b);
+    // let now = std::time::Instant::now();
     let n: usize = keys.len();
     assert!(n > 0, "get_batch requires at least one key");
     assert!(b <= n, "batch size b must be <= number of keys");
     let np = n * P;
     assert!(b >= n.div_ceil(P), "batch size b must be >= n/P to avoid overflow");
+    const SUBTASK_SIZE: usize = 32;
 
     // 1. Sort the keys by partition.
     let mut keyinfo = vec![KeyWithPart { partition: P, key: K::default() }; np];
@@ -496,26 +551,38 @@ where
     }
     distribute_payload(&mut keyinfo, &prefix_sum_2);
 
-    let (done_tx, done_rx) = bounded::<Replyv2<V>>(P);
+    // info!("get_batch preprocessing took {:?}", now.elapsed());
+    // let now = std::time::Instant::now();
 
+    let mut sent_count = 0;
     // 4. Read the first B values from each partition in the corresponding partition.
     for j in 0..P {
-      let blocks: Vec<K> = keyinfo[j * b..(j + 1) * b].iter().map(|x| x.key).collect();
-      self.workers[j].tx.send(Cmd::Getv2 { blocks, ret_tx: done_tx.clone() }).unwrap();
+      for k in 0..b.div_ceil(SUBTASK_SIZE) {
+        let offset = k * SUBTASK_SIZE;
+        let low = j * b + offset;
+        let high = (low + SUBTASK_SIZE).min((j + 1) * b);
+        let blocks: Vec<K> = keyinfo[low..high].iter().map(|x| x.key).collect();
+        self.workers[j].tx.send(Cmd::Getv2 { offset, blocks }).unwrap();
+        sent_count += 1;
+      }
     }
 
     let mut res = vec![OOption::<V>::default(); np];
 
-    for _ in 0..P {
-      match done_rx.recv().unwrap() {
-        Replyv2::Blocks { pid, values } => {
-          for i in 0..b {
-            res[pid * b + i] = values[i];
+    for _ in 0..sent_count {
+      match self.response_channel.recv().unwrap() {
+        Replyv2::Blocks { pid, offset, values } => {
+          for (val, res) in
+            values.iter().zip(res.iter_mut().skip(pid * b + offset)).take(SUBTASK_SIZE)
+          {
+            *res = *val;
           }
         }
         _ => panic!("unexpected reply from worker thread (probably early termination?)"),
       }
     }
+    // info!("get_batch querying took {:?}", now.elapsed());
+    // let now = std::time::Instant::now();
 
     // 5. Undo compaction and distribution of the results.
     compact_payload(&mut res, &prefix_sum_2);
@@ -529,6 +596,9 @@ where
 
     res.truncate(n);
     bitonic_payload_sort(&mut index_map_1[..n], &mut res);
+
+    // info!("get_batch postprocessing took {:?}", now.elapsed());
+
     res
   }
 
@@ -740,16 +810,21 @@ where
     }
     distribute_payload(&mut keyinfo, &prefix_sum_2);
 
-    let (done_tx, done_rx) = bounded::<Replyv2<V>>(P);
-
     // 4. Read the first B values from each partition in the corresponding partition.
+    const SUBTASK_SIZE: usize = 32;
+    let mut sent_count = 0;
     for j in 0..P {
-      let blocks: Vec<KeyWithPartValue<K, V>> = keyinfo[j * b..(j + 1) * b].to_vec();
-      self.workers[j].tx.send(Cmd::Insertv2 { blocks, ret_tx: done_tx.clone() }).unwrap();
+      for k in 0..b.div_ceil(SUBTASK_SIZE) {
+        let low = j * b + k * SUBTASK_SIZE;
+        let high = (low + SUBTASK_SIZE).min((j + 1) * b);
+        let blocks: Vec<KeyWithPartValue<K, V>> = keyinfo[low..high].to_vec();
+        self.workers[j].tx.send(Cmd::Insertv2 { blocks }).unwrap();
+        sent_count += 1;
+      }
     }
 
-    for _ in 0..P {
-      match done_rx.recv().unwrap() {
+    for _ in 0..sent_count {
+      match self.response_channel.recv().unwrap() {
         Replyv2::Unit(()) => {}
         _ => panic!("unexpected reply from worker thread (probably early termination?)"),
       }

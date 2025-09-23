@@ -152,7 +152,8 @@ where
   pub fn new(capacity: usize) -> Self {
     debug_assert!(capacity > 0);
     // For load factor of 0.8: cap / (0.8 * BUCKET_SIZE) = cap * 5 / (4 * BUCKET_SIZE)
-    let table_size = (capacity * 5).div_ceil(4 * BUCKET_SIZE).max(2);
+    // For load factor of 0.9: cap / (0.9 * BUCKET_SIZE) = cap * 10 / (9 * BUCKET_SIZE)
+    let table_size = (capacity * 10).div_ceil(9 * BUCKET_SIZE).max(2);
     Self {
       size: 0,
       _capacity: capacity,
