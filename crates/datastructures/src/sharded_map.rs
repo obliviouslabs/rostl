@@ -486,12 +486,12 @@ where
     let n: usize = keys.len();
     assert!(n > 0, "get_batch requires at least one key");
     assert!(b <= n, "batch size b must be <= number of keys");
-    let np = n * P;
+    let bp = b * P;
     assert!(b >= n.div_ceil(P), "batch size b must be >= n/P to avoid overflow");
     const SUBTASK_SIZE: usize = 32;
 
     // 1. Sort the keys by partition.
-    let mut keyinfo = vec![KeyWithPart { partition: P, key: K::default() }; np];
+    let mut keyinfo = vec![KeyWithPart { partition: P, key: K::default() }; bp];
     for i in 0..n {
       keyinfo[i].key = keys[i];
       keyinfo[i].partition = self.get_partition(&keys[i]);
@@ -540,7 +540,7 @@ where
     for j in 0..P {
       par_load_ps[j + 1] = par_load_ps[j] + par_load[j];
     }
-    let mut prefix_sum_2 = vec![0; np + 1];
+    let mut prefix_sum_2 = vec![0; bp + 1];
     for j in 0..P {
       for i in 0..b {
         let mut rank_in_part = i + 1;
@@ -566,7 +566,7 @@ where
       }
     }
 
-    let mut res = vec![OOption::<V>::default(); np];
+    let mut res = vec![OOption::<V>::default(); bp];
 
     for _ in 0..sent_count {
       match self.response_channel.recv().unwrap() {
@@ -741,12 +741,12 @@ where
     let n: usize = keys.len();
     assert!(n > 0, "get_batch requires at least one key");
     assert!(b <= n, "batch size b must be <= number of keys");
-    let np = n * P;
+    let bp = b * P;
     assert!(b >= n.div_ceil(P), "batch size b must be >= n/P to avoid overflow");
 
     // 1. Sort the keys by partition.
     let mut keyinfo =
-      vec![KeyWithPartValue { partition: P, key: K::default(), value: V::default() }; np];
+      vec![KeyWithPartValue { partition: P, key: K::default(), value: V::default() }; bp];
     for i in 0..n {
       keyinfo[i].key = keys[i];
       keyinfo[i].value = values[i];
@@ -799,7 +799,7 @@ where
     }
     self.size += par_load_ps[P];
 
-    let mut prefix_sum_2 = vec![0; np + 1];
+    let mut prefix_sum_2 = vec![0; bp + 1];
     for j in 0..P {
       for i in 0..b {
         let mut rank_in_part = i + 1;
