@@ -30,10 +30,10 @@ impl _Cmovbase for [u8; 64] {
     // In the reference: blend_mask = (__mmask8)(!cond) - 1;
     // When choice is true: !choice is false (0), 0 - 1 yields 0xFF.
     // When choice is false: !choice is true (1), 1 - 1 yields 0.
-    let blend_mask: __mmask8 = ((!choice) as u8).wrapping_sub(1) as __mmask8;
+    let lane_mask: i32 = -(choice as i32);
     unsafe {
       // Create a 512-bit vector with each 32-bit lane filled with mask.
-      let mask_vec = _mm512_set1_epi32(mask);
+      let mask_vec = _mm512_set1_epi32(lane_mask);
       // Load the full 64 bytes from each operand.
       let mut vec1 = _mm512_loadu_si512(self.as_ptr() as *const __m512i);
       let mut vec2 = _mm512_loadu_si512(other.as_ptr() as *const __m512i);
