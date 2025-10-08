@@ -5,13 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.1.0-alpha6 (2025-10-08)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 15 commits contributed to the release over the course of 34 calendar days.
+ - 38 days passed between releases.
+ - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Bump version ([`faaf3fa`](https://github.com/obliviouslabs/rostl/commit/faaf3fae3d4c924d010b150943f061dbbe1f1b6a))
+    - Fix typo ([`88dd7df`](https://github.com/obliviouslabs/rostl/commit/88dd7dfc0af4e0fc2dfd92c68009204b5767e054))
+    - Cleanup ([`d4394d4`](https://github.com/obliviouslabs/rostl/commit/d4394d49b3e718995a5437dfebc2795dbf293128))
+    - Improve map perf ([`b23fa21`](https://github.com/obliviouslabs/rostl/commit/b23fa21e65aad76d1a1da1e7a15869aadbe2b5d2))
+    - Adds non-distinct insert ([`c5ddb3f`](https://github.com/obliviouslabs/rostl/commit/c5ddb3f3a3eb483ced28520c91582db90c247fa0))
+    - Implements get_batch (nondistinct) ([`4efff6b`](https://github.com/obliviouslabs/rostl/commit/4efff6be5f5873812818f62c7c0b8619de5872f5))
+    - Remove unused packages ([`49bd398`](https://github.com/obliviouslabs/rostl/commit/49bd3981465fc0432a7b3906addf1013cafa48c8))
+    - Adds leaky version of get_batch ([`fde987f`](https://github.com/obliviouslabs/rostl/commit/fde987f2f92ef470011ba5463b9aac25b501ef63))
+    - Improve test coverage ([`3bd028d`](https://github.com/obliviouslabs/rostl/commit/3bd028dcd5f19d0459fa51ae4f66953d62c2470b))
+    - Reduce computed batch size overhead ([`38312b4`](https://github.com/obliviouslabs/rostl/commit/38312b40f0414e835d25a4b6bc0bd7f5c518931f))
+    - Increase msrv ([`5049428`](https://github.com/obliviouslabs/rostl/commit/5049428466d11222f4ef23dbdb3e0fc600f8173a))
+    - Adds compute_safe_batch_size helper function ([`8112fd7`](https://github.com/obliviouslabs/rostl/commit/8112fd70236c51e114f3912bd056442ba3845db6))
+    - Make shardedmap batch size a runtime parameter ([`cd3d33c`](https://github.com/obliviouslabs/rostl/commit/cd3d33c6e4f198095523a88672cad44c22065085))
+    - Adds conditional insert to map ([`da2d907`](https://github.com/obliviouslabs/rostl/commit/da2d907cb9395db97734d263162de492a7ec00ab))
+    - Bump versions ([`e869f8d`](https://github.com/obliviouslabs/rostl/commit/e869f8d1f4b08a4edda41c0c11780ac851613a2e))
+</details>
+
 ## v0.1.0-alpha4 (2025-08-30)
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 2 commits contributed to the release.
+ - 3 commits contributed to the release.
  - 27 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -23,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Adjusting changelogs prior to release of rostl-primitives v0.1.0-alpha4, rostl-oram v0.1.0-alpha4, rostl-sort v0.1.0-alpha4, rostl-datastructures v0.1.0-alpha4, rostl-storage v0.1.0-alpha4 ([`41393e1`](https://github.com/obliviouslabs/rostl/commit/41393e12dc6fb4188d473b976ed0aad586d55607))
     - Upgrade dependencies ([`ebc421a`](https://github.com/obliviouslabs/rostl/commit/ebc421a877f179ce7ea1c48417c4994f6fb9ddaf))
     - Improve batch interface ([`1e6bc06`](https://github.com/obliviouslabs/rostl/commit/1e6bc0691cd603abb57ab8d194205035355f4bea))
 </details>

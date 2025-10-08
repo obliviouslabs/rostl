@@ -5,13 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.1.0-alpha6 (2025-10-08)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 8 commits contributed to the release over the course of 34 calendar days.
+ - 38 days passed between releases.
+ - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Bump version ([`faaf3fa`](https://github.com/obliviouslabs/rostl/commit/faaf3fae3d4c924d010b150943f061dbbe1f1b6a))
+    - Implements get_batch (nondistinct) ([`4efff6b`](https://github.com/obliviouslabs/rostl/commit/4efff6be5f5873812818f62c7c0b8619de5872f5))
+    - Adds helper to compute prefix sum ([`077b430`](https://github.com/obliviouslabs/rostl/commit/077b4307734586688a942e4e1b1796f01184c912))
+    - Implements oblivious distribution ([`1d678d8`](https://github.com/obliviouslabs/rostl/commit/1d678d8865f07a4e3f59abeb43460353a3c03ac1))
+    - Implements fast oblivious compaction ([`fc940f6`](https://github.com/obliviouslabs/rostl/commit/fc940f6b7bfdbdbb3cea065f9e11da8219e82161))
+    - Remove unused packages ([`49bd398`](https://github.com/obliviouslabs/rostl/commit/49bd3981465fc0432a7b3906addf1013cafa48c8))
+    - Improve sort ([`a6a8c03`](https://github.com/obliviouslabs/rostl/commit/a6a8c03ad9884d60589f83e37717ecfe3d9c11ad))
+    - Bump versions ([`e869f8d`](https://github.com/obliviouslabs/rostl/commit/e869f8d1f4b08a4edda41c0c11780ac851613a2e))
+</details>
+
 ## v0.1.0-alpha4 (2025-08-30)
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 1 commit contributed to the release.
+ - 2 commits contributed to the release.
  - 27 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -23,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Adjusting changelogs prior to release of rostl-primitives v0.1.0-alpha4, rostl-oram v0.1.0-alpha4, rostl-sort v0.1.0-alpha4, rostl-datastructures v0.1.0-alpha4, rostl-storage v0.1.0-alpha4 ([`41393e1`](https://github.com/obliviouslabs/rostl/commit/41393e12dc6fb4188d473b976ed0aad586d55607))
     - Improve batch interface ([`1e6bc06`](https://github.com/obliviouslabs/rostl/commit/1e6bc0691cd603abb57ab8d194205035355f4bea))
 </details>
 

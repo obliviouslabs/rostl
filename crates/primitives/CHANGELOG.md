@@ -5,13 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.1.0-alpha6 (2025-10-08)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 7 commits contributed to the release over the course of 34 calendar days.
+ - 38 days passed between releases.
+ - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Bump version ([`faaf3fa`](https://github.com/obliviouslabs/rostl/commit/faaf3fae3d4c924d010b150943f061dbbe1f1b6a))
+    - Fix avx512f cxchg ([`545ee12`](https://github.com/obliviouslabs/rostl/commit/545ee12833b3111bb355803b05cad30de258db9d))
+    - Implements fast oblivious compaction ([`fc940f6`](https://github.com/obliviouslabs/rostl/commit/fc940f6b7bfdbdbb3cea065f9e11da8219e82161))
+    - Improve sort ([`a6a8c03`](https://github.com/obliviouslabs/rostl/commit/a6a8c03ad9884d60589f83e37717ecfe3d9c11ad))
+    - Implement cmov for arrays of cmov ([`6f6d1d9`](https://github.com/obliviouslabs/rostl/commit/6f6d1d95a2984e01362b278a82890ccdf78dfc06))
+    - Bump versions ([`e869f8d`](https://github.com/obliviouslabs/rostl/commit/e869f8d1f4b08a4edda41c0c11780ac851613a2e))
+    - Adds pod to ooption where subtype is pod ([`57c9fc4`](https://github.com/obliviouslabs/rostl/commit/57c9fc45e10dd399170343438c710950adcd2113))
+</details>
+
 ## v0.1.0-alpha4 (2025-08-30)
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 1 commit contributed to the release.
+ - 2 commits contributed to the release.
  - 27 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -23,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Adjusting changelogs prior to release of rostl-primitives v0.1.0-alpha4, rostl-oram v0.1.0-alpha4, rostl-sort v0.1.0-alpha4, rostl-datastructures v0.1.0-alpha4, rostl-storage v0.1.0-alpha4 ([`41393e1`](https://github.com/obliviouslabs/rostl/commit/41393e12dc6fb4188d473b976ed0aad586d55607))
     - Improve batch interface ([`1e6bc06`](https://github.com/obliviouslabs/rostl/commit/1e6bc0691cd603abb57ab8d194205035355f4bea))
 </details>
 
