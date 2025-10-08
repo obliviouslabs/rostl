@@ -2,7 +2,7 @@
 name = "rostl-sort"
 description = "Oblivious sorting algorithms."
 readme = "README.crate.md"
-version = "0.1.0-alpha5"
+version = "0.1.0-alpha6"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
