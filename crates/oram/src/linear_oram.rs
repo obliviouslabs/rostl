@@ -21,12 +21,11 @@ where
 /// # Arguments
 ///
 /// * `data` - A mutable slice of data.
-/// * `index` - The index to read and update.
+/// * `index` - The index to read and update, if out of bounds, the function will not modify `ret` or `data`.
 /// * `ret` - A mutable reference to store the read value.
 /// * `value` - The value to write at the specified index.
 #[inline]
 pub fn oblivious_read_update_index<T: Cmov>(data: &mut [T], index: usize, ret: &mut T, value: T) {
-  debug_assert!(index < data.len());
   for (i, item) in data.iter_mut().enumerate() {
     let choice = i == index;
     ret.cmov(item, choice);
@@ -39,11 +38,10 @@ pub fn oblivious_read_update_index<T: Cmov>(data: &mut [T], index: usize, ret: &
 /// # Arguments
 ///
 /// * `data` - A slice of data.
-/// * `index` - The index to read.
+/// * `index` - The index to read. If out of bounds, the function will not modify `out`.
 /// * `out` - A mutable reference to store the read value.
 #[inline]
 pub fn oblivious_read_index<T: Cmov>(data: &[T], index: usize, out: &mut T) {
-  debug_assert!(index < data.len());
   for (i, item) in data.iter().enumerate() {
     let choice = i == index;
     out.cmov(item, choice);
@@ -55,11 +53,10 @@ pub fn oblivious_read_index<T: Cmov>(data: &[T], index: usize, out: &mut T) {
 /// # Arguments
 ///
 /// * `data` - A mutable slice of data.
-/// * `index` - The index to write.
+/// * `index` - The index to write, if out of bounds, the function will not modify `data`.
 /// * `value` - The value to write at the specified index.
 #[inline]
 pub fn oblivious_write_index<T: Cmov, U: Borrow<T>>(data: &mut [T], index: usize, value: U) {
-  debug_assert!(index < data.len());
   for (i, item) in data.iter_mut().enumerate() {
     let choice = i == index;
     item.cmov(value.borrow(), choice);
