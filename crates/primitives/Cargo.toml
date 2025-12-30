@@ -2,7 +2,7 @@
 name = "rostl-primitives"
 description = "Oblivious primitives and utils."
 readme = "README.crate.md"
-version = "0.1.0-alpha6"
+version = "0.1.0-alpha7"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true

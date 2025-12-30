@@ -17,7 +17,7 @@ sed -i '/unit\.yml/d' /tmp/top_readme_head.txt
 
 for crate in "$CRATES_DIR"/*; do
   if [[ -d "$crate" && -f "$crate/$CRATE_README" && -f "$crate/Cargo.toml" ]]; then
-    name=$(tomlq -r '.package.name' "$crate/Cargo.toml")
+    name=$(tq -r '.package.name' -f "$crate/Cargo.toml")
 
     head -n 1 "$crate/$CRATE_README" > "$crate/$CRATE_README_TARGET"
     
