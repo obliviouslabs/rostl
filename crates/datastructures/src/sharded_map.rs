@@ -288,21 +288,21 @@ where
   }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl<K> PartialOrd for KeyWithPart<K>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
 {
-  #[allow(clippy::non_canonical_partial_ord_impl)]
   fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
     Some(self.cmp_ct(other))
   }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl<K> Ord for KeyWithPart<K>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
 {
-  #[allow(clippy::non_canonical_partial_ord_impl)]
   fn cmp(&self, other: &Self) -> std::cmp::Ordering {
     self.cmp_ct(other)
   }
@@ -343,23 +343,23 @@ where
   }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl<K, V> PartialOrd for KeyWithPartValue<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
   V: Cmov + Pod + Default + std::fmt::Debug + Eq,
 {
-  #[allow(clippy::non_canonical_partial_ord_impl)]
   fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
     Some(self.cmp_ct(other))
   }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl<K, V> Ord for KeyWithPartValue<K, V>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
   V: Cmov + Pod + Default + std::fmt::Debug + Eq,
 {
-  #[allow(clippy::non_canonical_partial_ord_impl)]
   fn cmp(&self, other: &Self) -> std::cmp::Ordering {
     self.cmp_ct(other)
   }
