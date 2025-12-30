@@ -359,6 +359,7 @@ where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
   V: Cmov + Pod + Default + std::fmt::Debug + Eq,
 {
+  #[allow(clippy::non_canonical_partial_ord_impl)]
   fn cmp(&self, other: &Self) -> std::cmp::Ordering {
     self.cmp_ct(other)
   }
