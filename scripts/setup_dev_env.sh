@@ -10,7 +10,7 @@ cargo install cargo-udeps
 cargo install cargo-deny
 cargo install cargo-llvm-cov
 cargo install cargo-smart-release
-cargo install tomlq
+cargo install tomlq # Now this needs to be installed from the distro (or with binstall)
 cargo install cargo-outdated
 
 echo "cargo make precommit" > .git/hooks/pre-push

@@ -3,8 +3,8 @@ set -e
 
 # Get crates from cargo.toml using jq
 CRATES=""
-for path in $(tomlq -r '.workspace.members[]' Cargo.toml); do
-  name=$(tomlq -r '.package.name' "$path/Cargo.toml")
+for path2 in $(tq -r '.workspace.members' --file Cargo.toml | jq -r '.[]'); do
+  name=$(tq -r '.package.name' --file "$path2/Cargo.toml")
   CRATES+="$name "
 done
 
