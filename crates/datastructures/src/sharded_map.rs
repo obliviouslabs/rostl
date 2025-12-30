@@ -302,6 +302,7 @@ impl<K> Ord for KeyWithPart<K>
 where
   K: OHash + Pod + Default + std::fmt::Debug + Ord + Sized,
 {
+  #[allow(clippy::non_canonical_partial_ord_impl)]
   fn cmp(&self, other: &Self) -> std::cmp::Ordering {
     self.cmp_ct(other)
   }
