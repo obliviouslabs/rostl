@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1767092053639,
+  "lastUpdate": 1767092186025,
   "repoUrl": "https://github.com/obliviouslabs/rostl",
   "entries": {
     "Benchmark": [
@@ -67083,6 +67083,750 @@ window.BENCHMARK_DATA = {
             "name": "np2_clz",
             "value": 1765,
             "range": "± 207",
+            "unit": "cycles/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "committer": {
+            "email": "afonso.tfaria21@gmail.com",
+            "name": "Afonso Tinoco",
+            "username": "xtrm0"
+          },
+          "distinct": true,
+          "id": "4cab9ddadd9944edf811b981600a362aac613880",
+          "message": "Try fixing clippy error again",
+          "timestamp": "2025-12-30T10:20:51Z",
+          "tree_id": "9e3d7b94600fe2190d3573c96fc6c0d80e405b1a",
+          "url": "https://github.com/obliviouslabs/rostl/commit/4cab9ddadd9944edf811b981600a362aac613880"
+        },
+        "date": 1767092184763,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "Array_Initialization/WallTime/ShortArray/128",
+            "value": 46,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/ShortQueue/128",
+            "value": 96,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/FixedArray/128",
+            "value": 43,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/ShortArray/1024",
+            "value": 151,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/ShortQueue/1024",
+            "value": 211,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/FixedArray/1024",
+            "value": 8763,
+            "range": "± 60",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/LongArray/128",
+            "value": 1106,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/DynamicArray/128",
+            "value": 1106,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/UnsortedMap/128",
+            "value": 1456,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/LongArray/1024",
+            "value": 8545,
+            "range": "± 42",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/DynamicArray/1024",
+            "value": 8546,
+            "range": "± 53",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/UnsortedMap/1024",
+            "value": 7101,
+            "range": "± 29",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/LongArray/1048576",
+            "value": 1552838754,
+            "range": "± 15379983",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/DynamicArray/1048576",
+            "value": 1555638722,
+            "range": "± 12786984",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/UnsortedMap/1048576",
+            "value": 169974876,
+            "range": "± 1147279",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Initialization/WallTime/EagerVector",
+            "value": 100,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/ShortArray/128",
+            "value": 86,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/ShortQueue_pushpop/128",
+            "value": 492,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/ShortArray/1024",
+            "value": 642,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/ShortQueue_pushpop/1024",
+            "value": 3827,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/LongArray_Read/128",
+            "value": 759,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/LongArray_Write/128",
+            "value": 749,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/FixedArray_Read/128",
+            "value": 73,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/DynamicArray_Read/128",
+            "value": 759,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/EagerVector_Read/128",
+            "value": 760,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/UnsortedMap_Read/128",
+            "value": 2194,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/LongArray_Read/1024",
+            "value": 1125,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/LongArray_Write/1024",
+            "value": 1111,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/FixedArray_Read/1024",
+            "value": 1126,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/DynamicArray_Read/1024",
+            "value": 1125,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/EagerVector_Read/1024",
+            "value": 1125,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Array_Operations/WallTime/UnsortedMap_Read/1024",
+            "value": 2969,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "mov-4k",
+            "value": 3363,
+            "range": "± 137",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "memstore-4k",
+            "value": 3376,
+            "range": "± 44",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov",
+            "value": 2930,
+            "range": "± 19",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "cmov2",
+            "value": 2849,
+            "range": "± 10",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "mov",
+            "value": 1519,
+            "range": "± 6",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "Heap_Initialization/WallTime/ObliviousHeap/16",
+            "value": 142,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Initialization/WallTime/ObliviousHeap/64",
+            "value": 366,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Initialization/WallTime/ObliviousHeap/256",
+            "value": 1329,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_Insert/16",
+            "value": 503,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_FindMin/16",
+            "value": 94,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_ExtractMin/16",
+            "value": 881,
+            "range": "± 127",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_Delete/16",
+            "value": 606,
+            "range": "± 123",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_Insert/64",
+            "value": 639,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_FindMin/64",
+            "value": 94,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_ExtractMin/64",
+            "value": 818,
+            "range": "± 364",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_Delete/64",
+            "value": 750,
+            "range": "± 387",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_Insert/256",
+            "value": 775,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_FindMin/256",
+            "value": 94,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_ExtractMin/256",
+            "value": 962,
+            "range": "± 1131",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Heap_Ops/WallTime/Heap_Delete/256",
+            "value": 904,
+            "range": "± 1271",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_goodrich/32",
+            "value": 329,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_ffocs/32",
+            "value": 268,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_goodrich/100",
+            "value": 1215,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_ffocs/100",
+            "value": 900,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_goodrich/320",
+            "value": 4584,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_ffocs/320",
+            "value": 3139,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_goodrich/1000",
+            "value": 16561,
+            "range": "± 69",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_ffocs/1000",
+            "value": 10778,
+            "range": "± 24",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_goodrich/4096",
+            "value": 99823,
+            "range": "± 411",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Compact_ffocs/4096",
+            "value": 73375,
+            "range": "± 425",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/LinearORAM/128",
+            "value": 43,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/CircuitORAM/128",
+            "value": 352,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/RecursivePositionMap/128",
+            "value": 671,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/LinearORAM/1024",
+            "value": 152,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/CircuitORAM/1024",
+            "value": 2996,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/RecursivePositionMap/1024",
+            "value": 5212,
+            "range": "± 37",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/LinearORAM/1048576",
+            "value": 109606,
+            "range": "± 1033",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/CircuitORAM/1048576",
+            "value": 10426122,
+            "range": "± 110094",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Initialization/WallTime/RecursivePositionMap/1048576",
+            "value": 1584241735,
+            "range": "± 13879705",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/LinearORAM_Read/128",
+            "value": 65,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Read/128",
+            "value": 722,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Write/128",
+            "value": 710,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/RecursivePositionMap/128",
+            "value": 45,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/LinearORAM_Read/1024",
+            "value": 483,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Read/1024",
+            "value": 890,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Write/1024",
+            "value": 880,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/RecursivePositionMap/1024",
+            "value": 254,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/LinearORAM_Read/1048576",
+            "value": 502301,
+            "range": "± 11218",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Read/1048576",
+            "value": 1514,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/CircuitORAM_Write/1048576",
+            "value": 1519,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ORAM_Ops/WallTime/RecursivePositionMap/1048576",
+            "value": 7766,
+            "range": "± 130",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/32",
+            "value": 666,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_innerpl/32",
+            "value": 713,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_payload_sort/32",
+            "value": 827,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/32",
+            "value": 429,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/32",
+            "value": 1043,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/32",
+            "value": 156,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Shuffle/32",
+            "value": 927,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/100",
+            "value": 2578,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_innerpl/100",
+            "value": 2954,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_payload_sort/100",
+            "value": 3392,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/100",
+            "value": 2500,
+            "range": "± 85",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/100",
+            "value": 6305,
+            "range": "± 48",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/100",
+            "value": 635,
+            "range": "± 28",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Shuffle/100",
+            "value": 3819,
+            "range": "± 40",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/320",
+            "value": 10860,
+            "range": "± 40",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_innerpl/320",
+            "value": 12863,
+            "range": "± 43",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_payload_sort/320",
+            "value": 15078,
+            "range": "± 48",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/320",
+            "value": 12338,
+            "range": "± 195",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/320",
+            "value": 47708,
+            "range": "± 410",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/320",
+            "value": 2507,
+            "range": "± 77",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Shuffle/320",
+            "value": 16293,
+            "range": "± 58",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/1000",
+            "value": 47162,
+            "range": "± 1430",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_innerpl/1000",
+            "value": 54524,
+            "range": "± 327",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_payload_sort/1000",
+            "value": 64185,
+            "range": "± 150",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/1000",
+            "value": 46039,
+            "range": "± 187",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/1000",
+            "value": 272298,
+            "range": "± 563",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/1000",
+            "value": 8908,
+            "range": "± 119",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Shuffle/1000",
+            "value": 67220,
+            "range": "± 243",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic/4096",
+            "value": 268069,
+            "range": "± 4503",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_innerpl/4096",
+            "value": 320712,
+            "range": "± 1164",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Bitonic_payload_sort/4096",
+            "value": 358518,
+            "range": "± 900",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Batcher/4096",
+            "value": 272467,
+            "range": "± 1034",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/BoseNelson/4096",
+            "value": 2712216,
+            "range": "± 17540",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/std::sort/4096",
+            "value": 53454,
+            "range": "± 634",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sorting/WallTime/Shuffle/4096",
+            "value": 370099,
+            "range": "± 1003",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "np2_bitmagic",
+            "value": 3056,
+            "range": "± 45",
+            "unit": "cycles/iter"
+          },
+          {
+            "name": "np2_clz",
+            "value": 3819,
+            "range": "± 60",
             "unit": "cycles/iter"
           }
         ]
