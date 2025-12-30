@@ -5,13 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.1.0-alpha7 (2025-12-30)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 4 commits contributed to the release.
+ - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Actually fix non-cannonical partial ord error ([`60420f8`](https://github.com/obliviouslabs/rostl/commit/60420f8e024dde50323097bbc49e55d8d1c40704))
+    - Try fixing clippy error again ([`4cab9dd`](https://github.com/obliviouslabs/rostl/commit/4cab9ddadd9944edf811b981600a362aac613880))
+    - Fix clippy warning ([`8541c73`](https://github.com/obliviouslabs/rostl/commit/8541c7369809768e6f65f3d32bfcd271916275a3))
+    - Upgrade package version ([`648d050`](https://github.com/obliviouslabs/rostl/commit/648d0505897d1a550bce3e9336e55d9d49e0cd06))
+</details>
+
 ## v0.1.0-alpha6 (2025-10-08)
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 15 commits contributed to the release over the course of 34 calendar days.
+ - 16 commits contributed to the release over the course of 34 calendar days.
  - 38 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -23,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Adjusting changelogs prior to release of rostl-primitives v0.1.0-alpha6, rostl-oram v0.1.0-alpha6, rostl-sort v0.1.0-alpha6, rostl-datastructures v0.1.0-alpha6, rostl-storage v0.1.0-alpha6 ([`2ec8a36`](https://github.com/obliviouslabs/rostl/commit/2ec8a365ed4916b0927d0da1d73e7b313a4880dc))
     - Bump version ([`faaf3fa`](https://github.com/obliviouslabs/rostl/commit/faaf3fae3d4c924d010b150943f061dbbe1f1b6a))
     - Fix typo ([`88dd7df`](https://github.com/obliviouslabs/rostl/commit/88dd7dfc0af4e0fc2dfd92c68009204b5767e054))
     - Cleanup ([`d4394d4`](https://github.com/obliviouslabs/rostl/commit/d4394d49b3e718995a5437dfebc2795dbf293128))

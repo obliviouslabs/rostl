@@ -5,13 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.1.0-alpha7 (2025-12-30)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 1 commit contributed to the release.
+ - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Upgrade package version ([`648d050`](https://github.com/obliviouslabs/rostl/commit/648d0505897d1a550bce3e9336e55d9d49e0cd06))
+</details>
+
 ## v0.1.0-alpha6 (2025-10-08)
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 7 commits contributed to the release over the course of 34 calendar days.
+ - 8 commits contributed to the release over the course of 34 calendar days.
  - 38 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -23,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Adjusting changelogs prior to release of rostl-primitives v0.1.0-alpha6, rostl-oram v0.1.0-alpha6, rostl-sort v0.1.0-alpha6, rostl-datastructures v0.1.0-alpha6, rostl-storage v0.1.0-alpha6 ([`2ec8a36`](https://github.com/obliviouslabs/rostl/commit/2ec8a365ed4916b0927d0da1d73e7b313a4880dc))
     - Bump version ([`faaf3fa`](https://github.com/obliviouslabs/rostl/commit/faaf3fae3d4c924d010b150943f061dbbe1f1b6a))
     - Fix avx512f cxchg ([`545ee12`](https://github.com/obliviouslabs/rostl/commit/545ee12833b3111bb355803b05cad30de258db9d))
     - Implements fast oblivious compaction ([`fc940f6`](https://github.com/obliviouslabs/rostl/commit/fc940f6b7bfdbdbb3cea065f9e11da8219e82161))
