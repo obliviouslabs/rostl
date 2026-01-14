@@ -338,7 +338,7 @@ impl Cmov for bool {
   }
 }
 
-impl<T> Cmov for &mut [T]
+impl<T> Cmov for [T]
 where
   T: Cmov,
 {
@@ -386,8 +386,8 @@ mod tests {
       assert_eq!(a, if *choice { b } else { 0 });
 
       let mut a = [0u8; 10];
-      let mut b = [1u8; 10];
-      a.as_mut_slice().cmov(&b.as_mut_slice(), *choice);
+      let b = [1u8; 10];
+      a.as_mut_slice().cmov(b.as_slice(), *choice);
       assert_eq!(a, if *choice { b } else { [0u8; 10] });
     }
   }

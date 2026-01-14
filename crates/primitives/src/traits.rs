@@ -10,7 +10,7 @@ pub trait _Cmovbase {
 
 /// A trait for conditionally moving values with constant memory trace.
 ///
-pub trait Cmov: Sized {
+pub trait Cmov {
   /// Conditionally move `other` into `self` based on `choice`.
   /// @Oblivious
   fn cmov(&mut self, other: &Self, choice: bool);
