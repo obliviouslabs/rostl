@@ -2,7 +2,7 @@
 // The stack is implemented as a linked list on top of NRORAM.
 
 use bytemuck::{Pod, Zeroable};
-use rand::{rngs::ThreadRng, Rng};
+use rand::{rng, Rng};
 use rostl_oram::{
   circuit_oram::CircuitORAM,
   prelude::{PositionType, DUMMY_POS},
@@ -37,7 +37,6 @@ where
   oram: CircuitORAM<StackElement<T>>,
   top: PositionType,
   size: usize,
-  rng: ThreadRng,
 }
 
 impl<T> Stack<T>
@@ -46,18 +45,19 @@ where
 {
   /// Creates a new stack.
   pub fn new(max_size: usize) -> Self {
-    Self { oram: CircuitORAM::new(max_size), top: DUMMY_POS, size: 0, rng: rand::rng() }
+    Self { oram: CircuitORAM::new(max_size), top: DUMMY_POS, size: 0 }
   }
 
   /// Pushes a new element on the stack if `real` is true.
   /// If `real` is false, the element is not pushed and the stack size is not incremented.
   pub fn maybe_push(&mut self, real: bool, value: T) {
     debug_assert!(!real || self.size < self.oram.max_n);
+    let mut rng = rng();
 
     let new_id = self.size + 1; // inv1
-    let read_pos = self.rng.random_range(0..self.oram.max_n as PositionType);
+    let read_pos = rng.random_range(0..self.oram.max_n as PositionType);
 
-    let mut new_pos = self.rng.random_range(0..self.oram.max_n as PositionType);
+    let mut new_pos = rng.random_range(0..self.oram.max_n as PositionType);
     new_pos.cmov(&DUMMY_POS, !real); // if not real, new_pos is DUMMY_POS, oram will ignore the write
 
     let wv = StackElement { value, next: self.top };
@@ -77,7 +77,7 @@ where
     debug_assert!(!real || self.size > 0);
 
     let target_id = self.size; // inv1 - the position of the top of the stack is the size of the stack.
-    let mut read_pos = self.rng.random_range(0..self.oram.max_n as PositionType);
+    let mut read_pos = rng().random_range(0..self.oram.max_n as PositionType);
     read_pos.cmov(&self.top, real);
     let mut new_pos = read_pos;
     new_pos.cmov(&DUMMY_POS, real); // if real, we should delete the top element. if not real, we should not change the read element.

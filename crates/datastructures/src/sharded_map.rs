@@ -842,6 +842,14 @@ mod tests {
   const N: usize = 4;
 
   #[test]
+  fn test_map_sendness() {
+    fn assert_send<T: Send>() {}
+    fn assert_sync<T: Sync>() {}
+    assert_send::<ShardedMap<u64, u64>>();
+    assert_sync::<ShardedMap<u64, u64>>();
+  }
+
+  #[test]
   fn new_map_rounds_capacity_and_starts_empty() {
     let requested = 100;
     let map: ShardedMap<u64, u64> = ShardedMap::new(requested);

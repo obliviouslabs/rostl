@@ -5,7 +5,7 @@
 use std::{array::from_fn, mem::ManuallyDrop};
 
 use bytemuck::Pod;
-use rand::{rngs::ThreadRng, Rng};
+use rand::{rng, Rng};
 use rostl_oram::{
   circuit_oram::CircuitORAM,
   linear_oram::{oblivious_read_index, oblivious_write_index},
@@ -79,8 +79,6 @@ where
   data: CircuitORAM<T>,
   /// The position map for the oram
   pos_map: RecursivePositionMap,
-  /// The local rng for the oram
-  rng: ThreadRng,
 }
 impl<T, const N: usize> LongArray<T, N>
 where
@@ -88,19 +86,19 @@ where
 {
   /// Creates a new `LongArray` with the given size `n`.
   pub fn new() -> Self {
-    Self { data: CircuitORAM::new(N), pos_map: RecursivePositionMap::new(N), rng: rand::rng() }
+    Self { data: CircuitORAM::new(N), pos_map: RecursivePositionMap::new(N) }
   }
 
   /// Reads from the index
   pub fn read(&mut self, index: usize, out: &mut T) {
-    let new_pos = self.rng.random_range(0..N as PositionType);
+    let new_pos = rng().random_range(0..N as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.read(old_pos, new_pos, index, out);
   }
 
   /// Writes to the index
   pub fn write(&mut self, index: usize, value: T) {
-    let new_pos = self.rng.random_range(0..N as PositionType);
+    let new_pos = rng().random_range(0..N as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.write_or_insert(old_pos, new_pos, index, value);
   }
@@ -269,8 +267,6 @@ where
   data: CircuitORAM<T>,
   /// The position map for the oram
   pos_map: RecursivePositionMap,
-  /// The local rng for the oram
-  rng: ThreadRng,
 }
 
 impl<T> DynamicArray<T>
@@ -279,7 +275,7 @@ where
 {
   /// Creates a new `LongArray` with the given size `n`.
   pub fn new(n: usize) -> Self {
-    Self { data: CircuitORAM::new(n), pos_map: RecursivePositionMap::new(n), rng: rand::rng() }
+    Self { data: CircuitORAM::new(n), pos_map: RecursivePositionMap::new(n) }
   }
 
   /// Resizes the array to have `n` elements.
@@ -296,14 +292,14 @@ where
 
   /// Reads from the index
   pub fn read(&mut self, index: usize, out: &mut T) {
-    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+    let new_pos = rng().random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.read(old_pos, new_pos, index, out);
   }
 
   /// Writes to the index
   pub fn write(&mut self, index: usize, value: T) {
-    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+    let new_pos = rng().random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.write_or_insert(old_pos, new_pos, index, value);
   }
@@ -313,7 +309,7 @@ where
   where
     F: FnOnce(&mut T) -> R,
   {
-    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+    let new_pos = rng().random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map.access_position(index, new_pos);
     self.data.update(old_pos, new_pos, index, update_func)
   }
@@ -337,8 +333,6 @@ where
   data: CircuitORAM<T>,
   /// The position maps for each subarray
   pos_map: [RecursivePositionMap; W],
-  /// The local rng for the oram
-  rng: ThreadRng,
 }
 
 impl<T, const W: usize> MultiWayArray<T, W>
@@ -348,11 +342,7 @@ where
   /// Creates a new `MultiWayArray` with the given size `n`.
   pub fn new(n: usize) -> Self {
     assert!(W.is_power_of_two(), "W must be a power of two due to all the ilog2's here");
-    Self {
-      data: CircuitORAM::new(n),
-      pos_map: from_fn(|_| RecursivePositionMap::new(n)),
-      rng: rand::rng(),
-    }
+    Self { data: CircuitORAM::new(n), pos_map: from_fn(|_| RecursivePositionMap::new(n)) }
   }
 
   fn get_real_index(&self, subarray: usize, index: usize) -> usize {
@@ -363,7 +353,7 @@ where
 
   /// Reads from the subarray and index
   pub fn read(&mut self, subarray: usize, index: usize, out: &mut T) {
-    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+    let new_pos = rng().random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map[subarray].access_position(index, new_pos);
     let real_index = self.get_real_index(subarray, index);
     self.data.read(old_pos, new_pos, real_index, out);
@@ -371,7 +361,7 @@ where
 
   /// Writes to the subarray and index
   pub fn write(&mut self, subarray: usize, index: usize, value: T) {
-    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+    let new_pos = rng().random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map[subarray].access_position(index, new_pos);
     let real_index = self.get_real_index(subarray, index);
     self.data.write_or_insert(old_pos, new_pos, real_index, value);
@@ -382,7 +372,7 @@ where
   where
     F: FnOnce(&mut T) -> R,
   {
-    let new_pos = self.rng.random_range(0..self.len() as PositionType);
+    let new_pos = rng().random_range(0..self.len() as PositionType);
     let old_pos = self.pos_map[subarray].access_position(index, new_pos);
     let real_index = self.get_real_index(subarray, index);
     self.data.update(old_pos, new_pos, real_index, update_func)

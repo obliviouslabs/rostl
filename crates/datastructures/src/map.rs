@@ -2,7 +2,7 @@
 
 use ahash::RandomState;
 use bytemuck::{Pod, Zeroable};
-use rand::{rngs::ThreadRng, Rng};
+use rand::{rng, Rng};
 use rostl_primitives::{
   cmov_body, cxchg_body, impl_cmov_for_generic_pod,
   traits::{Cmov, _Cmovbase},
@@ -139,8 +139,6 @@ where
   hash_builders: [RandomState; 2],
   /// The insertion queue
   insertion_queue: ShortQueue<InlineElement<K, V>, INSERTION_QUEUE_MAX_SIZE>,
-  /// Random source for random indices
-  rng: ThreadRng,
 }
 
 impl<K, V> UnsortedMap<K, V>
@@ -161,7 +159,6 @@ where
       table: MultiWayArray::new(table_size),
       hash_builders: [RandomState::new(), RandomState::new()],
       insertion_queue: ShortQueue::new(),
-      rng: rand::rng(),
     }
   }
 
@@ -217,7 +214,7 @@ where
         let choice = !done;
         let inserted = bucket.insert_if_available(choice, *element);
         done.cmov(&true, inserted);
-        let randidx = self.rng.random_range(0..BUCKET_SIZE);
+        let randidx = rng().random_range(0..BUCKET_SIZE);
         bucket.elements[randidx].cxchg(element, !done);
       });
     }});
@@ -315,6 +312,14 @@ mod tests {
     map.write(1, 3);
     assert!(map.get(1, &mut value));
     assert_eq!(value, 3);
+  }
+
+  #[test]
+  fn test_map_sendness() {
+    fn assert_send<T: Send>() {}
+    fn assert_sync<T: Sync>() {}
+    assert_send::<UnsortedMap<u32, u32>>();
+    assert_sync::<UnsortedMap<u32, u32>>();
   }
 
   #[test]

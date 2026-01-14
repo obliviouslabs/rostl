@@ -1,6 +1,6 @@
 //! Implements [path oblivious heap](https://eprint.iacr.org/2019/274).
 use bytemuck::{Pod, Zeroable};
-use rand::{rngs::ThreadRng, Rng};
+use rand::{rng, Rng};
 use rostl_oram::{
   circuit_oram::{remove_element, write_block_to_empty_slot, Block, CircuitORAM, S, Z},
   heap_tree::HeapTree,
@@ -44,8 +44,6 @@ where
   pub data: CircuitORAM<HeapElement<V>>,
   /// The metadata tree used for storing the element with minimum key in the subtree.
   pub metadata: HeapTree<Block<HeapElement<V>>>,
-  /// Thread local rng.
-  pub rng: ThreadRng,
   /// maximum size of the heap.
   pub max_size: usize,
   /// timestamp: usize,
@@ -61,7 +59,7 @@ where
     let data = CircuitORAM::new(n);
     let default_value = Block::<HeapElement<V>>::default();
     let metadata = HeapTree::new_with(data.h, default_value);
-    Self { data, metadata, rng: rand::rng(), max_size: n, timestamp: 0 }
+    Self { data, metadata, max_size: n, timestamp: 0 }
   }
 
   /// Finds the minimum element in the heap.
@@ -142,7 +140,8 @@ where
   /// # Returns
   /// * the position and timestamp of the inserted element.
   pub fn insert(&mut self, key: K, value: V) -> (PositionType, K) {
-    let new_pos = self.rng.random_range(0..self.data.max_n as PositionType);
+    let mut rng = rng();
+    let new_pos = rng.random_range(0..self.data.max_n as PositionType);
     let oram_key: K = self.timestamp;
     self.timestamp += 1;
     let heap_value = HeapElement::<V> { key, value };
@@ -153,7 +152,7 @@ where
     );
 
     for _ in 0..2 {
-      let pos_to_evict = self.rng.random_range(0..self.data.max_n as PositionType);
+      let pos_to_evict = rng.random_range(0..self.data.max_n as PositionType);
       self.evict(pos_to_evict);
       self.update_min(pos_to_evict);
     }
@@ -171,7 +170,7 @@ where
     self.data.write_back_path(pos);
     self.update_min(pos);
 
-    let pos_to_evict = self.rng.random_range(0..self.data.max_n as PositionType);
+    let pos_to_evict = rng().random_range(0..self.data.max_n as PositionType);
     self.evict(pos_to_evict);
     self.update_min(pos_to_evict);
   }

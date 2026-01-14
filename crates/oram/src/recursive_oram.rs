@@ -3,7 +3,6 @@
 
 use bytemuck::{Pod, Zeroable};
 use core::mem::size_of;
-use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
 use rostl_primitives::traits::Cmov;
 use rostl_primitives::utils::{max, min};
@@ -65,8 +64,6 @@ pub struct RecursivePositionMap {
   /// The depth of the ORAM,
   /// i.e. the number of levels in the recursive ORAM
   h: usize, // public
-  /// Thread local rng
-  rng: ThreadRng,
 }
 
 impl RecursivePositionMap {
@@ -132,7 +129,7 @@ impl RecursivePositionMap {
       first_level.data[i] = inner;
     }
 
-    Self { linear_oram: first_level, recursive_orams: data_maps, n, h, rng }
+    Self { linear_oram: first_level, recursive_orams: data_maps, n, h }
   }
 
   /// Accesses the position of a key `k` and updates it to `new_pos`.
@@ -152,11 +149,12 @@ impl RecursivePositionMap {
     let mut curr_max_pos = 1;
     let mask0 = k & MASK0;
     let mut curr_k = mask0;
+    let mut rng = rng();
     k >>= LEVEL0_BITS;
     curr_max_pos <<= LEVEL0_BITS;
 
     let mut new_curr_pos: PositionType =
-      if self.h == 0 { new_pos } else { self.rng.random_range(0..curr_max_pos) };
+      if self.h == 0 { new_pos } else { rng.random_range(0..curr_max_pos) };
 
     let level0_bucket_idx = curr_k >> LEVELN_BITS;
     let mut level0_bucket = InternalNode::default();
@@ -171,8 +169,7 @@ impl RecursivePositionMap {
       curr_max_pos <<= LEVELN_BITS;
 
       let pos = ret;
-      let next_curr_pos =
-        if self.h == i + 1 { new_pos } else { self.rng.random_range(0..curr_max_pos) };
+      let next_curr_pos = if self.h == i + 1 { new_pos } else { rng.random_range(0..curr_max_pos) };
 
       let (_found, nextpos) =
         self.recursive_orams[i].update(pos, new_curr_pos, curr_k, |node: &mut InternalNode| {

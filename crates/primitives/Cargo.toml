@@ -20,6 +20,8 @@ static_assertions.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
+rand.workspace = true
+rand_chacha.workspace = true
 
 [target.'cfg(target_arch = "x86_64")'.dev-dependencies]
 criterion-cycles-per-byte.workspace = true
@@ -30,4 +32,8 @@ harness=false
 
 [[bench]]
 name="utils"
+harness=false
+
+[[bench]]
+name="rng"
 harness=false
