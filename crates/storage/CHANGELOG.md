@@ -5,13 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v0.1.0-alpha8 (2026-01-15)
+## v0.1.0-alpha9 (2026-01-20)
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
  - 1 commit contributed to the release.
+ - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Bump version ([`d28eaa9`](https://github.com/obliviouslabs/rostl/commit/d28eaa9f2a4630a688ae44e13679b4c622ba30d1))
+</details>
+
+## v0.1.0-alpha8 (2026-01-15)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 2 commits contributed to the release.
  - 16 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -23,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Adjusting changelogs prior to release of rostl-primitives v0.1.0-alpha8, rostl-oram v0.1.0-alpha8, rostl-sort v0.1.0-alpha8, rostl-datastructures v0.1.0-alpha8, rostl-storage v0.1.0-alpha8 ([`fddcaf5`](https://github.com/obliviouslabs/rostl/commit/fddcaf534b948877056dbd37f0286e4aa6644da9))
     - Bump version ([`8dfc9f0`](https://github.com/obliviouslabs/rostl/commit/8dfc9f0895bda82a0857c4cf210cac454f1a3ba9))
 </details>
 
