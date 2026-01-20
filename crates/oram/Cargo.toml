@@ -12,6 +12,7 @@ homepage.workspace = true
 
 [dependencies]
 rostl-primitives.workspace = true
+rostl-sort.workspace = true
 bytemuck.workspace = true
 static_assertions.workspace = true
 rand.workspace = true
