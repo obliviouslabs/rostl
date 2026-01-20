@@ -8,6 +8,8 @@ pub mod bitonic;
 
 pub mod compaction;
 
+pub mod rotate;
+
 pub mod shuffle;
 
 pub mod utils;
