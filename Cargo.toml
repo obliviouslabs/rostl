@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.1.0-alpha8"
+version = "0.1.0-alpha9"
 edition = "2021"
 rust-version = "1.84"
 license = "MIT OR Apache-2.0"
@@ -144,12 +144,11 @@ overflow-checks = true
 
 
 [workspace.dependencies]
-# rostl-rodb = { path = "crates/rodb" }
-rostl-datastructures = { path = "crates/datastructures", version = "0.1.0-alpha8" }
-rostl-oram = { path = "crates/oram", version = "0.1.0-alpha8" }
-rostl-primitives = { path = "crates/primitives", version = "0.1.0-alpha8" }
-rostl-sort = { path = "crates/sort", version = "0.1.0-alpha8" }
-rostl-storage = { path = "crates/storage", version = "0.1.0-alpha8" }
+rostl-datastructures = { path = "crates/datastructures", version = "0.1.0-alpha9" }
+rostl-oram = { path = "crates/oram", version = "0.1.0-alpha9" }
+rostl-primitives = { path = "crates/primitives", version = "0.1.0-alpha9" }
+rostl-sort = { path = "crates/sort", version = "0.1.0-alpha9" }
+rostl-storage = { path = "crates/storage", version = "0.1.0-alpha9" }
 
 
 ahash = { version = "0.8.11" }

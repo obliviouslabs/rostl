@@ -502,7 +502,7 @@ checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
 
 [[package]]
 name = "rostl-datastructures"
-version = "0.1.0-alpha8"
+version = "0.1.0-alpha9"
 dependencies = [
  "ahash",
  "bytemuck",
@@ -519,7 +519,7 @@ dependencies = [
 
 [[package]]
 name = "rostl-oram"
-version = "0.1.0-alpha8"
+version = "0.1.0-alpha9"
 dependencies = [
  "bytemuck",
  "criterion",
@@ -531,7 +531,7 @@ dependencies = [
 
 [[package]]
 name = "rostl-primitives"
-version = "0.1.0-alpha8"
+version = "0.1.0-alpha9"
 dependencies = [
  "assume",
  "bytemuck",
@@ -544,7 +544,7 @@ dependencies = [
 
 [[package]]
 name = "rostl-sort"
-version = "0.1.0-alpha8"
+version = "0.1.0-alpha9"
 dependencies = [
  "assume",
  "bytemuck",
@@ -556,7 +556,7 @@ dependencies = [
 
 [[package]]
 name = "rostl-storage"
-version = "0.1.0-alpha8"
+version = "0.1.0-alpha9"
 dependencies = [
  "bytemuck",
  "criterion",
